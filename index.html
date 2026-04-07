@@ -46,61 +46,109 @@ body {
 ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 3px; }
 ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.3); }
 
+/* ─── SIDEBAR ─── */
+.sidebar {
+  position: fixed; top: 0; left: 0; bottom: 0; width: 260px; z-index: 200;
+  background: rgba(15,14,23,0.75);
+  backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
+  border-right: 1px solid rgba(255,255,255,0.1);
+  box-shadow: 4px 0 24px rgba(0,0,0,0.3);
+  display: flex; flex-direction: column;
+  transform: translateX(-100%); transition: transform .3s var(--ease);
+  overflow-y: auto; overflow-x: hidden;
+}
+body.sidebar-open .sidebar { transform: translateX(0); }
+.sidebar-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 199;
+  opacity: 0; pointer-events: none; transition: opacity .3s var(--ease);
+}
+body.sidebar-open .sidebar-overlay { opacity: 1; pointer-events: auto; }
+
+/* Sidebar brand */
+.sidebar-brand {
+  display: flex; align-items: center; gap: 12px;
+  padding: 18px 20px 14px; border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+.sidebar-brand .icon { font-size: 24px; line-height: 1; }
+.sidebar-brand h2 { font-size: 14px; font-weight: 700; color: var(--text-primary); letter-spacing: -0.2px; line-height: 1.3; }
+.sidebar-brand .sub { font-size: 10px; color: var(--text-muted); margin-top: 2px; }
+.sidebar-close {
+  margin-left: auto; background: none; border: none; color: var(--text-muted); cursor: pointer;
+  font-size: 18px; line-height: 1; padding: 4px; border-radius: 4px; transition: all .15s var(--ease);
+}
+.sidebar-close:hover { color: var(--text-primary); background: rgba(255,255,255,0.1); }
+
+/* Sidebar sections */
+.sidebar-section { padding: 14px 16px 8px; }
+.sidebar-label {
+  font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .8px;
+  color: var(--text-muted); margin-bottom: 10px; padding: 0 4px;
+}
+.sidebar-divider { height: 1px; background: rgba(255,255,255,0.08); margin: 4px 16px; }
+
+/* Sidebar items (action buttons) */
+.sidebar-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 9px 12px; border-radius: var(--radius-sm); cursor: pointer;
+  font-size: 13px; color: var(--text-secondary); border: none; background: none;
+  width: 100%; text-align: left; transition: all .2s var(--ease); font-family: inherit;
+}
+.sidebar-item:hover { background: rgba(255,255,255,0.08); color: var(--text-primary); }
+.sidebar-item.active { background: rgba(99,102,241,0.2); color: #a5b4fc; font-weight: 600; }
+.sidebar-item .sb-icon { font-size: 16px; width: 22px; text-align: center; flex-shrink: 0; }
+
+/* Sidebar selects */
+.sidebar-select-group { padding: 0 4px; margin-bottom: 8px; }
+.sidebar-select-group label { font-size: 11px; font-weight: 600; color: var(--text-muted); margin-bottom: 4px; display: block; }
+.sidebar-select {
+  width: 100%; padding: 8px 12px; border-radius: var(--radius-sm); font-size: 12px;
+  background: rgba(255,255,255,0.06); color: #fff; border: 1px solid rgba(255,255,255,0.12);
+  cursor: pointer; outline: none; transition: all .2s var(--ease); font-family: inherit;
+}
+.sidebar-select:hover { background: rgba(255,255,255,0.12); border-color: rgba(255,255,255,0.22); }
+.sidebar-select:focus { border-color: rgba(99,102,241,0.5); box-shadow: 0 0 0 2px rgba(99,102,241,0.2); background: rgba(255,255,255,0.1); }
+.sidebar-select option { color: #e0e7ff; background: #1e1e2e; }
+
+/* Sidebar col-panel embed */
+.sidebar .col-panel-embed { display: none; padding: 0 4px; }
+.sidebar .col-panel-embed.open { display: block; }
+
+/* Sidebar footer */
+.sidebar-footer {
+  margin-top: auto; padding: 12px 20px; border-top: 1px solid rgba(255,255,255,0.08);
+  font-size: 10px; color: var(--text-muted);
+}
+.sidebar-footer span { opacity: 0.6; }
+/* Sprint info in sidebar */
+.sidebar-sprint-info { font-size: 11px; color: var(--text-muted); padding: 4px 4px 0; line-height: 1.4; }
+
 /* ─── TOPBAR ─── */
 .topbar {
   background: rgba(15,14,23,0.5);
   backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
   color: #fff;
-  padding: 14px 28px;
-  display: flex; align-items: center; justify-content: space-between;
-  gap: 14px; flex-wrap: wrap;
+  padding: 10px 20px;
+  display: flex; align-items: center; gap: 14px;
   box-shadow: 0 1px 0 rgba(255,255,255,0.08), 0 4px 20px rgba(0,0,0,0.3);
   position: sticky; top: 0; z-index: 100;
   border-bottom: 1px solid rgba(255,255,255,0.1);
+  transition: margin-left .3s var(--ease);
 }
-.topbar-brand { display: flex; align-items: center; gap: 12px; }
-.topbar-brand .icon { font-size: 28px; line-height: 1; filter: drop-shadow(0 1px 3px rgba(0,0,0,0.12)); }
-.topbar-brand h1 { font-size: 17px; font-weight: 700; letter-spacing: -0.2px; }
-.topbar-brand .sub { font-size: 11px; opacity: 0.9; margin-top: 2px; letter-spacing: 0.2px; }
-.topbar-right { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-.topbar-right label { font-size: 12px; opacity: 0.95; white-space: nowrap; font-weight: 500; }
-.top-select {
-  padding: 6px 12px; border-radius: var(--radius-sm); border: 1px solid rgba(255,255,255,0.15); font-size: 12px;
-  background: rgba(255,255,255,0.08); color: #fff; cursor: pointer; outline: none; min-width: 230px;
-  backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); transition: all .2s var(--ease);
+body.sidebar-open .topbar { margin-left: 260px; }
+.topbar-brand { display: flex; align-items: center; gap: 10px; }
+.topbar-brand .icon { font-size: 24px; line-height: 1; filter: drop-shadow(0 1px 3px rgba(0,0,0,0.12)); }
+.topbar-brand h1 { font-size: 15px; font-weight: 700; letter-spacing: -0.2px; }
+.topbar-brand .sub { font-size: 10px; opacity: 0.9; margin-top: 1px; letter-spacing: 0.2px; }
+.hamburger-btn {
+  background: none; border: 1px solid rgba(255,255,255,0.15); color: #fff; font-size: 20px;
+  cursor: pointer; padding: 4px 10px; border-radius: var(--radius-sm); line-height: 1;
+  transition: all .2s var(--ease); flex-shrink: 0;
 }
-.top-select:hover { background: rgba(255,255,255,0.15); border-color: rgba(255,255,255,0.3); }
-.top-select:focus { background: rgba(255,255,255,0.18); border-color: rgba(255,255,255,0.4); box-shadow: 0 0 0 2px rgba(99,102,241,0.3); }
-.top-select option { color: #e0e7ff; background: #1e1e2e; }
-.top-btn {
-  padding: 6px 14px; border-radius: var(--radius-sm); font-size: 12px; cursor: pointer;
-  background: rgba(255,255,255,0.08); color: #fff;
-  border: 1px solid rgba(255,255,255,0.15); transition: all .25s var(--ease);
-  white-space: nowrap; position: relative; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
-}
-.top-btn:hover { background: rgba(255,255,255,0.18); border-color: rgba(255,255,255,0.3); transform: translateY(-1px); box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
-.top-btn:active { transform: translateY(0); }
-.top-btn.active { background: rgba(99,102,241,0.35); color: #fff; font-weight: 700; border-color: rgba(99,102,241,0.5); box-shadow: 0 0 15px rgba(99,102,241,0.3); }
-/* Custom tooltip — shown below button (topbar is at top of page) */
-.top-btn[data-tooltip]::before {
-  content: ''; position: absolute; top: calc(100% + 4px); left: 50%; transform: translateX(-50%);
-  border: 5px solid transparent; border-bottom-color: rgba(15,14,23,0.95);
-  pointer-events: none; opacity: 0; transition: opacity .2s var(--ease); z-index: 301;
-}
-.top-btn[data-tooltip]::after {
-  content: attr(data-tooltip);
-  position: absolute; top: calc(100% + 9px); left: 50%; transform: translateX(-50%);
-  background: rgba(15,14,23,0.95); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
-  color: #e0e7ff; font-size: 11px; font-weight: 500;
-  white-space: nowrap; padding: 6px 12px; border-radius: var(--radius-sm);
-  pointer-events: none; opacity: 0; transition: opacity .2s var(--ease);
-  z-index: 300; letter-spacing: .2px; box-shadow: 0 4px 12px rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1);
-}
-.top-btn[data-tooltip]:hover::before,
-.top-btn[data-tooltip]:hover::after { opacity: 1; }
+.hamburger-btn:hover { background: rgba(255,255,255,0.12); border-color: rgba(255,255,255,0.3); }
 
 /* ─── LAYOUT ─── */
-.main { padding: 20px 28px; }
+.main { padding: 20px 28px; transition: margin-left .3s var(--ease); }
+body.sidebar-open .main { margin-left: 260px; }
 
 /* ─── STATS ─── */
 .stats { display: flex; gap: 14px; margin-bottom: 20px; flex-wrap: wrap; }
@@ -418,18 +466,13 @@ tbody tr.task-level4:hover td { background: rgba(239,68,68,0.1) !important; }
 
 .footer { font-size: 10px; color: var(--text-muted); text-align: right; padding: 14px 0 4px; letter-spacing: .2px; }
 
-/* ─── COLUMN MANAGER PANEL ─── */
+/* ─── COLUMN MANAGER PANEL (inside sidebar) ─── */
 .col-panel {
-  position: fixed; top: 60px; right: 16px;
-  background: rgba(30,30,50,0.85); backdrop-filter: var(--glass-blur-strong); -webkit-backdrop-filter: var(--glass-blur-strong);
-  border-radius: var(--radius);
-  box-shadow: var(--shadow-lg);
-  padding: 18px 20px; z-index: 500; min-width: 240px;
-  display: none; border: 1px solid rgba(255,255,255,0.1);
-  animation: slideIn .2s var(--ease);
+  background: none; border-radius: 0; box-shadow: none;
+  padding: 8px 0 0; display: none; border: none;
 }
 @keyframes slideIn { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }
-.col-panel.open { display: block; }
+.col-panel.open { display: block; animation: slideIn .2s var(--ease); }
 .col-item {
   display: flex; align-items: center; gap: 8px;
   padding: 8px 10px; border-radius: var(--radius-sm); cursor: grab;
@@ -553,19 +596,19 @@ tbody tr.task-level4:hover td { background: rgba(239,68,68,0.1) !important; }
   .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
   .stat { min-width: unset; padding: 14px 16px; }
   .stat .n { font-size: 26px; }
-  .topbar { padding: 12px 18px; gap: 10px; }
-  .top-select { min-width: 180px; font-size: 11px; }
+  .topbar { padding: 10px 14px; }
   .filter-panel { padding: 14px 16px; }
   .search-input { width: 220px; }
-  .col-panel { width: 280px; }
+  .sidebar { width: 240px; }
+  body.sidebar-open .topbar, body.sidebar-open .main { margin-left: 240px; }
 }
 
 /* ─── RESPONSIVE: MOBILE ─── */
 @media (max-width: 768px) {
-  .topbar { flex-direction: column; align-items: stretch; padding: 12px 14px; }
-  .topbar-brand { justify-content: center; }
-  .topbar-right { justify-content: center; flex-wrap: wrap; }
-  .top-select { min-width: 160px; width: 100%; }
+  /* Sidebar overlays instead of pushing */
+  body.sidebar-open .topbar, body.sidebar-open .main { margin-left: 0; }
+  .sidebar { width: 280px; box-shadow: 8px 0 40px rgba(0,0,0,0.5); }
+  .topbar { padding: 10px 12px; }
   .main { padding: 12px 10px; }
   .stats { grid-template-columns: repeat(2, 1fr); gap: 8px; }
   .stat { padding: 12px 14px; }
@@ -579,7 +622,6 @@ tbody tr.task-level4:hover td { background: rgba(239,68,68,0.1) !important; }
   .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; border-radius: var(--radius-sm); }
   table { min-width: 900px; }
   .pat-modal, .cert-modal { width: 95vw; padding: 24px 18px; }
-  .col-panel { width: 260px; right: 0; }
 }
 
 /* ─── RESPONSIVE: SMALL MOBILE ─── */
@@ -594,49 +636,107 @@ tbody tr.task-level4:hover td { background: rgba(239,68,68,0.1) !important; }
   .chip { font-size: 11px; padding: 4px 10px; }
   .cert-modal { padding: 18px 14px; }
   .cert-modal h2 { font-size: 15px; }
-  .top-btn { font-size: 11px; padding: 5px 10px; }
 }
 </style>
 </head>
 <body>
 
+<!-- ─── SIDEBAR ─── -->
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-brand">
+    <div class="icon">&#128203;</div>
+    <div>
+      <h2>CasepointARA</h2>
+      <div class="sub">Team Sprint Dashboard</div>
+    </div>
+    <button class="sidebar-close" onclick="toggleSidebar()" title="Close sidebar">&#10005;</button>
+  </div>
+
+  <!-- Sprint info -->
+  <div class="sidebar-section" style="padding-bottom:0">
+    <div class="sidebar-sprint-info" id="sidebarSprintInfo">Connecting to TFS&hellip;</div>
+  </div>
+
+  <!-- Navigation -->
+  <div class="sidebar-section">
+    <div class="sidebar-label">Navigation</div>
+    <div class="sidebar-select-group">
+      <label>Sprint</label>
+      <select class="sidebar-select" id="sprintSelect" onchange="loadSprint(this.value)">
+        <option>Loading&hellip;</option>
+      </select>
+    </div>
+    <div class="sidebar-select-group">
+      <label>Area</label>
+      <select class="sidebar-select" id="areaSelect" onchange="onAreaSelect()">
+        <option value="All">All Areas</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="sidebar-divider"></div>
+
+  <!-- View Options -->
+  <div class="sidebar-section">
+    <div class="sidebar-label">View Options</div>
+    <button class="sidebar-item" id="groupBtn" onclick="toggleGroup()">
+      <span class="sb-icon">&#128100;</span> Group by Assignee
+    </button>
+    <button class="sidebar-item active" id="treeBtn" onclick="toggleTree()">
+      <span class="sb-icon">&#128196;</span> Tree View
+    </button>
+    <button class="sidebar-item" id="memberDataBtn" onclick="showMemberData()">
+      <span class="sb-icon">&#128101;</span> Member Data
+    </button>
+  </div>
+
+  <div class="sidebar-divider"></div>
+
+  <!-- Actions -->
+  <div class="sidebar-section">
+    <div class="sidebar-label">Actions</div>
+    <button class="sidebar-item" onclick="refresh()">
+      <span class="sb-icon">&#8635;</span> Refresh
+    </button>
+    <button class="sidebar-item" id="colPanelToggle" onclick="toggleColPanel()">
+      <span class="sb-icon">&#9881;</span> Column Manager
+    </button>
+    <button class="sidebar-item" id="patBtn" onclick="showPATModal(true)">
+      <span class="sb-icon">&#128273;</span> Update PAT
+    </button>
+  </div>
+
+  <!-- Column Manager (embedded) -->
+  <div class="sidebar-section" style="padding-top:0">
+    <div id="colPanel" class="col-panel">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; padding:0 4px">
+        <strong style="font-size:12px; color:var(--text-primary)">Column Order</strong>
+        <span onclick="toggleColPanel()" style="cursor:pointer; font-size:16px; color:var(--text-muted); line-height:1">&#10005;</span>
+      </div>
+      <p style="font-size:10px; color:var(--text-muted); margin-bottom:8px; padding:0 4px">Drag to reorder columns</p>
+      <div id="colList"></div>
+      <div style="margin-top:8px; border-top:1px solid rgba(255,255,255,0.08); padding-top:8px">
+        <span onclick="resetColOrder()" style="cursor:pointer; font-size:11px; color:#a5b4fc; text-decoration:underline; padding:0 4px">Reset to default</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div class="sidebar-footer">
+    <span>TFS Sprint Dashboard v1.0</span>
+  </div>
+</div>
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
 <!-- ─── TOPBAR ─── -->
 <div class="topbar">
+  <button class="hamburger-btn" onclick="toggleSidebar()" title="Toggle sidebar">&#9776;</button>
   <div class="topbar-brand">
     <div class="icon">&#128203;</div>
     <div>
-      <h1>CasepointARA — Team Sprint Dashboard</h1>
-      <div class="sub" id="sprintLabel">Connecting to TFS…</div>
+      <h1>CasepointARA — Sprint Dashboard</h1>
+      <div class="sub" id="sprintLabel">Connecting to TFS&hellip;</div>
     </div>
-  </div>
-  <div class="topbar-right">
-    <label>Sprint:</label>
-    <select class="top-select" id="sprintSelect" onchange="loadSprint(this.value)">
-      <option>Loading…</option>
-    </select>
-    <label>Area:</label>
-    <select class="top-select" id="areaSelect" onchange="onAreaSelect()" style="min-width:140px">
-      <option value="All">All Areas</option>
-    </select>
-    <button class="top-btn" id="groupBtn" onclick="toggleGroup()" data-tooltip="Group by Assignee">&#128100;</button>
-    <button class="top-btn active" id="treeBtn" onclick="toggleTree()" data-tooltip="Tree View">&#128196;</button>
-    <button class="top-btn" onclick="refresh()" data-tooltip="Refresh">&#8635;</button>
-    <button class="top-btn" onclick="toggleColPanel()" data-tooltip="Reorder / Hide Columns">&#9881;</button>
-    <button class="top-btn" id="memberDataBtn" onclick="showMemberData()" data-tooltip="Member Data">&#128101;</button>
-    <button class="top-btn" id="patBtn" onclick="showPATModal(true)" data-tooltip="Update PAT">&#128273;</button>
-  </div>
-</div>
-
-<!-- ─── COLUMN MANAGER PANEL ─── -->
-<div id="colPanel" class="col-panel">
-  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px">
-    <strong style="font-size:13px; color:#222">Column Order</strong>
-    <span onclick="toggleColPanel()" style="cursor:pointer; font-size:18px; color:#aaa; line-height:1">&#10005;</span>
-  </div>
-  <p style="font-size:11px; color:#999; margin-bottom:10px">Drag rows to reorder columns</p>
-  <div id="colList"></div>
-  <div style="margin-top:10px; border-top:1px solid #f0f0f0; padding-top:8px">
-    <span onclick="resetColOrder()" style="cursor:pointer; font-size:11px; color:#0078d4; text-decoration:underline">Reset to default</span>
   </div>
 </div>
 
@@ -846,6 +946,29 @@ var LS_PAT_KEY = 'tfs_dashboard_pat';
 /* ─── AVATAR COLORS ─── */
 var COLORS = ['#0078d4','#038387','#8764b8','#c43501','#107c10',
               '#e3008c','#ca5010','#0099bc','#498205','#515c6b'];
+/* ─── SIDEBAR ─── */
+var LS_SIDEBAR_KEY = 'tfs_dashboard_sidebar';
+function toggleSidebar() {
+  var open = document.body.classList.toggle('sidebar-open');
+  localStorage.setItem(LS_SIDEBAR_KEY, open ? '1' : '0');
+}
+function closeSidebarOnMobile() {
+  if (window.innerWidth <= 768 && document.body.classList.contains('sidebar-open')) {
+    document.body.classList.remove('sidebar-open');
+    localStorage.setItem(LS_SIDEBAR_KEY, '0');
+  }
+}
+/* Init sidebar state */
+(function(){
+  var saved = localStorage.getItem(LS_SIDEBAR_KEY);
+  if (saved === '1' && window.innerWidth > 768) {
+    document.body.classList.add('sidebar-open');
+  } else if (saved === null && window.innerWidth > 1024) {
+    document.body.classList.add('sidebar-open');
+    localStorage.setItem(LS_SIDEBAR_KEY, '1');
+  }
+})();
+
 var colorMap = {};
 var colorIdx = 0;
 function memberColor(name) {
@@ -1035,6 +1158,8 @@ function buildColPanel() {
 function toggleColPanel() {
   var panel = document.getElementById('colPanel');
   var open  = panel.classList.toggle('open');
+  var toggle = document.getElementById('colPanelToggle');
+  if (toggle) toggle.classList.toggle('active', open);
   if (open) buildColPanel();
 }
 
@@ -1081,9 +1206,9 @@ function buildReqCells(req, kids, reqRem, reqDone, reqOrig, devTestKids) {
         '</td>'; break;
       case 'taskSum':
         var tsKids = (devTestKids || []).filter(function(t){ return t.orig && t.orig > 0; });
-        html += '<td class="hours-cell" style="text-align:center; font-weight:700; color:#0078d4; white-space:nowrap">';
+        html += '<td class="hours-cell" style="text-align:center; font-weight:700; color:#93c5fd; white-space:nowrap">';
         if (reqOrig > 0 && tsKids.length) {
-          var tsHtml = '<strong style="display:block;margin-bottom:4px;font-size:12px;color:#0078d4;border-bottom:1px solid #e2e8f0;padding-bottom:4px">'+tsKids.length+' Task'+(tsKids.length!==1?'s':'')+'</strong>';
+          var tsHtml = '<strong style="display:block;margin-bottom:4px;font-size:12px;color:#93c5fd;border-bottom:1px solid rgba(255,255,255,0.1);padding-bottom:4px">'+tsKids.length+' Task'+(tsKids.length!==1?'s':'')+'</strong>';
           tsKids.forEach(function(t){
             tsHtml += '<span class="ow-tip-row"><span class="ow-tip-id">#'+t.id+'</span> <span class="ow-tip-disc">'+esc(t.discipline)+'</span> <span class="ow-tip-title">'+esc(t.title)+'</span> <span class="ow-tip-hrs">'+(+t.orig).toFixed(2)+'h</span></span>';
           });
@@ -1099,7 +1224,7 @@ function buildReqCells(req, kids, reqRem, reqDone, reqOrig, devTestKids) {
         var owDetails = origWorkDetailsByReq[req.id];
         html += '<td class="hours-cell" style="text-align:center; font-weight:700; color:#038387; white-space:nowrap">';
         if (owVal > 0 && owDetails && owDetails.length) {
-          var owHtml = '<strong style="display:block;margin-bottom:4px;font-size:12px;color:#1e88e5;border-bottom:1px solid #e2e8f0;padding-bottom:4px">'+owDetails.length+' Task'+(owDetails.length!==1?'s':'')+'</strong>';
+          var owHtml = '<strong style="display:block;margin-bottom:4px;font-size:12px;color:#60a5fa;border-bottom:1px solid rgba(255,255,255,0.1);padding-bottom:4px">'+owDetails.length+' Task'+(owDetails.length!==1?'s':'')+'</strong>';
           owDetails.forEach(function(t){
             owHtml += '<span class="ow-tip-row"><span class="ow-tip-id">#'+t.id+'</span> <span class="ow-tip-disc">'+esc(t.disc)+'</span> <span class="ow-tip-title">'+esc(t.title)+'</span> <span class="ow-tip-hrs">'+(+t.orig).toFixed(2)+'h</span></span>';
           });
@@ -1115,7 +1240,7 @@ function buildReqCells(req, kids, reqRem, reqDone, reqOrig, devTestKids) {
         var cwDetails = compWorkDetailsByReq[req.id];
         html += '<td class="hours-cell" style="text-align:center; font-weight:700; color:#ca5010; white-space:nowrap">';
         if (cwVal > 0 && cwDetails && cwDetails.length) {
-          var cwHtml = '<strong style="display:block;margin-bottom:4px;font-size:12px;color:#ca5010;border-bottom:1px solid #e2e8f0;padding-bottom:4px">'+cwDetails.length+' Task'+(cwDetails.length!==1?'s':'')+'</strong>';
+          var cwHtml = '<strong style="display:block;margin-bottom:4px;font-size:12px;color:#fb923c;border-bottom:1px solid rgba(255,255,255,0.1);padding-bottom:4px">'+cwDetails.length+' Task'+(cwDetails.length!==1?'s':'')+'</strong>';
           cwDetails.forEach(function(t){
             cwHtml += '<span class="ow-tip-row"><span class="ow-tip-id">#'+t.id+'</span> <span class="ow-tip-disc">'+esc(t.disc)+'</span> <span class="ow-tip-title">'+esc(t.title)+'</span> <span class="ow-tip-hrs">'+(+t.comp).toFixed(2)+'h</span></span>';
           });
@@ -1355,7 +1480,7 @@ function renderMemberDataGrid(burnMap) {
   });
 
   if (!members.length) {
-    bhtml = '<tr><td colspan="' + (orderedKeys.length + 3) + '" style="text-align:center; padding:40px; color:#9ca3af">No members with burn data in this sprint/area.</td></tr>';
+    bhtml = '<tr><td colspan="' + (orderedKeys.length + 3) + '" style="text-align:center; padding:40px; color:rgba(200,210,235,0.6)">No members with burn data in this sprint/area.</td></tr>';
   }
 
   tbody.innerHTML = bhtml;
@@ -1567,6 +1692,8 @@ function loadSprint(iterPath) {
   var lbl = 'Sprint: '+sName;
   if (sprint&&sprint.start&&sprint.finish) lbl += '  \u00b7  '+fmtDate(sprint.start)+' \u2013 '+fmtDate(sprint.finish);
   document.getElementById('sprintLabel').textContent = lbl;
+  var sbInfo = document.getElementById('sidebarSprintInfo');
+  if (sbInfo) sbInfo.textContent = lbl;
 
   var wiqlUrl = TFS_BASE+'/'+PROJECT+'/_apis/wit/wiql?api-version=2.0';
   var selArea = document.getElementById('areaSelect').value;
@@ -2386,8 +2513,8 @@ function renderTree(filtered, tbody) {
           titleTd.innerHTML +=
             '<br><span style="font-size:10px;color:#6b7280;margin-top:2px;display:inline-block">'+
               '&#8593; <span style="opacity:.75">'+esc(req.type)+':</span> '+
-              '<a class="id-link" href="'+WI_URL+req.id+'" target="_blank" style="font-size:10px;color:#0078d4">'+req.id+'</a>'+
-              ' &mdash; <span style="color:#555">'+esc(req.title.length > 60 ? req.title.substring(0,60)+'…' : req.title)+'</span>'+
+              '<a class="id-link" href="'+WI_URL+req.id+'" target="_blank" style="font-size:10px;color:#93c5fd">'+req.id+'</a>'+
+              ' &mdash; <span style="color:rgba(224,231,255,0.7)">'+esc(req.title.length > 60 ? req.title.substring(0,60)+'…' : req.title)+'</span>'+
             '</span>';
         }
         /* ── Expand button for bugs that have child tasks ── */
@@ -2451,8 +2578,8 @@ function renderTree(filtered, tbody) {
           titleTd.innerHTML +=
             '<br><span style="font-size:10px;color:#6b7280;margin-top:2px;display:inline-block">'+
               '&#8593; <span style="opacity:.75">'+esc(req.type)+':</span> '+
-              '<a class="id-link" href="'+WI_URL+req.id+'" target="_blank" style="font-size:10px;color:#0078d4">'+req.id+'</a>'+
-              ' &mdash; <span style="color:#555">'+esc(req.title.length > 60 ? req.title.substring(0,60)+'…' : req.title)+'</span>'+
+              '<a class="id-link" href="'+WI_URL+req.id+'" target="_blank" style="font-size:10px;color:#93c5fd">'+req.id+'</a>'+
+              ' &mdash; <span style="color:rgba(224,231,255,0.7)">'+esc(req.title.length > 60 ? req.title.substring(0,60)+'…' : req.title)+'</span>'+
             '</span>';
         }
         if (task.type === 'Bug' && tasksByBug[task.id] && tasksByBug[task.id].length) {
@@ -2526,8 +2653,8 @@ function renderTree(filtered, tbody) {
         titleTd.innerHTML +=
           '<br><span style="font-size:10px;color:#6b7280;margin-top:2px;display:inline-block">'+
             '&#8593; <span style="opacity:.75">'+esc(par.type)+':</span> '+
-            '<a class="id-link" href="'+WI_URL+par.id+'" target="_blank" style="font-size:10px;color:#0078d4">'+par.id+'</a>'+
-            ' &mdash; <span style="color:#555">'+esc(par.title.length > 60 ? par.title.substring(0,60)+'…' : par.title)+'</span>'+
+            '<a class="id-link" href="'+WI_URL+par.id+'" target="_blank" style="font-size:10px;color:#93c5fd">'+par.id+'</a>'+
+            ' &mdash; <span style="color:rgba(224,231,255,0.7)">'+esc(par.title.length > 60 ? par.title.substring(0,60)+'…' : par.title)+'</span>'+
           '</span>';
         if (item.type === 'Bug' && tasksByBug[item.id] && tasksByBug[item.id].length) {
           if (expandedItems['bug-'+item.id] === undefined) expandedItems['bug-'+item.id] = false;
@@ -2561,7 +2688,7 @@ function renderTree(filtered, tbody) {
         titleTd.innerHTML +=
           '<br><span style="font-size:10px;color:#6b7280;margin-top:2px;display:inline-block">'+
             '&#8593; Parent: '+
-            '<a class="id-link" href="'+WI_URL+item.parentId+'" target="_blank" style="font-size:10px;color:#0078d4">'+item.parentId+'</a>'+
+            '<a class="id-link" href="'+WI_URL+item.parentId+'" target="_blank" style="font-size:10px;color:#93c5fd">'+item.parentId+'</a>'+
           '</span>';
       }
       tbody.appendChild(tr);
@@ -2617,7 +2744,7 @@ function showError(msg) {
   box.innerHTML='<strong>&#9888; Error:</strong> '+esc(msg)+
     (isCertIssue
       ? '<br><small>This is likely a <strong>certificate issue</strong>. '+
-        '<a href="#" onclick="showCertModal();return false" style="color:#1d4ed8;font-weight:600">Click here to fix it</a></small>'
+        '<a href="#" onclick="showCertModal();return false" style="color:#a5b4fc;font-weight:600">Click here to fix it</a></small>'
       : '<br><small>If the issue persists, try refreshing or check your PAT.</small>');
 }
 
