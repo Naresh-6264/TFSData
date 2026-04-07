@@ -542,22 +542,41 @@ tbody tr.task-level4:hover td { background: #fff1f2 !important; }
   </div>
 </div>
 
-<!-- ─── CERT WARNING MODAL ─── -->
+<!-- ─── CERT / PROXY WARNING MODAL ─── -->
 <div id="certOverlay" class="cert-overlay" style="display:none">
   <div class="cert-modal">
-    <h2>&#128274; TFS Certificate Not Trusted</h2>
-    <p>Your browser cannot connect to the TFS server because its SSL certificate is not trusted on this computer.
-       This is a one-time setup per browser.</p>
-    <ol class="cert-steps">
-      <li><strong>Click the button below</strong> to open TFS in a new tab.</li>
-      <li>In the new tab, click <strong>"Advanced"</strong> &rarr; <strong>"Proceed to tfs.casepoint.in"</strong> (or similar).</li>
-      <li><strong>Come back to this tab</strong> &mdash; the dashboard will reconnect automatically.</li>
-    </ol>
-    <div>
-      <button class="cert-open-btn" onclick="openTFSForCert()">&#128279; Open TFS to Accept Certificate</button>
+    <h2>&#128274; Cannot Connect to TFS</h2>
+    <p>The dashboard cannot reach the TFS server. This is usually caused by an <strong>untrusted SSL certificate</strong>
+       or <strong>CORS restrictions</strong> when hosted externally.</p>
+
+    <div style="display:flex; gap:12px; margin:16px 0; flex-wrap:wrap">
+      <!-- Option 1: Accept cert -->
+      <div style="flex:1; min-width:220px; background:#f0f7ff; border:1.5px solid #bfdbfe; border-radius:8px; padding:14px">
+        <strong style="font-size:12px; color:#1e40af">Option 1 — Accept Certificate</strong>
+        <ol class="cert-steps" style="margin:8px 0 0; padding:0 0 0 18px; background:none; border:none">
+          <li>Click the button below to open TFS</li>
+          <li>Accept the certificate in the new tab</li>
+          <li>Come back — auto-reconnects</li>
+        </ol>
+        <button class="cert-open-btn" onclick="openTFSForCert()" style="margin-top:10px; font-size:12px; padding:8px 18px">&#128279; Open TFS</button>
+      </div>
+
+      <!-- Option 2: Proxy URL -->
+      <div style="flex:1; min-width:220px; background:#fefce8; border:1.5px solid #fde68a; border-radius:8px; padding:14px">
+        <strong style="font-size:12px; color:#854d0e">Option 2 — Use CORS Proxy</strong>
+        <p style="font-size:11px; color:#713f12; margin:6px 0 10px; line-height:1.5">
+          If hosted externally (Netlify, GitHub Pages), enter your CORS proxy URL. The URL must end with <code style="background:#fef9c3; padding:1px 4px; border-radius:3px">?url=</code></p>
+        <input id="proxyInput" class="pat-input" type="text"
+               placeholder="https://your-proxy.workers.dev/?url="
+               style="font-size:11px; padding:8px 12px; font-family:inherit; width:100%; box-sizing:border-box"
+               onkeydown="if(event.key==='Enter') saveProxy()">
+        <button class="cert-open-btn" onclick="saveProxy()" style="margin-top:8px; font-size:12px; padding:8px 18px; background:linear-gradient(180deg,#facc15,#eab308); color:#1a1a2e; box-shadow:0 2px 8px rgba(234,179,8,0.3)">&#128190; Save &amp; Connect</button>
+      </div>
     </div>
+
     <div>
-      <button class="cert-skip-btn" onclick="closeCertModal()">Skip (already accepted)</button>
+      <button class="cert-skip-btn" onclick="closeCertModal()">Skip — try connecting anyway</button>
+      <button class="cert-skip-btn" id="clearProxyBtn" onclick="clearProxy()" style="display:none; color:#b91c1c; border-color:#fecaca">&#10005; Clear Proxy</button>
     </div>
     <div class="cert-status" id="certStatus"><span class="cert-spinner"></span> Checking connection…</div>
   </div>
@@ -662,7 +681,8 @@ tbody tr.task-level4:hover td { background: #fff1f2 !important; }
 /* ─── CONFIG ─── */
 var PAT      = ''; /* loaded from localStorage at boot — never hardcoded */
 var TFS_BASE = 'https://tfs.casepoint.in/tfs/Casepoint';
-var CORS_PROXY = ''; /* e.g. 'https://your-proxy.workers.dev/?url=' — leave empty when running on same network */
+var LS_PROXY_KEY = 'tfs_dashboard_proxy';
+var CORS_PROXY = localStorage.getItem(LS_PROXY_KEY) || '';
 function proxyUrl(url) { return CORS_PROXY ? CORS_PROXY + encodeURIComponent(url) : url; }
 var PROJECT  = 'CasepointARA';
 var WI_URL   = TFS_BASE + '/' + PROJECT + '/_workitems/edit/';
@@ -2500,10 +2520,36 @@ function checkTFSCert() {
 function showCertModal() {
   document.getElementById('certOverlay').style.display = 'flex';
   document.getElementById('certStatus').style.display = 'none';
+  var proxyInput = document.getElementById('proxyInput');
+  proxyInput.value = CORS_PROXY;
+  document.getElementById('clearProxyBtn').style.display = CORS_PROXY ? '' : 'none';
   _certCheckPending = true;
 }
 
 function closeCertModal() {
+  document.getElementById('certOverlay').style.display = 'none';
+  _certCheckPending = false;
+  bootConnect();
+}
+
+function saveProxy() {
+  var val = document.getElementById('proxyInput').value.trim();
+  CORS_PROXY = val;
+  if (val) {
+    localStorage.setItem(LS_PROXY_KEY, val);
+  } else {
+    localStorage.removeItem(LS_PROXY_KEY);
+  }
+  document.getElementById('certOverlay').style.display = 'none';
+  _certCheckPending = false;
+  bootConnect();
+}
+
+function clearProxy() {
+  CORS_PROXY = '';
+  localStorage.removeItem(LS_PROXY_KEY);
+  document.getElementById('proxyInput').value = '';
+  document.getElementById('clearProxyBtn').style.display = 'none';
   document.getElementById('certOverlay').style.display = 'none';
   _certCheckPending = false;
   bootConnect();
