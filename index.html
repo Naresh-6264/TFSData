@@ -611,8 +611,10 @@ tbody tr.task-level4:hover td { background: #fff1f2 !important; }
 /* ─── CONFIG ─── */
 var PAT      = ''; /* loaded from localStorage at boot — never hardcoded */
 var TFS_BASE = 'https://tfs.casepoint.in/tfs/Casepoint';
+var CORS_PROXY = ''; /* e.g. 'https://your-proxy.workers.dev/?url=' — leave empty when running on same network */
+function proxyUrl(url) { return CORS_PROXY ? CORS_PROXY + encodeURIComponent(url) : url; }
 var PROJECT  = 'CasepointARA';
-var WI_URL   = 'https://tfs.casepoint.in/tfs/Casepoint/CasepointARA/_workitems/edit/';
+var WI_URL   = TFS_BASE + '/' + PROJECT + '/_workitems/edit/';
 var FIELDS_BASE = [
   'System.Id','System.WorkItemType','System.Title','System.State',
   'System.AssignedTo','System.IterationPath','System.AreaPath',
@@ -1210,13 +1212,13 @@ function bootConnect() {
 
 /* ─── API ─── */
 function apiFetch(url) {
-  return fetch(url, { headers: { Authorization: AUTH_HDR } }).then(function(r) {
+  return fetch(proxyUrl(url), { headers: { Authorization: AUTH_HDR } }).then(function(r) {
     if (!r.ok) return r.text().then(function(t) { throw new Error('HTTP '+r.status+': '+t.substring(0,250)); });
     return r.json();
   });
 }
 function apiPost(url, body) {
-  return fetch(url, {
+  return fetch(proxyUrl(url), {
     method: 'POST',
     headers: { Authorization: AUTH_HDR, 'Content-Type': 'application/json' },
     body: JSON.stringify(body)
@@ -2380,7 +2382,8 @@ function showError(msg) {
   var box=document.getElementById('errorBox');
   box.style.display='';
   box.innerHTML='<strong>&#9888; Error:</strong> '+esc(msg)+
-    '<br><small>CORS fix: open <a href="'+TFS_BASE+'" target="_blank" style="color:inherit">'+TFS_BASE+'</a> first to accept the certificate, then reload this page.</small>';
+    '<br><small>CORS fix: If running on the same network, open <a href="'+TFS_BASE+'" target="_blank" style="color:inherit">'+TFS_BASE+'</a> first to accept the certificate, then reload this page.'+
+    '<br>If hosted externally (e.g. GitHub Pages), set the CORS_PROXY variable in the script to a proxy URL that forwards requests to TFS with CORS headers.</small>';
 }
 
 function showEmpty(msg) {
