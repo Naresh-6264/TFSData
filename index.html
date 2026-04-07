@@ -356,13 +356,57 @@ tbody tr.task-level4:hover td { background: rgba(239,68,68,0.1) !important; }
 /* ─── LOADER / ERROR ─── */
 .loader-wrap {
   display: flex; align-items: center; justify-content: center;
-  padding: 80px 20px; gap: 16px; flex-direction: column; color: var(--text-muted); font-size: 13px; font-weight: 500;
+  padding: 50px 20px 30px; gap: 14px; flex-direction: column; color: var(--text-muted); font-size: 13px; font-weight: 500;
 }
 .spinner {
-  width: 40px; height: 40px; border: 3px solid rgba(255,255,255,0.1); border-top-color: #6366f1; border-radius: 50%;
+  width: 36px; height: 36px; border: 3px solid rgba(255,255,255,0.1); border-top-color: #6366f1; border-radius: 50%;
   animation: spin .65s linear infinite;
 }
+.loader-stage { font-size: 11px; color: var(--text-muted); opacity: 0.7; transition: opacity .3s; }
 @keyframes spin { to { transform: rotate(360deg); } }
+
+/* ─── SKELETON SHIMMER ─── */
+@keyframes shimmer {
+  0% { background-position: -400px 0; }
+  100% { background-position: 400px 0; }
+}
+.skeleton {
+  background: linear-gradient(90deg, rgba(255,255,255,0.06) 25%, rgba(255,255,255,0.12) 50%, rgba(255,255,255,0.06) 75%);
+  background-size: 800px 100%; animation: shimmer 1.5s ease-in-out infinite; border-radius: 6px;
+}
+.skeleton-stats { display: flex; gap: 14px; flex-wrap: wrap; margin-bottom: 20px; }
+.skeleton-stat {
+  flex: 1; min-width: 120px; height: 80px; border-radius: var(--radius);
+  background: var(--glass-bg); backdrop-filter: var(--glass-blur); -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border); position: relative; overflow: hidden;
+}
+.skeleton-stat::after {
+  content: ''; position: absolute; inset: 0;
+  background: linear-gradient(90deg, transparent 25%, rgba(255,255,255,0.08) 50%, transparent 75%);
+  background-size: 800px 100%; animation: shimmer 1.5s ease-in-out infinite;
+}
+.skeleton-table { border-radius: var(--radius); overflow: hidden; border: 1px solid var(--glass-border); background: var(--glass-bg); backdrop-filter: var(--glass-blur); }
+.skeleton-row {
+  display: flex; gap: 16px; padding: 12px 18px; border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+.skeleton-row:first-child { background: rgba(99,102,241,0.15); }
+.skeleton-cell { height: 14px; border-radius: 4px; }
+.skeleton-cell.w10 { width: 10%; } .skeleton-cell.w15 { width: 15%; } .skeleton-cell.w20 { width: 20%; }
+.skeleton-cell.w25 { width: 25%; } .skeleton-cell.w30 { width: 30%; } .skeleton-cell.w8 { width: 8%; }
+
+/* Data fade-in */
+@keyframes fadeInUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+.data-ready .stats { animation: fadeInUp .4s var(--ease) both; }
+.data-ready .table-wrap { animation: fadeInUp .4s var(--ease) .1s both; }
+.data-ready .stat { animation: fadeInUp .35s var(--ease) both; }
+.data-ready .stat:nth-child(1) { animation-delay: 0s; }
+.data-ready .stat:nth-child(2) { animation-delay: .04s; }
+.data-ready .stat:nth-child(3) { animation-delay: .08s; }
+.data-ready .stat:nth-child(4) { animation-delay: .12s; }
+.data-ready .stat:nth-child(5) { animation-delay: .16s; }
+.data-ready .stat:nth-child(6) { animation-delay: .2s; }
+.data-ready .stat:nth-child(7) { animation-delay: .24s; }
+.data-ready .stat:nth-child(8) { animation-delay: .28s; }
 
 .error-box {
   background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.25); color: #fca5a5;
@@ -660,8 +704,14 @@ tbody tr.task-level4:hover td { background: rgba(239,68,68,0.1) !important; }
 <!-- ─── MAIN ─── -->
 <div class="main">
 
+  <!-- Skeleton Stats (shown during load) -->
+  <div class="skeleton-stats" id="skeletonStats">
+    <div class="skeleton-stat"></div><div class="skeleton-stat"></div><div class="skeleton-stat"></div><div class="skeleton-stat"></div>
+    <div class="skeleton-stat"></div><div class="skeleton-stat"></div><div class="skeleton-stat"></div><div class="skeleton-stat"></div>
+  </div>
+
   <!-- Stats -->
-  <div class="stats">
+  <div class="stats" id="realStats" style="display:none">
     <div class="stat st-total">   <div class="n" id="s-total">—</div>   <div class="l">Total</div></div>
     <div class="stat st-members"> <div class="n" id="s-members">—</div> <div class="l">Members</div></div>
     <div class="stat st-active">  <div class="n" id="s-active">—</div>  <div class="l">Active</div></div>
@@ -732,14 +782,24 @@ tbody tr.task-level4:hover td { background: rgba(239,68,68,0.1) !important; }
     <div class="loader-wrap" id="loaderWrap">
       <div class="spinner"></div>
       <div id="loaderMsg">Connecting to TFS…</div>
+      <div class="loader-stage" id="loaderStage"></div>
+    </div>
+    <!-- Skeleton table rows (shown during load) -->
+    <div class="skeleton-table" id="skeletonTable">
+      <div class="skeleton-row"><div class="skeleton skeleton-cell w8"></div><div class="skeleton skeleton-cell w20"></div><div class="skeleton skeleton-cell w10"></div><div class="skeleton skeleton-cell w10"></div><div class="skeleton skeleton-cell w15"></div><div class="skeleton skeleton-cell w15"></div><div class="skeleton skeleton-cell w8"></div><div class="skeleton skeleton-cell w8"></div></div>
+      <div class="skeleton-row"><div class="skeleton skeleton-cell w8"></div><div class="skeleton skeleton-cell w25"></div><div class="skeleton skeleton-cell w10"></div><div class="skeleton skeleton-cell w10"></div><div class="skeleton skeleton-cell w15"></div><div class="skeleton skeleton-cell w15"></div><div class="skeleton skeleton-cell w8"></div><div class="skeleton skeleton-cell w8"></div></div>
+      <div class="skeleton-row"><div class="skeleton skeleton-cell w8"></div><div class="skeleton skeleton-cell w30"></div><div class="skeleton skeleton-cell w10"></div><div class="skeleton skeleton-cell w10"></div><div class="skeleton skeleton-cell w15"></div><div class="skeleton skeleton-cell w15"></div><div class="skeleton skeleton-cell w8"></div><div class="skeleton skeleton-cell w8"></div></div>
+      <div class="skeleton-row"><div class="skeleton skeleton-cell w8"></div><div class="skeleton skeleton-cell w20"></div><div class="skeleton skeleton-cell w10"></div><div class="skeleton skeleton-cell w10"></div><div class="skeleton skeleton-cell w15"></div><div class="skeleton skeleton-cell w15"></div><div class="skeleton skeleton-cell w8"></div><div class="skeleton skeleton-cell w8"></div></div>
+      <div class="skeleton-row"><div class="skeleton skeleton-cell w8"></div><div class="skeleton skeleton-cell w25"></div><div class="skeleton skeleton-cell w10"></div><div class="skeleton skeleton-cell w10"></div><div class="skeleton skeleton-cell w15"></div><div class="skeleton skeleton-cell w15"></div><div class="skeleton skeleton-cell w8"></div><div class="skeleton skeleton-cell w8"></div></div>
+      <div class="skeleton-row"><div class="skeleton skeleton-cell w8"></div><div class="skeleton skeleton-cell w15"></div><div class="skeleton skeleton-cell w10"></div><div class="skeleton skeleton-cell w10"></div><div class="skeleton skeleton-cell w15"></div><div class="skeleton skeleton-cell w15"></div><div class="skeleton skeleton-cell w8"></div><div class="skeleton skeleton-cell w8"></div></div>
     </div>
     <table id="mainTable" style="display:none">
       <thead><tr></tr></thead>
       <tbody id="tableBody"></tbody>
     </table>
     <div id="memberDataWrap" style="display:none">
-      <div style="display:flex; align-items:center; justify-content:space-between; padding:14px 18px; border-bottom:1px solid #e2e8f0">
-        <div id="mdTitle" style="font-size:14px; font-weight:700; color:#1e3a5f">&#128101; Member Burn Data</div>
+      <div style="display:flex; align-items:center; justify-content:space-between; padding:14px 18px; border-bottom:1px solid rgba(255,255,255,0.1)">
+        <div id="mdTitle" style="font-size:14px; font-weight:700; color:var(--text-primary)">&#128101; Member Burn Data</div>
         <button class="md-back-btn" onclick="hideMemberData()">&#8592; Back to Grid</button>
       </div>
       <table id="memberDataTable">
@@ -1300,6 +1360,7 @@ function renderMemberDataGrid(burnMap) {
 
   tbody.innerHTML = bhtml;
   document.getElementById('loaderWrap').style.display = 'none';
+  hideSkeletons();
   document.getElementById('memberDataWrap').style.display = '';
   document.getElementById('mainTable').style.display = 'none';
 }
@@ -1498,6 +1559,7 @@ function mapItem(it) {
 function loadSprint(iterPath) {
   if (!iterPath) return;
   resetFilters();
+  resetLoaderSteps();
   var sprint = sprints.filter(function(s){ return s.path===iterPath; })[0];
   var sName  = sprint ? sprint.name : iterPath;
   setLoader('Loading all work items for '+sName+'…');
@@ -1967,6 +2029,7 @@ function renderTable() {
   document.getElementById('loaderWrap').style.display='none';
   document.getElementById('mainTable').style.display='';
   document.getElementById('errorBox').style.display='none';
+  hideSkeletons();
 
   /* Sync global expand-all button icon with current state */
   var globalBtn = document.getElementById('btn-expand-all');
@@ -2515,16 +2578,39 @@ function sortBy(col) {
 function refresh() { loadSprint(document.getElementById('sprintSelect').value); }
 
 /* ─── UI HELPERS ─── */
+var _loaderStep = 0;
+var _loaderTotal = 6;
+
 function setLoader(msg) {
   document.getElementById('loaderMsg').textContent=msg;
   document.getElementById('loaderWrap').style.display='flex';
   document.getElementById('mainTable').style.display='none';
   document.getElementById('errorBox').style.display='none';
+  /* Show skeletons, hide real data */
+  document.getElementById('skeletonStats').style.display='';
+  document.getElementById('skeletonTable').style.display='';
+  document.getElementById('realStats').style.display='none';
+  document.querySelector('.main').classList.remove('data-ready');
+  /* Stage progress */
+  _loaderStep++;
+  var pct = Math.min(Math.round((_loaderStep / _loaderTotal) * 100), 99);
+  var stageEl = document.getElementById('loaderStage');
+  if (stageEl) stageEl.textContent = 'Step ' + Math.min(_loaderStep, _loaderTotal) + ' of ' + _loaderTotal + '  ·  ' + pct + '%';
+}
+
+function resetLoaderSteps() { _loaderStep = 0; }
+
+function hideSkeletons() {
+  document.getElementById('skeletonStats').style.display='none';
+  document.getElementById('skeletonTable').style.display='none';
+  document.getElementById('realStats').style.display='';
+  document.querySelector('.main').classList.add('data-ready');
 }
 
 function showError(msg) {
   document.getElementById('loaderWrap').style.display='none';
   document.getElementById('mainTable').style.display='none';
+  hideSkeletons();
   var box=document.getElementById('errorBox');
   box.style.display='';
   var isCertIssue = msg.toLowerCase().indexOf('failed to fetch') !== -1 || msg.toLowerCase().indexOf('networkerror') !== -1;
@@ -2537,6 +2623,7 @@ function showError(msg) {
 
 function showEmpty(msg) {
   document.getElementById('loaderWrap').style.display='none';
+  hideSkeletons();
   document.getElementById('tableBody').innerHTML='<tr class="empty-row"><td colspan="9">'+esc(msg)+'</td></tr>';
   document.getElementById('mainTable').style.display='';
 }
