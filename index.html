@@ -447,6 +447,36 @@ tbody tr.task-level4:hover td { background: #fff1f2 !important; }
 .filter-date { padding: 5px 10px; border: 1.5px solid #e2e8f0; border-radius: var(--radius-sm); font-size: 12px; font-family: inherit; color: #1e3a5f; background: #f8fafc; transition: all .2s var(--ease); }
 .filter-date:hover { border-color: #cbd5e1; background: #fff; }
 .filter-date:focus { border-color: var(--blue-600); outline: none; box-shadow: 0 0 0 3px rgba(0,120,212,.1); background: #fff; }
+
+/* ─── CERT WARNING OVERLAY ─── */
+.cert-overlay {
+  position: fixed; inset: 0; background: rgba(15,23,42,0.6);
+  display: flex; align-items: center; justify-content: center; z-index: 1100;
+  backdrop-filter: blur(4px); animation: fadeIn .2s var(--ease);
+}
+.cert-modal {
+  background: var(--surface-raised); border-radius: 14px; padding: 32px 36px;
+  box-shadow: 0 16px 50px rgba(0,0,0,0.25), 0 0 0 1px rgba(0,0,0,0.05); width: 520px; max-width: 95vw;
+  animation: modalIn .25s var(--ease); text-align: center;
+}
+.cert-modal h2 { font-size: 18px; font-weight: 700; color: #b91c1c; margin-bottom: 12px; }
+.cert-modal p { font-size: 13px; color: #475569; line-height: 1.7; margin-bottom: 10px; text-align: left; }
+.cert-modal .cert-steps { text-align: left; margin: 16px 0; padding: 16px 20px; background: #f8fafc; border-radius: var(--radius-sm); border: 1px solid #e2e8f0; }
+.cert-modal .cert-steps li { font-size: 12px; color: #334155; margin-bottom: 8px; line-height: 1.6; }
+.cert-modal .cert-steps li:last-child { margin-bottom: 0; }
+.cert-open-btn {
+  display: inline-block; padding: 10px 28px; background: linear-gradient(180deg, #42a5f5, #2196F3); color: #fff;
+  border: none; border-radius: var(--radius-sm); font-size: 14px; font-weight: 600; cursor: pointer;
+  transition: all .2s var(--ease); box-shadow: 0 2px 8px rgba(33,150,243,0.3); margin: 8px 4px;
+}
+.cert-open-btn:hover { background: linear-gradient(180deg, #2196F3, #1e88e5); transform: translateY(-1px); box-shadow: 0 3px 12px rgba(33,150,243,0.35); }
+.cert-skip-btn {
+  display: inline-block; padding: 9px 18px; background: none; color: #64748b; cursor: pointer;
+  border: 1.5px solid #e2e8f0; border-radius: var(--radius-sm); font-size: 13px; transition: all .15s var(--ease); margin: 8px 4px;
+}
+.cert-skip-btn:hover { background: #f8fafc; border-color: #cbd5e1; color: #334155; }
+.cert-status { font-size: 12px; color: #16a34a; font-weight: 600; margin-top: 12px; display: none; }
+.cert-spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid #e5e7eb; border-top-color: var(--blue-600); border-radius: 50%; animation: spin .6s linear infinite; vertical-align: middle; margin-right: 6px; }
 </style>
 </head>
 <body>
@@ -509,6 +539,27 @@ tbody tr.task-level4:hover td { background: #fff1f2 !important; }
       <button class="pat-cancel-btn" id="patCancelBtn" onclick="closePATModal()">Cancel</button>
       <button class="pat-save-btn" onclick="savePAT()">Save &amp; Connect</button>
     </div>
+  </div>
+</div>
+
+<!-- ─── CERT WARNING MODAL ─── -->
+<div id="certOverlay" class="cert-overlay" style="display:none">
+  <div class="cert-modal">
+    <h2>&#128274; TFS Certificate Not Trusted</h2>
+    <p>Your browser cannot connect to the TFS server because its SSL certificate is not trusted on this computer.
+       This is a one-time setup per browser.</p>
+    <ol class="cert-steps">
+      <li><strong>Click the button below</strong> to open TFS in a new tab.</li>
+      <li>In the new tab, click <strong>"Advanced"</strong> &rarr; <strong>"Proceed to tfs.casepoint.in"</strong> (or similar).</li>
+      <li><strong>Come back to this tab</strong> &mdash; the dashboard will reconnect automatically.</li>
+    </ol>
+    <div>
+      <button class="cert-open-btn" onclick="openTFSForCert()">&#128279; Open TFS to Accept Certificate</button>
+    </div>
+    <div>
+      <button class="cert-skip-btn" onclick="closeCertModal()">Skip (already accepted)</button>
+    </div>
+    <div class="cert-status" id="certStatus"><span class="cert-spinner"></span> Checking connection…</div>
   </div>
 </div>
 
@@ -2381,9 +2432,12 @@ function showError(msg) {
   document.getElementById('mainTable').style.display='none';
   var box=document.getElementById('errorBox');
   box.style.display='';
+  var isCertIssue = msg.toLowerCase().indexOf('failed to fetch') !== -1 || msg.toLowerCase().indexOf('networkerror') !== -1;
   box.innerHTML='<strong>&#9888; Error:</strong> '+esc(msg)+
-    '<br><small>CORS fix: If running on the same network, open <a href="'+TFS_BASE+'" target="_blank" style="color:inherit">'+TFS_BASE+'</a> first to accept the certificate, then reload this page.'+
-    '<br>If hosted externally (e.g. GitHub Pages), set the CORS_PROXY variable in the script to a proxy URL that forwards requests to TFS with CORS headers.</small>';
+    (isCertIssue
+      ? '<br><small>This is likely a <strong>certificate issue</strong>. '+
+        '<a href="#" onclick="showCertModal();return false" style="color:#1d4ed8;font-weight:600">Click here to fix it</a></small>'
+      : '<br><small>If the issue persists, try refreshing or check your PAT.</small>');
 }
 
 function showEmpty(msg) {
@@ -2431,6 +2485,55 @@ function getLast5WorkingDays() {
   window.addEventListener('resize', applyTopbarHeight);
 })();
 
+/* ─── CERTIFICATE CHECK ─── */
+var _certCheckPending = false;
+
+function checkTFSCert() {
+  /* Quick connectivity test — fetch a lightweight TFS endpoint */
+  return fetch(proxyUrl(TFS_BASE + '/' + PROJECT + '/_apis/wit/classificationnodes/areas?$depth=0&api-version=2.0'), {
+    headers: { Authorization: AUTH_HDR },
+    mode: 'cors'
+  }).then(function(r) { return true; })
+    .catch(function() { return false; });
+}
+
+function showCertModal() {
+  document.getElementById('certOverlay').style.display = 'flex';
+  document.getElementById('certStatus').style.display = 'none';
+  _certCheckPending = true;
+}
+
+function closeCertModal() {
+  document.getElementById('certOverlay').style.display = 'none';
+  _certCheckPending = false;
+  bootConnect();
+}
+
+function openTFSForCert() {
+  window.open(TFS_BASE, '_blank');
+  var status = document.getElementById('certStatus');
+  status.style.display = '';
+  status.innerHTML = '<span class="cert-spinner"></span> Waiting for you to accept the certificate and come back…';
+
+  /* Auto-retry when user returns to this tab */
+  function onFocus() {
+    if (!_certCheckPending) { window.removeEventListener('focus', onFocus); return; }
+    status.innerHTML = '<span class="cert-spinner"></span> Checking connection…';
+    checkTFSCert().then(function(ok) {
+      if (ok) {
+        status.style.display = 'none';
+        _certCheckPending = false;
+        window.removeEventListener('focus', onFocus);
+        document.getElementById('certOverlay').style.display = 'none';
+        bootConnect();
+      } else {
+        status.innerHTML = '&#10060; Still cannot connect. Please make sure you accepted the certificate in the other tab, then try again.';
+      }
+    });
+  }
+  window.addEventListener('focus', onFocus);
+}
+
 /* ─── BOOT ─── */
 buildThead();
 (function(){
@@ -2438,7 +2541,14 @@ buildThead();
   if (stored) {
     PAT      = stored;
     AUTH_HDR = 'Basic ' + btoa(':' + PAT);
-    bootConnect();
+    /* Check if TFS is reachable before loading data */
+    checkTFSCert().then(function(ok) {
+      if (ok) {
+        bootConnect();
+      } else {
+        showCertModal();
+      }
+    });
   } else {
     showPATModal(false);
   }
