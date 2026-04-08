@@ -157,65 +157,109 @@ body {
 .st-rem      { box-shadow: var(--shadow-sm), inset 0 1px 0 rgba(251,191,36,0.15); } .st-rem .n      { color:#fbbf24; } .st-rem:hover { box-shadow: var(--glow-orange), var(--shadow-md); }
 .st-done     { box-shadow: var(--shadow-sm), inset 0 1px 0 rgba(74,222,128,0.15); } .st-done .n     { color:#4ade80; } .st-done:hover { box-shadow: var(--glow-green), var(--shadow-md); }
 
-/* ─── FILTER PANEL ─── */
-.filter-panel {
+/* ─── FILTER BAR (compact search + chips + popup) ─── */
+.filter-bar {
+  display: flex; align-items: center; gap: 0;
   background: rgba(255,255,255,0.08); backdrop-filter: var(--glass-blur); -webkit-backdrop-filter: var(--glass-blur);
-  border-radius: var(--radius); padding: 18px 22px;
+  border-radius: var(--radius); padding: 0;
   box-shadow: var(--shadow-sm); margin-bottom: 18px;
-  display: flex; flex-direction: column; gap: 12px;
   border: 1px solid var(--glass-border);
+  position: relative; min-height: 44px;
 }
-.filter-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-.filter-label { font-size: 10px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: .6px; min-width: 70px; }
-.search-input {
-  padding: 8px 14px; border: 1.5px solid rgba(255,255,255,0.12); border-radius: var(--radius-sm);
-  font-size: 13px; width: 280px; outline: none; transition: all .25s var(--ease);
-  background: rgba(255,255,255,0.06); color: var(--text-primary);
+.filter-bar-icon {
+  display: flex; align-items: center; justify-content: center;
+  width: 44px; min-width: 44px; height: 44px; cursor: pointer;
+  color: var(--text-muted); font-size: 18px; transition: all .2s var(--ease);
+  border-right: 1px solid rgba(255,255,255,0.08); flex-shrink: 0;
+  border-radius: var(--radius) 0 0 var(--radius);
 }
-.search-input::placeholder { color: var(--text-muted); }
-.search-input:hover { border-color: rgba(255,255,255,0.2); background: rgba(255,255,255,0.1); }
-.search-input:focus { border-color: rgba(99,102,241,0.5); background: rgba(255,255,255,0.1); box-shadow: 0 0 0 3px rgba(99,102,241,0.15); }
+.filter-bar-icon:hover { color: #a5b4fc; background: rgba(99,102,241,0.1); }
+.filter-bar-icon.active { color: #a5b4fc; background: rgba(99,102,241,0.15); }
 
-/* Chip filters */
-.chip {
-  padding: 5px 14px; border-radius: 20px; font-size: 12px; font-weight: 500;
-  border: 1.5px solid rgba(255,255,255,0.12); background: rgba(255,255,255,0.06); color: var(--text-secondary); cursor: pointer;
-  transition: all .25s var(--ease); white-space: nowrap; display: inline-flex; align-items: center; gap: 5px;
+.filter-bar-body {
+  flex: 1; display: flex; align-items: center; flex-wrap: wrap;
+  gap: 6px; padding: 6px 10px; min-height: 44px;
 }
-.chip:hover { border-color: rgba(99,102,241,0.4); color: #a5b4fc; background: rgba(99,102,241,0.1); box-shadow: 0 0 10px rgba(99,102,241,0.15); }
-.chip.on { background: rgba(99,102,241,0.3); color: #fff; border-color: rgba(99,102,241,0.5); box-shadow: 0 0 15px rgba(99,102,241,0.25); }
-.chip .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
 
-/* Assignee chips with avatar */
-.chip-assignee { padding: 3px 10px 3px 4px; }
-.chip-avatar {
-  width: 22px; height: 22px; border-radius: 50%; font-size: 10px; font-weight: 700;
-  display: inline-flex; align-items: center; justify-content: center; color: #fff;
-  flex-shrink: 0; text-transform: uppercase;
+/* Active filter chips inside search bar */
+.filter-chip {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 3px 8px 3px 10px; border-radius: 16px; font-size: 11px; font-weight: 600;
+  background: rgba(99,102,241,0.2); color: #a5b4fc;
+  border: 1px solid rgba(99,102,241,0.35);
+  white-space: nowrap; animation: chipIn .2s var(--ease);
 }
-.chip.on .chip-avatar { opacity: 0.9; }
-
-.filter-clear {
-  margin-left: auto; font-size: 11px; color: #a5b4fc; cursor: pointer;
-  text-decoration: none; white-space: nowrap; font-weight: 600;
-  padding: 3px 10px; border-radius: 4px; transition: all .15s var(--ease);
-  background: transparent;
+.filter-chip .chip-label { text-transform: uppercase; font-size: 9px; letter-spacing: .5px; color: var(--text-muted); margin-right: 2px; }
+.filter-chip .chip-val { color: #e0e7ff; }
+.filter-chip .chip-x {
+  width: 16px; height: 16px; display: flex; align-items: center; justify-content: center;
+  border-radius: 50%; font-size: 12px; cursor: pointer; margin-left: 2px;
+  color: rgba(255,255,255,0.5); transition: all .15s var(--ease);
 }
-.filter-clear:hover { color: #c4b5fd; background: rgba(99,102,241,0.1); }
+.filter-chip .chip-x:hover { background: rgba(255,255,255,0.15); color: #fff; }
+@keyframes chipIn { from { opacity: 0; transform: scale(0.85); } to { opacity: 1; transform: scale(1); } }
 
-/* Dropdown selects for Area & Assignee */
+.filter-bar-search {
+  flex: 1; min-width: 120px; border: none; outline: none; background: transparent;
+  font-size: 13px; color: var(--text-primary); padding: 8px 4px; font-family: inherit;
+}
+.filter-bar-search::placeholder { color: var(--text-muted); }
+
+.filter-bar-clear {
+  display: none; align-items: center; justify-content: center;
+  width: 36px; min-width: 36px; height: 36px; cursor: pointer;
+  color: var(--text-muted); font-size: 16px; transition: all .2s var(--ease);
+  border-radius: 50%; margin-right: 4px; flex-shrink: 0;
+}
+.filter-bar-clear:hover { color: #f87171; background: rgba(248,113,113,0.12); }
+.filter-bar-clear.visible { display: flex; }
+
+/* Date filters inline (member data mode) */
+.filter-bar-dates {
+  display: none; align-items: center; gap: 8px; padding: 0 10px;
+  border-left: 1px solid rgba(255,255,255,0.08); margin-left: auto; flex-shrink: 0;
+}
+.filter-bar-dates.visible { display: flex; }
+.filter-bar-dates label { font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: .5px; }
+
+/* ─── FILTER POPUP ─── */
+.filter-popup {
+  position: absolute; top: calc(100% + 6px); left: 0; z-index: 300;
+  background: rgba(20,18,35,0.95); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255,255,255,0.15); border-radius: var(--radius);
+  box-shadow: 0 12px 40px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.05);
+  padding: 16px 18px; min-width: 320px; max-width: 420px;
+  display: none; flex-direction: column; gap: 14px;
+  animation: popIn .2s var(--ease);
+}
+.filter-popup.open { display: flex; }
+@keyframes popIn { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }
+
+.filter-popup-title {
+  font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .8px;
+  color: var(--text-muted); padding-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+.filter-popup-group { display: flex; flex-direction: column; gap: 6px; }
+.filter-popup-group label {
+  font-size: 10px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: .6px;
+}
+.filter-popup-overlay {
+  position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 299;
+  display: none;
+}
+.filter-popup-overlay.open { display: block; }
+
+/* Hidden dropdown selects (still used for value storage & logic) */
 .filter-select {
-  padding: 6px 30px 6px 12px;
+  padding: 7px 30px 7px 12px;
   border: 1.5px solid rgba(255,255,255,0.12);
   border-radius: var(--radius-sm);
   font-size: 12px;
-  min-width: 180px;
-  max-width: 260px;
+  width: 100%;
   background: rgba(255,255,255,0.06) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%2394a3b8'/%3E%3C/svg%3E") no-repeat right 10px center;
   background-size: 8px;
   appearance: none; -webkit-appearance: none;
-  cursor: pointer;
-  outline: none;
+  cursor: pointer; outline: none;
   transition: all .25s var(--ease);
   color: var(--text-primary);
 }
@@ -224,8 +268,8 @@ body {
 .filter-select:focus { border-color: rgba(99,102,241,0.5); box-shadow: 0 0 0 3px rgba(99,102,241,0.15); background-color: rgba(255,255,255,0.1); }
 .filter-select.has-value { border-color: rgba(99,102,241,0.5); background-color: rgba(99,102,241,0.12); color: #a5b4fc; font-weight: 600; }
 
-/* Assignee select option avatar prefix handled via option text */
-.select-wrap { position: relative; display: inline-block; }
+/* Assignee select */
+.select-wrap { position: relative; display: block; }
 .select-badge {
   position: absolute; left: 8px; top: 50%; transform: translateY(-50%);
   width: 18px; height: 18px; border-radius: 50%;
@@ -234,6 +278,20 @@ body {
   pointer-events: none; z-index: 1;
 }
 .select-wrap .filter-select { padding-left: 32px; }
+
+.filter-date { padding: 5px 10px; border: 1.5px solid rgba(255,255,255,0.12); border-radius: var(--radius-sm); font-size: 12px; font-family: inherit; color: var(--text-primary); background: rgba(255,255,255,0.06); transition: all .2s var(--ease); color-scheme: dark; }
+.filter-date:hover { border-color: rgba(255,255,255,0.22); background: rgba(255,255,255,0.1); }
+.filter-date:focus { border-color: rgba(99,102,241,0.5); outline: none; box-shadow: 0 0 0 3px rgba(99,102,241,0.15); background: rgba(255,255,255,0.1); }
+
+/* Legacy chip class (used elsewhere) */
+.chip {
+  padding: 5px 14px; border-radius: 20px; font-size: 12px; font-weight: 500;
+  border: 1.5px solid rgba(255,255,255,0.12); background: rgba(255,255,255,0.06); color: var(--text-secondary); cursor: pointer;
+  transition: all .25s var(--ease); white-space: nowrap; display: inline-flex; align-items: center; gap: 5px;
+}
+.chip:hover { border-color: rgba(99,102,241,0.4); color: #a5b4fc; background: rgba(99,102,241,0.1); box-shadow: 0 0 10px rgba(99,102,241,0.15); }
+.chip.on { background: rgba(99,102,241,0.3); color: #fff; border-color: rgba(99,102,241,0.5); box-shadow: 0 0 15px rgba(99,102,241,0.25); }
+.chip .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
 
 /* Result bar */
 .result-bar {
@@ -536,9 +594,6 @@ tbody tr.task-level4:hover td { background: rgba(239,68,68,0.1) !important; }
 .md-day-header .md-dow { display: block; font-size: 10px; opacity: 0.75; font-weight: 500; }
 .md-back-btn { background: linear-gradient(135deg, rgba(99,102,241,0.7), rgba(79,70,229,0.8)); color: #fff; border: 1px solid rgba(255,255,255,0.15); padding: 6px 16px; border-radius: var(--radius-sm); font-size: 11px; font-weight: 600; cursor: pointer; transition: all .25s var(--ease); box-shadow: 0 0 15px rgba(99,102,241,0.25); }
 .md-back-btn:hover { box-shadow: 0 0 25px rgba(99,102,241,0.4); transform: translateY(-1px); }
-.filter-date { padding: 5px 10px; border: 1.5px solid rgba(255,255,255,0.12); border-radius: var(--radius-sm); font-size: 12px; font-family: inherit; color: var(--text-primary); background: rgba(255,255,255,0.06); transition: all .2s var(--ease); color-scheme: dark; }
-.filter-date:hover { border-color: rgba(255,255,255,0.22); background: rgba(255,255,255,0.1); }
-.filter-date:focus { border-color: rgba(99,102,241,0.5); outline: none; box-shadow: 0 0 0 3px rgba(99,102,241,0.15); background: rgba(255,255,255,0.1); }
 
 /* ─── CERT WARNING OVERLAY ─── */
 .cert-overlay {
@@ -579,8 +634,7 @@ tbody tr.task-level4:hover td { background: rgba(239,68,68,0.1) !important; }
   .stat { min-width: unset; padding: 14px 16px; }
   .stat .n { font-size: 26px; }
   .topbar { padding: 10px 14px; }
-  .filter-panel { padding: 14px 16px; }
-  .search-input { width: 220px; }
+  .filter-popup { min-width: 280px; }
 }
 
 /* ─── RESPONSIVE: MOBILE ─── */
@@ -609,11 +663,10 @@ tbody tr.task-level4:hover td { background: rgba(239,68,68,0.1) !important; }
   .stat { padding: 12px 14px; }
   .stat .n { font-size: 22px; }
   .stat .l { font-size: 9px; }
-  .filter-panel { padding: 12px 14px; gap: 10px; }
-  .filter-row { flex-direction: column; align-items: stretch; }
-  .filter-label { min-width: unset; }
-  .search-input { width: 100%; }
-  .filter-select { width: 100%; }
+  .filter-bar { flex-wrap: wrap; }
+  .filter-bar-body { min-height: 38px; }
+  .filter-bar-dates { border-left: none; border-top: 1px solid rgba(255,255,255,0.08); width: 100%; padding: 8px 10px; }
+  .filter-popup { min-width: unset; left: 0; right: 0; max-width: none; }
   .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; border-radius: var(--radius-sm); }
   table { min-width: 900px; }
   .pat-modal, .cert-modal { width: 95vw; padding: 24px 18px; }
@@ -634,6 +687,8 @@ tbody tr.task-level4:hover td { background: rgba(239,68,68,0.1) !important; }
   .stat { padding: 10px 12px; border-radius: var(--radius-sm); }
   .main { padding: 10px 8px; }
   .chip { font-size: 11px; padding: 4px 10px; }
+  .filter-chip { font-size: 10px; padding: 2px 6px 2px 8px; }
+  .filter-bar-dates { flex-wrap: wrap; gap: 4px; }
   .cert-modal { padding: 18px 14px; }
   .cert-modal h2 { font-size: 15px; }
 }
@@ -689,26 +744,38 @@ body.light-theme .st-total .n    { color: #4f46e5; } body.light-theme .st-member
 body.light-theme .st-active .n   { color: #6366f1; } body.light-theme .st-proposed .n { color: #64748b; }
 body.light-theme .st-closed .n   { color: #16a34a; } body.light-theme .st-bug .n      { color: #dc2626; }
 body.light-theme .st-rem .n      { color: #d97706; } body.light-theme .st-done .n     { color: #16a34a; }
-/* Filter panel */
-body.light-theme .search-input {
-  background: rgba(0,0,0,0.03); border-color: rgba(0,0,0,0.12); color: #1e293b;
+/* Filter bar */
+body.light-theme .filter-bar { background: rgba(255,255,255,0.7); border-color: rgba(0,0,0,0.1); }
+body.light-theme .filter-bar-icon { color: #64748b; border-right-color: rgba(0,0,0,0.08); }
+body.light-theme .filter-bar-icon:hover { color: #4f46e5; background: rgba(99,102,241,0.06); }
+body.light-theme .filter-bar-icon.active { color: #4f46e5; background: rgba(99,102,241,0.08); }
+body.light-theme .filter-bar-search { color: #1e293b; }
+body.light-theme .filter-bar-search::placeholder { color: #94a3b8; }
+body.light-theme .filter-bar-clear { color: #94a3b8; }
+body.light-theme .filter-bar-clear:hover { color: #dc2626; background: rgba(220,38,38,0.08); }
+body.light-theme .filter-bar-dates { border-left-color: rgba(0,0,0,0.08); }
+body.light-theme .filter-bar-dates label { color: #64748b; }
+body.light-theme .filter-chip { background: rgba(99,102,241,0.1); color: #4f46e5; border-color: rgba(99,102,241,0.25); }
+body.light-theme .filter-chip .chip-label { color: #64748b; }
+body.light-theme .filter-chip .chip-val { color: #1e293b; }
+body.light-theme .filter-chip .chip-x { color: rgba(0,0,0,0.35); }
+body.light-theme .filter-chip .chip-x:hover { background: rgba(0,0,0,0.08); color: #dc2626; }
+body.light-theme .filter-popup {
+  background: rgba(255,255,255,0.97); border-color: rgba(0,0,0,0.12);
+  box-shadow: 0 12px 40px rgba(0,0,0,0.15), 0 0 0 1px rgba(0,0,0,0.05);
 }
-body.light-theme .search-input::placeholder { color: #94a3b8; }
-body.light-theme .search-input:hover { border-color: rgba(0,0,0,0.2); background: #fff; }
-body.light-theme .search-input:focus { border-color: rgba(99,102,241,0.5); background: #fff; }
-body.light-theme .filter-panel { background: rgba(255,255,255,0.6); border-color: rgba(0,0,0,0.08); }
+body.light-theme .filter-popup-title { color: #64748b; border-bottom-color: rgba(0,0,0,0.06); }
+body.light-theme .filter-popup-group label { color: #475569; }
 body.light-theme .filter-select {
-  background: rgba(0,0,0,0.03); border-color: rgba(0,0,0,0.12); color: #1e293b;
+  background-color: rgba(0,0,0,0.03); border-color: rgba(0,0,0,0.12); color: #1e293b;
 }
-body.light-theme .filter-select:hover { border-color: rgba(0,0,0,0.2); background: #fff; }
-body.light-theme .filter-select:focus { border-color: rgba(99,102,241,0.5); background: #fff; }
+body.light-theme .filter-select:hover { border-color: rgba(0,0,0,0.2); background-color: #fff; }
+body.light-theme .filter-select:focus { border-color: rgba(99,102,241,0.5); background-color: #fff; }
 body.light-theme .filter-select option { color: #1e293b; background: #fff; }
-body.light-theme .filter-select.has-value { background: rgba(99,102,241,0.06); color: #4f46e5; border-color: rgba(99,102,241,0.3); }
+body.light-theme .filter-select.has-value { background-color: rgba(99,102,241,0.06); color: #4f46e5; border-color: rgba(99,102,241,0.3); }
 body.light-theme .chip { border-color: rgba(0,0,0,0.1); background: rgba(0,0,0,0.03); color: #475569; }
 body.light-theme .chip:hover { border-color: rgba(99,102,241,0.3); color: #4f46e5; background: rgba(99,102,241,0.05); }
 body.light-theme .chip.on { background: rgba(99,102,241,0.12); color: #4f46e5; border-color: rgba(99,102,241,0.3); }
-body.light-theme .filter-clear { color: #6366f1; }
-body.light-theme .filter-clear:hover { color: #4f46e5; background: rgba(99,102,241,0.06); }
 body.light-theme .filter-date { background: #fff; border-color: rgba(0,0,0,0.12); color: #1e293b; color-scheme: light; }
 body.light-theme .filter-date:hover { border-color: rgba(0,0,0,0.2); }
 body.light-theme .filter-date:focus { border-color: rgba(99,102,241,0.5); background: #fff; }
@@ -984,56 +1051,67 @@ body.light-theme .ow-tip-popup { background: rgba(255,255,255,0.97); border-colo
     <div class="stat st-done">    <div class="n" id="s-done">—</div>    <div class="l">Done Hours</div></div>
   </div>
 
-  <!-- Filter Panel -->
-  <div class="filter-panel">
-
-    <!-- Row 1: Search + Type + State + Priority -->
-    <div class="filter-row" id="filterRow1">
-      <span class="filter-label">Search</span>
-      <input class="search-input" id="searchBox" type="text" placeholder="&#128269;  Title or Work Item ID…" oninput="applyFilters()">
-
-      <span class="filter-label" style="margin-left:10px">Type</span>
-      <select id="typeSelect" class="filter-select" onchange="onTypeSelect()" style="min-width:130px">
-        <option value="All">All Types</option>
-      </select>
-
-      <span class="filter-label">State</span>
-      <select id="stateSelect" class="filter-select" onchange="onStateSelect()" style="min-width:130px">
-        <option value="All">All States</option>
-      </select>
-
-      <span class="filter-label">Priority</span>
-      <select id="prioSelect" class="filter-select" onchange="onPrioSelect()" style="min-width:130px">
-        <option value="All">All Priorities</option>
-      </select>
-
-      <span class="filter-label">Discipline</span>
-      <select id="discSelect" class="filter-select" onchange="onDiscSelect()" style="min-width:130px">
-        <option value="All">All Disciplines</option>
-      </select>
+  <!-- Filter Bar (compact search + chips) -->
+  <div class="filter-bar" id="filterBar">
+    <!-- Filter icon -->
+    <div class="filter-bar-icon" id="filterBarIcon" onclick="toggleFilterPopup()" title="Open filters">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
     </div>
-
-    <!-- Row 2: Assignee dropdown -->
-    <div class="filter-row">
-      <span class="filter-label">Assignee</span>
-      <div class="select-wrap">
-        <div class="select-badge" id="assigneeBadge" style="display:none"></div>
-        <select id="assigneeSelect" class="filter-select" onchange="onAssigneeSelect()">
-          <option value="All">All Members</option>
-        </select>
-      </div>
-
-      <span class="filter-clear" onclick="clearFilters()">Clear all filters</span>
+    <!-- Chips + search input area -->
+    <div class="filter-bar-body">
+      <div id="filterChips"></div>
+      <input class="filter-bar-search" id="searchBox" type="text" placeholder="Search title or ID…" oninput="applyFilters()">
     </div>
-
-    <!-- Row 3: Date range (member data only) -->
-    <div class="filter-row" id="filterRowDate" style="display:none">
-      <span class="filter-label">From</span>
+    <!-- Date filters (member data mode) -->
+    <div class="filter-bar-dates" id="filterBarDates">
+      <label>From</label>
       <input type="date" id="mdFromDate" class="filter-date" onchange="onMemberDateChange()">
-      <span class="filter-label" style="min-width:auto">To</span>
+      <label>To</label>
       <input type="date" id="mdToDate" class="filter-date" onchange="onMemberDateChange()">
     </div>
+    <!-- Clear all X -->
+    <div class="filter-bar-clear" id="filterBarClear" onclick="clearFilters()" title="Clear all filters">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </div>
 
+    <!-- Filter popup (hidden by default) -->
+    <div class="filter-popup-overlay" id="filterPopupOverlay" onclick="closeFilterPopup()"></div>
+    <div class="filter-popup" id="filterPopup">
+      <div class="filter-popup-title">Filters</div>
+      <div class="filter-popup-group">
+        <label>Type</label>
+        <select id="typeSelect" class="filter-select" onchange="onTypeSelect()">
+          <option value="All">All Types</option>
+        </select>
+      </div>
+      <div class="filter-popup-group">
+        <label>State</label>
+        <select id="stateSelect" class="filter-select" onchange="onStateSelect()">
+          <option value="All">All States</option>
+        </select>
+      </div>
+      <div class="filter-popup-group">
+        <label>Priority</label>
+        <select id="prioSelect" class="filter-select" onchange="onPrioSelect()">
+          <option value="All">All Priorities</option>
+        </select>
+      </div>
+      <div class="filter-popup-group">
+        <label>Discipline</label>
+        <select id="discSelect" class="filter-select" onchange="onDiscSelect()">
+          <option value="All">All Disciplines</option>
+        </select>
+      </div>
+      <div class="filter-popup-group">
+        <label>Assignee</label>
+        <div class="select-wrap">
+          <div class="select-badge" id="assigneeBadge" style="display:none"></div>
+          <select id="assigneeSelect" class="filter-select" onchange="onAssigneeSelect()">
+            <option value="All">All Members</option>
+          </select>
+        </div>
+      </div>
+    </div>
   </div>
 
   <!-- Result Bar -->
@@ -1543,8 +1621,7 @@ function showMemberData() {
   document.getElementById('memberDataBtn').classList.add('active');
   document.getElementById('mainTable').style.display = 'none';
   document.getElementById('memberDataWrap').style.display = 'none';
-  document.getElementById('filterRow1').style.display = 'none';
-  document.getElementById('filterRowDate').style.display = '';
+  document.getElementById('filterBarDates').classList.add('visible');
   initMemberDateFilters();
 
   var selArea  = document.getElementById('areaSelect').value;
@@ -1572,8 +1649,7 @@ function hideMemberData() {
   document.getElementById('memberDataWrap').style.display = 'none';
   document.getElementById('mainTable').style.display = '';
   document.getElementById('loaderWrap').style.display = 'none';
-  document.getElementById('filterRow1').style.display = '';
-  document.getElementById('filterRowDate').style.display = 'none';
+  document.getElementById('filterBarDates').classList.remove('visible');
 }
 
 function renderMemberDataGrid(burnMap) {
@@ -2193,25 +2269,89 @@ function buildFilterChips() {
   updateAssigneeBadge();
 }
 
+/* ─── FILTER POPUP TOGGLE ─── */
+function toggleFilterPopup() {
+  var popup = document.getElementById('filterPopup');
+  var overlay = document.getElementById('filterPopupOverlay');
+  var icon = document.getElementById('filterBarIcon');
+  var isOpen = popup.classList.contains('open');
+  popup.classList.toggle('open', !isOpen);
+  overlay.classList.toggle('open', !isOpen);
+  icon.classList.toggle('active', !isOpen);
+}
+function closeFilterPopup() {
+  document.getElementById('filterPopup').classList.remove('open');
+  document.getElementById('filterPopupOverlay').classList.remove('open');
+  document.getElementById('filterBarIcon').classList.remove('active');
+}
+
+/* ─── FILTER CHIP MANAGEMENT ─── */
+var filterChipMap = {
+  typeSelect:     { label: 'Type',       displayFn: function(v){ return v; } },
+  stateSelect:    { label: 'State',      displayFn: function(v){ return v; } },
+  prioSelect:     { label: 'Priority',   displayFn: function(v){ return v; } },
+  discSelect:     { label: 'Discipline', displayFn: function(v){ return v; } },
+  assigneeSelect: { label: 'Assignee',   displayFn: function(v){ return v; } }
+};
+
+function syncFilterChips() {
+  var container = document.getElementById('filterChips');
+  container.innerHTML = '';
+  var hasAny = false;
+  Object.keys(filterChipMap).forEach(function(selId) {
+    var sel = document.getElementById(selId);
+    if (sel.value !== 'All') {
+      hasAny = true;
+      var cfg = filterChipMap[selId];
+      var chip = document.createElement('span');
+      chip.className = 'filter-chip';
+      chip.innerHTML = '<span class="chip-label">' + cfg.label + ':</span>' +
+        '<span class="chip-val">' + cfg.displayFn(sel.value) + '</span>' +
+        '<span class="chip-x" data-filter="' + selId + '" onclick="removeFilterChip(this)" title="Remove">&times;</span>';
+      container.appendChild(chip);
+    }
+  });
+  var clearBtn = document.getElementById('filterBarClear');
+  clearBtn.classList.toggle('visible', hasAny);
+}
+
+function removeFilterChip(el) {
+  var selId = el.getAttribute('data-filter');
+  var sel = document.getElementById(selId);
+  sel.value = 'All';
+  sel.classList.remove('has-value');
+  if (selId === 'assigneeSelect') updateAssigneeBadge();
+  syncFilterChips();
+  if (memberDataMode && memberDataCache && (selId === 'discSelect' || selId === 'assigneeSelect')) {
+    renderMemberDataGrid(memberDataCache.data);
+  } else {
+    applyFilters();
+  }
+}
+
 function onTypeSelect() {
   var sel = document.getElementById('typeSelect');
   sel.classList.toggle('has-value', sel.value !== 'All');
+  syncFilterChips();
   applyFilters();
 }
 
 function onStateSelect() {
   var sel = document.getElementById('stateSelect');
   sel.classList.toggle('has-value', sel.value !== 'All');
+  syncFilterChips();
   applyFilters();
 }
 function onPrioSelect() {
   var sel = document.getElementById('prioSelect');
   sel.classList.toggle('has-value', sel.value !== 'All');
+  syncFilterChips();
   applyFilters();
 }
 function onDiscSelect() {
   var sel = document.getElementById('discSelect');
   sel.classList.toggle('has-value', sel.value !== 'All');
+  syncFilterChips();
   if (memberDataMode && memberDataCache) {
     renderMemberDataGrid(memberDataCache.data);
   } else {
@@ -2231,6 +2371,7 @@ function onAssigneeSelect() {
   updateAssigneeBadge();
   var sel = document.getElementById('assigneeSelect');
   sel.classList.toggle('has-value', sel.value !== 'All');
+  syncFilterChips();
   if (memberDataMode && memberDataCache) {
     renderMemberDataGrid(memberDataCache.data);
   } else {
@@ -2259,6 +2400,7 @@ function clearFilters() {
     el.value = 'All'; el.classList.remove('has-value');
   });
   document.getElementById('assigneeBadge').style.display = 'none';
+  syncFilterChips();
   applyFilters();
 }
 
