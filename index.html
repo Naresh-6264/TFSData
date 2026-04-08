@@ -1277,7 +1277,7 @@ function fetchMemberBurnData() {
     }
     return true;
   });
-  var burnMap = {};
+  var burnMap = {};   /* burnMap[member][date] = { total: N, tasks: [{id,title,type,hours}] } */
   var done = 0, total = workItems.length;
 
   function fetchOne(item) {
@@ -1295,7 +1295,12 @@ function fetchMemberBurnData() {
         var member = item.assigneeName;
         if (!member) return;
         if (!burnMap[member]) burnMap[member] = {};
-        burnMap[member][dateStr] = (burnMap[member][dateStr] || 0) + delta;
+        if (!burnMap[member][dateStr]) burnMap[member][dateStr] = { total: 0, tasks: [] };
+        burnMap[member][dateStr].total += delta;
+        /* Aggregate per task per date */
+        var existing = burnMap[member][dateStr].tasks.filter(function(t){ return t.id === item.id; })[0];
+        if (existing) { existing.hours += delta; }
+        else { burnMap[member][dateStr].tasks.push({ id: item.id, title: item.title, type: item.type, hours: delta }); }
       });
       done++;
       document.getElementById('loaderMsg').textContent = 'Loading member burn data\u2026 ' + done + ' / ' + total;
@@ -1434,12 +1439,20 @@ function renderMemberDataGrid(burnMap) {
       '<div class="av" style="background:' + col + '">' + ini + '</div>' +
       '<span>' + esc(name) + '</span></div></td>';
     orderedKeys.forEach(function(dk) {
-      var hrs = (burnMap[name] && burnMap[name][dk]) ? burnMap[name][dk] : 0;
+      var cell = (burnMap[name] && burnMap[name][dk]) ? burnMap[name][dk] : null;
+      var hrs = cell ? cell.total : 0;
       rowTotal += hrs;
       var cls = 'md-hours';
       if (hrs === 0 && dk === todayKey) cls = 'md-hours today-pending';
       else if (hrs === 0) cls = 'md-hours zero';
-      bhtml += '<td class="' + cls + '">' + (hrs > 0 ? fmtH(hrs) + 'h' : '0') + '</td>';
+      var tip = '';
+      if (cell && cell.tasks.length) {
+        tip = cell.tasks.length + ' task' + (cell.tasks.length !== 1 ? 's' : '') + ' \u00b7 ' + fmtH(hrs) + 'h total\n';
+        cell.tasks.forEach(function(t) {
+          tip += '#' + t.id + ' [' + t.type + '] ' + t.title.substring(0, 45) + (t.title.length > 45 ? '\u2026' : '') + ' \u2192 ' + fmtH(t.hours) + 'h\n';
+        });
+      }
+      bhtml += '<td class="' + cls + '"' + (tip ? ' title="' + esc(tip.trim()) + '"' : '') + ' style="cursor:' + (tip ? 'help' : 'default') + '">' + (hrs > 0 ? fmtH(hrs) + 'h' : '0') + '</td>';
     });
     bhtml += '<td class="md-total">' + fmtH(rowTotal) + 'h</td>';
     /* Total Completed: sum (revised>0 ? revised : completed) for all member Tasks/Bugs */
