@@ -24,18 +24,34 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Inject auth config from secret
-        run: printf '%s\n' "$AUTH_CONFIG_DATA" > ai-adoption-tracker/auth-config.js
-        env:
-          AUTH_CONFIG_DATA: ${{ secrets.AUTH_CONFIG_DATA }}
-
-      - name: Verify auth config was created
+      - name: Prepare deployment
         run: |
-          if [ ! -s ai-adoption-tracker/auth-config.js ]; then
-            echo "::error::auth-config.js is empty — check that AUTH_CONFIG_DATA secret is set"
+          mkdir _site
+
+          # Copy portal files
+          cp index.html _site/
+          cp tools.json _site/
+
+          # Copy each tool
+          cp -r tfs-dashboard _site/
+          cp -r md-viewer _site/
+          cp -r ai-adoption-tracker _site/
+
+          # Inject auth config from secret
+          printf '%s\n' "$AUTH_CONFIG_DATA" > _site/ai-adoption-tracker/auth-config.js
+
+          # Verify
+          echo "=== Deployed files ==="
+          find _site -type f -name '*.html' -o -name '*.js' -o -name '*.json' | sort
+          echo ""
+          if [ -s _site/ai-adoption-tracker/auth-config.js ]; then
+            echo "✓ auth-config.js created ($(wc -c < _site/ai-adoption-tracker/auth-config.js) bytes)"
+          else
+            echo "::error::auth-config.js is empty — check AUTH_CONFIG_DATA secret"
             exit 1
           fi
-          echo "auth-config.js created ($(wc -c < ai-adoption-tracker/auth-config.js) bytes)"
+        env:
+          AUTH_CONFIG_DATA: ${{ secrets.AUTH_CONFIG_DATA }}
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
@@ -43,7 +59,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: .
+          path: _site
 
       - name: Deploy to GitHub Pages
         id: deployment
