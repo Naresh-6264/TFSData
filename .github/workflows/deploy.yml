@@ -25,10 +25,17 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Inject auth config from secret
-        run: |
-          echo "$AUTH_CONFIG_DATA" > ai-adoption-tracker/auth-config.js
+        run: printf '%s\n' "$AUTH_CONFIG_DATA" > ai-adoption-tracker/auth-config.js
         env:
           AUTH_CONFIG_DATA: ${{ secrets.AUTH_CONFIG_DATA }}
+
+      - name: Verify auth config was created
+        run: |
+          if [ ! -s ai-adoption-tracker/auth-config.js ]; then
+            echo "::error::auth-config.js is empty — check that AUTH_CONFIG_DATA secret is set"
+            exit 1
+          fi
+          echo "auth-config.js created ($(wc -c < ai-adoption-tracker/auth-config.js) bytes)"
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
