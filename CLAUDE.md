@@ -15,41 +15,80 @@ This copies everything into `~/.claude/` (agents, skills, commands, rules) and m
 
 ## Project Overview
 
-A real-time TFS (Team Foundation Server) Sprint Team Dashboard for the CasepointARA project. Single-file vanilla JavaScript SPA — all CSS, HTML, and JS live in `index.html` (~3300 lines). No build tools, no dependencies, no framework.
+A **multi-tool portal** for the Casepoint team. The root `index.html` is a landing page that links to self-contained tools in subdirectories. Each tool is a standalone vanilla JS SPA with no build tools, no dependencies, and no framework.
+
+### Folder Structure
+
+```
+TFSData/
+├── index.html              ← Tools portal landing page
+├── tools.json              ← Tool registry (drives the landing page)
+├── tfs-dashboard/
+│   └── index.html          ← TFS Sprint Dashboard (~3300 lines)
+├── md-viewer/
+│   ├── index.html          ← Markdown Viewer (~970 lines)
+│   └── marked.umd.js       ← Markdown parsing library
+├── everything-claude-code/  ← ECC plugin (gitignored)
+├── CLAUDE.md
+└── README.md
+```
+
+### Adding a New Tool
+
+1. Create a subfolder with an `index.html` (e.g., `my-tool/index.html`)
+2. Add an entry to `tools.json`:
+   ```json
+   {
+     "id": "my-tool",
+     "name": "My Tool",
+     "description": "What it does.",
+     "path": "my-tool/",
+     "icon": "default",
+     "accentColor": "#10b981",
+     "tags": ["Tag1"]
+   }
+   ```
+3. Optionally add a new SVG icon key to `ICONS` in `index.html`
 
 ## Development
 
-- **No build step.** Open `index.html` directly in a browser.
-- **No tests or linter.** Verify changes by opening the file in a browser with a valid TFS PAT.
-- A TFS Personal Access Token is required for data — entered via modal on first load, stored in localStorage.
+- **No build step.** Open any `index.html` directly in a browser.
+- **No tests or linter.** Verify changes by opening the file in a browser.
+- The portal landing page loads `tools.json` via `fetch()`, with a hardcoded fallback array for `file://` protocol.
+
+## Tools
+
+### TFS Sprint Dashboard (`tfs-dashboard/index.html`)
+
+Real-time TFS Sprint Team Dashboard for CasepointARA. Single-file vanilla JS SPA — all CSS, HTML, and JS in one file (~3300 lines).
+
+- A TFS Personal Access Token is required — entered via modal on first load, stored in localStorage.
 - For external hosting behind CORS restrictions, configure a proxy URL via the settings modal.
 
-## Architecture
+#### Architecture
 
-### Single-file structure
+Three main sections:
 
-`index.html` is the entire application. It has three main sections:
+1. **CSS** (lines 1–1158): Glassmorphism dark theme with `.light-theme` class override. Uses CSS custom properties for theming.
+2. **HTML** (lines ~1050–1158): Sidebar, topbar, stats cards, main table, PAT modal, certificate warning.
+3. **JavaScript** (lines 1160–3283): ES5 with `var` declarations.
 
-1. **CSS** (lines 1–1158): Glassmorphism dark theme with a `.light-theme` class override for light mode. Uses CSS custom properties (`--glass-bg`, `--glass-border`, etc.) for theming.
-2. **HTML** (lines ~1050–1158): Sidebar with filters/controls, topbar, stats cards, main table, PAT modal, certificate warning overlay.
-3. **JavaScript** (lines 1160–3283): All application logic in ES5 with `var` declarations.
-
-### JS sections (marked by `/* ─── SECTION ─── */` comments)
+#### JS sections (marked by `/* ─── SECTION ─── */` comments)
 
 - **CONFIG** — TFS base URL, project name, field lists, localStorage keys
-- **STATE** — Global mutable state: `allItems`, `sprints`, `sortCol`, `treeMode`, `groupMode`, work totals caches
-- **COLUMN DEFINITIONS** — `COLS` array defines table columns; `colOrder`/`colMap` for visibility and drag-reorder
-- **TASK EXECUTION TYPE VALIDATION** — `EXEC_TYPE_RULES` maps Discipline → allowed execution types; `isValidExecType()`, `isCompWorkExceeded()`, `isInvalidManualAI()` flag warnings
-- **API** — `apiFetch(url)` / `apiPost(url, body)` handle auth + proxy; `fetchWorkItemsBatch()` has automatic field-fallback (disables custom fields that TFS rejects)
-- **LOAD SPRINTS** — Walks TFS iteration tree, finds sprints matching `PI-\d{4}`, auto-selects current sprint
-- **ITEM MAPPER** — `mapItem()` transforms TFS API response into flat objects used everywhere
+- **STATE** — Global mutable state: `allItems`, `sprints`, `sortCol`, `treeMode`, `groupMode`
+- **COLUMN DEFINITIONS** — `COLS` array, `colOrder`/`colMap` for visibility and drag-reorder
+- **TASK EXECUTION TYPE VALIDATION** — `EXEC_TYPE_RULES`, `isValidExecType()`, `isCompWorkExceeded()`, `isInvalidManualAI()`
+- **API** — `apiFetch(url)` / `apiPost(url, body)` with auth + proxy; `fetchWorkItemsBatch()` with field-fallback
+- **LOAD SPRINTS** — Walks TFS iteration tree, finds `PI-\d{4}` sprints, auto-selects current
+- **ITEM MAPPER** — `mapItem()` transforms TFS API response into flat objects
 - **LOAD SPRINT ITEMS** — WIQL query → batch fetch → parent-child linking → render
-- **FETCH ALL-SPRINT WORK TOTALS** — Cross-sprint aggregation of Original/Completed work per requirement (including bugs-under-requirements via link traversal)
-- **MEMBER DATA** — Per-member daily burn chart built from work item update history
-- **APPLY + RENDER** — `renderTable()` dispatches to `renderTree()` or `renderGrouped()`; `buildRow()` builds a single `<tr>`
-- **BOOT** — Entry point: loads PAT from localStorage → cert check → `bootConnect()` → `loadAreas()` → `loadSprints()` → auto-loads current sprint
+- **FETCH ALL-SPRINT WORK TOTALS** — Cross-sprint aggregation including bugs-under-requirements
+- **MEMBER DATA** — Per-member daily burn chart from update history
+- **APPLY + RENDER** — `renderTable()` dispatches to `renderTree()` or `renderGrouped()`
+- **BOOT** — PAT → cert check → `bootConnect()` → `loadAreas()` → `loadSprints()`
 
-### Data flow
+#### Data flow
 
 ```
 Boot → loadAreas() → loadSprints() → loadSprint(path) → WIQL query → fetchWorkItemsBatch()
@@ -57,11 +96,20 @@ Boot → loadAreas() → loadSprints() → loadSprint(path) → WIQL query → f
   → renderTable()
 ```
 
-### View modes
+#### View modes
 
 - **Tree mode** (default): Parent requirements with expandable child tasks/bugs
 - **Grouped mode**: Work items grouped by assignee
-- **Member Data mode**: Daily burn grid per team member (fetches update history)
+- **Member Data mode**: Daily burn grid per team member
+
+### Markdown Viewer (`md-viewer/index.html`)
+
+Markdown file viewer/editor with live preview. Uses `marked.umd.js` (v15.0.7) for rendering.
+
+- Drag-and-drop or upload `.md`/`.txt` files
+- Live editing with real-time rendering (120ms debounce)
+- Copy HTML output, print support
+- Light/dark theme toggle
 
 ## TFS API Details
 
@@ -69,18 +117,20 @@ Boot → loadAreas() → loadSprints() → loadSprint(path) → WIQL query → f
 - **Project:** `CasepointARA`
 - **API version:** `2.0`
 - **Auth:** Basic Auth with PAT (`"Basic " + btoa(":" + PAT)`)
-- **Custom fields** (may not exist on all TFS instances — code auto-disables them on 400 errors):
+- **Custom fields** (auto-disabled on 400 errors):
   - `Casepoint.TFS.CustomFields.TaskExecutionType`
   - `Microsoft.VSTS.Scheduling.RevisedEstimate`
 
 ## localStorage Keys
 
-| Key | Purpose |
-|-----|---------|
-| `tfs_dashboard_pat` | Personal Access Token |
-| `tfs_dashboard_proxy` | CORS proxy URL |
-| `tfs_dashboard_sidebar` | Sidebar collapsed state |
-| `tfs_dashboard_theme` | Light/dark theme preference |
+| Key | Tool | Purpose |
+|-----|------|---------|
+| `tools_portal_theme` | Portal | Light/dark theme preference |
+| `tfs_dashboard_pat` | TFS Dashboard | Personal Access Token |
+| `tfs_dashboard_proxy` | TFS Dashboard | CORS proxy URL |
+| `tfs_dashboard_sidebar` | TFS Dashboard | Sidebar collapsed state |
+| `tfs_dashboard_theme` | TFS Dashboard | Light/dark theme preference |
+| `md-viewer-theme` | MD Viewer | Light/dark theme preference |
 
 ## Code Style
 
@@ -89,4 +139,4 @@ Boot → loadAreas() → loadSprints() → loadSprint(path) → WIQL query → f
 - Section headers: `/* ─── SECTION NAME ─── */`
 - HTML escaping via `esc()` function for all user-supplied text
 - CSS custom properties for theming; glassmorphism via `backdrop-filter`
-- Work item types: Task, Bug, Requirement, Feature, User Story
+- Each tool is fully self-contained in its subfolder (no shared CSS/JS files)

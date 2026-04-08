@@ -1,0 +1,973 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Markdown Viewer</title>
+  <!-- Apply saved theme BEFORE paint to prevent flash of wrong theme -->
+  <script>
+    (function() {
+      var s = localStorage.getItem('md-viewer-theme');
+      if (!s) s = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      document.documentElement.setAttribute('data-theme', s);
+    })();
+  </script>
+  <script src="marked.umd.js"></script>
+  <style>
+    /* ── Reset & Base ───────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    /* ── Light Mode (default) ─────────────────────────────────── */
+    :root {
+      --bg:          #FFFFFF;
+      --surface:     #F5F5F5;
+      --surface-alt: #E8E8E8;
+      --border:      #D1D5DB;
+      --text:        #111827;
+      --text-muted:  #4B5563;
+      --disabled:    #9CA3AF;
+      --accent:      #2563EB;
+      --accent-alt:  #1D4ED8;
+      --green:       #16A34A;
+      --red:         #DC2626;
+      --yellow:      #A16207;
+      --peach:       #C2410C;
+      --mauve:       #7C3AED;
+      --pink:        #DB2777;
+      --teal:        #0D9488;
+      --radius:      8px;
+      --font-mono:   'Cascadia Code', 'Fira Code', 'JetBrains Mono', 'Consolas', monospace;
+      --font-sans:   'Segoe UI', 'Inter', -apple-system, sans-serif;
+      --shadow:      0 1px 3px rgba(0,0,0,0.08);
+      --code-bg:     #F3F4F6;
+      --code-text:   #C2410C;
+      --row-stripe:  rgba(0, 0, 0, 0.025);
+    }
+
+    /* ── Dark Mode ────────────────────────────────────────────── */
+    [data-theme="dark"] {
+      --bg:          #111827;
+      --surface:     #1F2937;
+      --surface-alt: #374151;
+      --border:      #374151;
+      --text:        #F9FAFB;
+      --text-muted:  #D1D5DB;
+      --disabled:    #6B7280;
+      --accent:      #60A5FA;
+      --accent-alt:  #3B82F6;
+      --green:       #4ADE80;
+      --red:         #F87171;
+      --yellow:      #FDE68A;
+      --peach:       #FDBA74;
+      --mauve:       #C4B5FD;
+      --pink:        #F9A8D4;
+      --teal:        #5EEAD4;
+      --shadow:      0 1px 3px rgba(0,0,0,0.3);
+      --code-bg:     #1F2937;
+      --code-text:   #FDBA74;
+      --row-stripe:  rgba(255, 255, 255, 0.03);
+    }
+
+    html { font-size: 15px; }
+
+    /* ── Smooth theme transitions ─────────────────────────────── */
+    body, .toolbar, .panel-header, .input-panel, .output-panel,
+    .btn, #markdown-input, .resize-handle,
+    #rendered-output pre, #rendered-output code,
+    #rendered-output blockquote, #rendered-output table,
+    #rendered-output thead, #rendered-output tbody tr {
+      transition: background-color 0.3s ease, color 0.3s ease,
+                  border-color 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    body {
+      font-family: var(--font-sans);
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      line-height: 1.7;
+    }
+
+    /* ── Layout ─────────────────────────────────────────────────── */
+    .app {
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+    }
+
+    .toolbar {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 24px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+
+    .toolbar h1 {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--accent);
+      margin-right: auto;
+      letter-spacing: -0.3px;
+    }
+
+    .toolbar h1 span { color: var(--text-muted); font-weight: 400; }
+
+    .btn {
+      padding: 7px 16px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--surface-alt);
+      color: var(--text);
+      font-size: 0.85rem;
+      font-family: var(--font-sans);
+      cursor: pointer;
+      transition: all 0.15s ease;
+      white-space: nowrap;
+    }
+    .btn:hover { border-color: var(--accent); color: var(--accent); }
+    .btn.primary { background: var(--accent); color: var(--bg); border-color: var(--accent); font-weight: 600; }
+    .btn.primary:hover { opacity: 0.88; }
+
+    .main {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    /* ── Input Panel ────────────────────────────────────────────── */
+    .input-panel {
+      width: 50%;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      background: var(--bg);
+    }
+
+    .input-panel.hidden { width: 0 !important; overflow: hidden; }
+    .input-panel.hidden + .resize-handle { display: none; }
+
+    /* ── Resize Handle ───────────────────────────────────────────── */
+    .resize-handle {
+      width: 6px;
+      cursor: col-resize;
+      background: var(--border);
+      flex-shrink: 0;
+      position: relative;
+      z-index: 10;
+      transition: background 0.15s ease;
+    }
+    .resize-handle:hover,
+    .resize-handle.active {
+      background: var(--accent);
+    }
+    .resize-handle::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 2px;
+      height: 32px;
+      border-radius: 1px;
+      background: var(--text-muted);
+      opacity: 0;
+      transition: opacity 0.15s ease;
+    }
+    .resize-handle:hover::after,
+    .resize-handle.active::after {
+      opacity: 1;
+      background: var(--bg);
+    }
+
+    .panel-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 16px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .panel-header .dot { width: 8px; height: 8px; border-radius: 50%; }
+    .dot.green { background: var(--green); }
+    .dot.blue  { background: var(--accent); }
+
+    #markdown-input {
+      flex: 1;
+      width: 100%;
+      padding: 20px;
+      background: var(--bg);
+      color: var(--text);
+      border: none;
+      resize: none;
+      font-family: var(--font-mono);
+      font-size: 0.88rem;
+      line-height: 1.7;
+      outline: none;
+      tab-size: 4;
+    }
+
+    #markdown-input::placeholder { color: var(--text-muted); }
+
+    /* ── Output Panel ───────────────────────────────────────────── */
+    .output-panel {
+      flex: 1;
+      min-width: 0;
+      overflow-y: auto;
+      background: var(--bg);
+    }
+
+    #rendered-output {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 32px 40px 80px;
+    }
+
+    /* ── Drop Zone ──────────────────────────────────────────────── */
+    .drop-zone {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(137, 180, 250, 0.08);
+      border: 3px dashed var(--accent);
+      z-index: 999;
+      align-items: center;
+      justify-content: center;
+    }
+    .drop-zone.active { display: flex; }
+    .drop-zone p {
+      font-size: 1.3rem;
+      color: var(--accent);
+      font-weight: 600;
+      background: var(--surface);
+      padding: 20px 40px;
+      border-radius: 12px;
+    }
+
+    .file-info {
+      display: none;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 12px;
+      background: var(--surface-alt);
+      border-radius: var(--radius);
+      font-size: 0.8rem;
+      color: var(--green);
+    }
+    .file-info.visible { display: flex; }
+    .file-info .name { max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .file-info .close {
+      cursor: pointer; color: var(--text-muted); margin-left: 4px;
+      font-size: 1rem; line-height: 1;
+    }
+    .file-info .close:hover { color: var(--red); }
+
+    /* ── Rendered Markdown Styles ───────────────────────────────── */
+    #rendered-output h1 {
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--accent);
+      margin: 32px 0 16px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid var(--border);
+      letter-spacing: -0.5px;
+    }
+    #rendered-output h1:first-child { margin-top: 0; }
+
+    #rendered-output h2 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: var(--mauve);
+      margin: 28px 0 12px;
+      padding-bottom: 6px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    #rendered-output h3 {
+      font-size: 1.2rem;
+      font-weight: 600;
+      color: var(--teal);
+      margin: 24px 0 10px;
+    }
+
+    #rendered-output h4 {
+      font-size: 1.05rem;
+      font-weight: 600;
+      color: var(--peach);
+      margin: 20px 0 8px;
+    }
+
+    #rendered-output h5 {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--pink);
+      margin: 16px 0 6px;
+    }
+
+    #rendered-output h6 {
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: var(--yellow);
+      margin: 14px 0 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    #rendered-output p {
+      margin: 0 0 14px;
+    }
+
+    #rendered-output a {
+      color: var(--accent);
+      text-decoration: underline;
+      text-underline-offset: 2px;
+    }
+    #rendered-output a:hover { color: var(--accent-alt); }
+
+    #rendered-output strong { color: var(--yellow); font-weight: 600; }
+    #rendered-output em     { color: var(--pink); font-style: italic; }
+
+    /* ── Lists ──────────────────────────────────────────────────── */
+    #rendered-output ul,
+    #rendered-output ol {
+      margin: 0 0 14px;
+      padding-left: 24px;
+    }
+
+    #rendered-output li {
+      margin-bottom: 6px;
+      padding-left: 4px;
+    }
+
+    #rendered-output li::marker {
+      color: var(--accent);
+    }
+
+    #rendered-output ol li::marker {
+      color: var(--peach);
+      font-weight: 600;
+    }
+
+    #rendered-output ul li ul,
+    #rendered-output ol li ol,
+    #rendered-output ul li ol,
+    #rendered-output ol li ul {
+      margin-top: 6px;
+      margin-bottom: 6px;
+    }
+
+    /* ── Checkboxes ─────────────────────────────────────────────── */
+    #rendered-output li input[type="checkbox"] {
+      appearance: none;
+      width: 16px;
+      height: 16px;
+      border: 2px solid var(--border);
+      border-radius: 4px;
+      vertical-align: middle;
+      margin-right: 6px;
+      position: relative;
+      top: -1px;
+      cursor: default;
+    }
+    #rendered-output li input[type="checkbox"]:checked {
+      background: var(--green);
+      border-color: var(--green);
+    }
+    #rendered-output li input[type="checkbox"]:checked::after {
+      content: '\2713';
+      position: absolute;
+      top: -2px;
+      left: 1px;
+      font-size: 12px;
+      color: var(--bg);
+      font-weight: 700;
+    }
+
+    /* ── Blockquote ─────────────────────────────────────────────── */
+    #rendered-output blockquote {
+      border-left: 4px solid var(--mauve);
+      background: var(--surface);
+      margin: 0 0 14px;
+      padding: 12px 20px;
+      border-radius: 0 var(--radius) var(--radius) 0;
+      color: var(--text);
+    }
+    #rendered-output blockquote p:last-child { margin-bottom: 0; }
+
+    /* ── Code ───────────────────────────────────────────────────── */
+    #rendered-output code {
+      font-family: var(--font-mono);
+      font-size: 0.88em;
+      background: var(--code-bg);
+      color: var(--code-text);
+      padding: 2px 7px;
+      border-radius: 4px;
+      border: 1px solid var(--border);
+    }
+
+    #rendered-output pre {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px 20px;
+      margin: 0 0 14px;
+      overflow-x: auto;
+      position: relative;
+    }
+
+    #rendered-output pre code {
+      background: none;
+      border: none;
+      padding: 0;
+      color: var(--text);
+      font-size: 0.85rem;
+      line-height: 1.65;
+    }
+
+    /* language badge on code blocks */
+    #rendered-output pre[data-lang]::before {
+      content: attr(data-lang);
+      position: absolute;
+      top: 6px;
+      right: 10px;
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      font-family: var(--font-sans);
+    }
+
+    /* ── Tables ─────────────────────────────────────────────────── */
+    #rendered-output table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 0 0 18px;
+      font-size: 0.9rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+
+    #rendered-output thead {
+      background: var(--surface-alt);
+    }
+
+    #rendered-output thead th {
+      padding: 10px 14px;
+      text-align: left;
+      font-weight: 600;
+      color: var(--accent);
+      border-bottom: 2px solid var(--accent);
+      white-space: nowrap;
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+
+    #rendered-output tbody tr {
+      border-bottom: 1px solid var(--border);
+      transition: background 0.1s ease;
+    }
+    #rendered-output tbody tr:hover { background: var(--surface); }
+    #rendered-output tbody tr:last-child { border-bottom: none; }
+
+    #rendered-output tbody td {
+      padding: 9px 14px;
+      vertical-align: top;
+    }
+
+    #rendered-output tbody td code {
+      font-size: 0.82em;
+    }
+
+    /* alternating row stripe */
+    #rendered-output tbody tr:nth-child(even) { background: var(--row-stripe); }
+    #rendered-output tbody tr:nth-child(even):hover { background: var(--surface); }
+
+    /* ── Horizontal Rule ────────────────────────────────────────── */
+    #rendered-output hr {
+      border: none;
+      height: 1px;
+      background: linear-gradient(to right, transparent, var(--border), transparent);
+      margin: 28px 0;
+    }
+
+    /* ── Images ─────────────────────────────────────────────────── */
+    #rendered-output img {
+      max-width: 100%;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      margin: 8px 0;
+    }
+
+    /* ── Definition-style (bold + colon pattern) ────────────────── */
+    #rendered-output dl {
+      margin: 0 0 14px;
+    }
+    #rendered-output dt {
+      font-weight: 600;
+      color: var(--teal);
+      margin-top: 10px;
+    }
+    #rendered-output dd {
+      margin-left: 20px;
+      margin-bottom: 6px;
+    }
+
+    /* ── Empty State ────────────────────────────────────────────── */
+    .empty-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      min-height: 300px;
+      color: var(--text-muted);
+      text-align: center;
+      gap: 12px;
+      padding: 40px;
+    }
+    .empty-state .icon { font-size: 3rem; opacity: 0.4; }
+    .empty-state p { font-size: 0.95rem; max-width: 380px; line-height: 1.6; }
+
+    /* ── Stats bar ──────────────────────────────────────────────── */
+    .stats {
+      display: flex;
+      gap: 16px;
+      font-size: 0.78rem;
+      color: var(--text-muted);
+    }
+    .stats span { display: flex; align-items: center; gap: 4px; }
+
+    /* ── Toggle button for panels ───────────────────────────────── */
+    .toggle-label {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    /* ── Theme Toggle Switch ──────────────────────────────────── */
+    .theme-toggle {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      padding: 4px 0;
+      user-select: none;
+    }
+
+    .theme-toggle__icon {
+      font-size: 1rem;
+      line-height: 1;
+      width: 20px;
+      text-align: center;
+    }
+
+    .theme-toggle__track {
+      width: 40px;
+      height: 22px;
+      background: var(--border);
+      border-radius: 11px;
+      position: relative;
+      transition: background-color 0.3s ease;
+      flex-shrink: 0;
+    }
+
+    .theme-toggle__track::after {
+      content: '';
+      position: absolute;
+      top: 3px;
+      left: 3px;
+      width: 16px;
+      height: 16px;
+      background: #fff;
+      border-radius: 50%;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+      transition: transform 0.3s ease, background-color 0.3s ease;
+    }
+
+    [data-theme="dark"] .theme-toggle__track {
+      background: var(--accent);
+    }
+
+    [data-theme="dark"] .theme-toggle__track::after {
+      transform: translateX(18px);
+      background: var(--bg);
+    }
+
+    .theme-toggle__label {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      min-width: 36px;
+    }
+
+    /* ── Print styles ───────────────────────────────────────────── */
+    @media print {
+      .toolbar, .input-panel, .panel-header { display: none !important; }
+      .output-panel { overflow: visible !important; }
+      #rendered-output { max-width: 100%; padding: 0; }
+      body { background: #fff; color: #1a1a1a; }
+      #rendered-output h1 { color: #1a1a1a; border-color: #ccc; }
+      #rendered-output h2 { color: #333; border-color: #ddd; }
+      #rendered-output h3 { color: #444; }
+      #rendered-output h4, #rendered-output h5, #rendered-output h6 { color: #555; }
+      #rendered-output strong { color: #1a1a1a; }
+      #rendered-output em { color: #333; }
+      #rendered-output code { background: #f0f0f0; color: #c7254e; border-color: #ddd; }
+      #rendered-output pre { background: #f6f6f6; border-color: #ddd; }
+      #rendered-output pre code { color: #333; }
+      #rendered-output blockquote { border-color: #aaa; background: #f9f9f9; }
+      #rendered-output thead th { color: #1a1a1a; border-color: #333; }
+      #rendered-output table, #rendered-output tbody tr { border-color: #ccc; }
+      #rendered-output tbody tr:nth-child(even) { background: #f6f6f6; }
+      #rendered-output a { color: #0066cc; }
+      #rendered-output hr { background: #ccc; }
+    }
+
+    /* ── Scrollbar ──────────────────────────────────────────────── */
+    ::-webkit-scrollbar { width: 8px; height: 8px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+
+    /* ── Responsive ─────────────────────────────────────────────── */
+    @media (max-width: 900px) {
+      .input-panel { width: 100% !important; border-bottom: 1px solid var(--border); }
+      .main { flex-direction: column; }
+      .input-panel.hidden { height: 0; width: 100% !important; }
+      .resize-handle { display: none; }
+      #rendered-output { padding: 20px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <!-- Toolbar -->
+    <div class="toolbar">
+      <h1>Markdown Viewer <span>v1.0</span></h1>
+      <div class="file-info" id="file-info">
+        <span class="name" id="file-name"></span>
+        <span class="close" id="file-clear" title="Clear file">&times;</span>
+      </div>
+      <div class="stats" id="stats"></div>
+      <div class="theme-toggle" id="theme-toggle" title="Toggle light/dark mode" role="switch" aria-checked="false" tabindex="0">
+        <span class="theme-toggle__icon" id="theme-icon">&#9788;</span>
+        <div class="theme-toggle__track"></div>
+        <span class="theme-toggle__label" id="theme-label">Light</span>
+      </div>
+      <label class="btn" for="file-upload" title="Open a .md or .txt file">Open File</label>
+      <input type="file" id="file-upload" accept=".md,.txt,.markdown,.mdown,.mkd,.mkdn,.text" hidden>
+      <button class="btn" id="toggle-editor" title="Toggle the editor panel">Toggle Editor</button>
+      <button class="btn" id="btn-copy" title="Copy rendered HTML to clipboard">Copy HTML</button>
+      <button class="btn primary" id="btn-print" title="Print the rendered output">Print</button>
+    </div>
+
+    <!-- Main area -->
+    <div class="main">
+      <!-- Editor panel -->
+      <div class="input-panel" id="input-panel">
+        <div class="panel-header"><span class="dot green"></span> Markdown Input</div>
+        <textarea
+          id="markdown-input"
+          spellcheck="false"
+          placeholder="Paste or type your Markdown here...
+
+# Heading 1
+## Heading 2
+
+**Bold text** and *italic text*
+
+- Bullet one
+- Bullet two
+
+| Column A | Column B |
+|----------|----------|
+| Cell 1   | Cell 2   |
+
+> Blockquote
+
+```js
+console.log('code block');
+```
+"
+        ></textarea>
+      </div>
+
+      <!-- Resize handle -->
+      <div class="resize-handle" id="resize-handle"></div>
+
+      <!-- Rendered output panel -->
+      <div class="output-panel" id="output-panel">
+        <div class="panel-header"><span class="dot blue"></span> Rendered Output</div>
+        <div id="rendered-output">
+          <div class="empty-state" id="empty-state">
+            <div class="icon">&#9998;</div>
+            <p>Type Markdown in the editor, paste content, or drag &amp; drop a <strong>.md</strong> file anywhere on this page.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Drag-and-drop overlay -->
+    <div class="drop-zone" id="drop-zone">
+      <p>Drop your Markdown file here</p>
+    </div>
+  </div>
+
+  <script>
+    /* ── Elements ──────────────────────────────────────────────── */
+    const input       = document.getElementById('markdown-input');
+    const output      = document.getElementById('rendered-output');
+    const emptyState  = document.getElementById('empty-state');
+    const fileUpload  = document.getElementById('file-upload');
+    const fileInfo    = document.getElementById('file-info');
+    const fileName    = document.getElementById('file-name');
+    const fileClear   = document.getElementById('file-clear');
+    const stats       = document.getElementById('stats');
+    const toggleBtn   = document.getElementById('toggle-editor');
+    const inputPanel  = document.getElementById('input-panel');
+    const btnCopy     = document.getElementById('btn-copy');
+    const btnPrint    = document.getElementById('btn-print');
+    const dropZone    = document.getElementById('drop-zone');
+    const resizeHandle = document.getElementById('resize-handle');
+    const mainContainer = document.querySelector('.main');
+    const themeToggle = document.getElementById('theme-toggle');
+    const themeIcon   = document.getElementById('theme-icon');
+    const themeLabel  = document.getElementById('theme-label');
+
+    /* ── Theme: Dark / Light toggle + persistence ─────────────── */
+    (function initTheme() {
+      const STORAGE_KEY = 'md-viewer-theme';
+
+      function applyTheme(theme) {
+        document.documentElement.setAttribute('data-theme', theme);
+        const isDark = theme === 'dark';
+        themeIcon.innerHTML  = isDark ? '&#9790;' : '&#9788;';
+        themeLabel.textContent = isDark ? 'Dark' : 'Light';
+        themeToggle.setAttribute('aria-checked', isDark);
+      }
+
+      function toggleTheme() {
+        const current = document.documentElement.getAttribute('data-theme');
+        const next = current === 'dark' ? 'light' : 'dark';
+        applyTheme(next);
+        localStorage.setItem(STORAGE_KEY, next);
+      }
+
+      /* Resolve initial theme: saved > system > light */
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        applyTheme(saved);
+      } else {
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        applyTheme(prefersDark ? 'dark' : 'light');
+      }
+
+      /* Listen for OS-level theme changes */
+      window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+        if (!localStorage.getItem(STORAGE_KEY)) {
+          applyTheme(e.matches ? 'dark' : 'light');
+        }
+      });
+
+      themeToggle.addEventListener('click', toggleTheme);
+      themeToggle.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleTheme(); }
+      });
+    })();
+
+    /* ── Resizable panels ─────────────────────────────────────── */
+    (function initResize() {
+      let isResizing = false;
+
+      resizeHandle.addEventListener('mousedown', (e) => {
+        e.preventDefault();
+        isResizing = true;
+        resizeHandle.classList.add('active');
+        document.body.style.cursor = 'col-resize';
+        document.body.style.userSelect = 'none';
+      });
+
+      document.addEventListener('mousemove', (e) => {
+        if (!isResizing) return;
+        const mainRect = mainContainer.getBoundingClientRect();
+        const offset = e.clientX - mainRect.left;
+        const totalWidth = mainRect.width;
+        const handleWidth = resizeHandle.offsetWidth;
+
+        const minPx = 200;
+        const maxPx = totalWidth - handleWidth - 200;
+        const clampedPx = Math.max(minPx, Math.min(offset, maxPx));
+
+        inputPanel.style.width = clampedPx + 'px';
+      });
+
+      document.addEventListener('mouseup', () => {
+        if (!isResizing) return;
+        isResizing = false;
+        resizeHandle.classList.remove('active');
+        document.body.style.cursor = '';
+        document.body.style.userSelect = '';
+      });
+
+      /* Double-click to reset to 50/50 */
+      resizeHandle.addEventListener('dblclick', () => {
+        inputPanel.style.width = '50%';
+      });
+    })();
+
+    /* ── Marked configuration ─────────────────────────────────── */
+    marked.setOptions({
+      gfm: true,
+      breaks: true,
+      pedantic: false
+    });
+
+    /* Custom renderer for language badges on fenced code blocks */
+    const renderer = new marked.Renderer();
+    const defaultCodeRenderer = renderer.code;
+
+    renderer.code = function({ text, lang }) {
+      const langAttr = lang ? ` data-lang="${lang}"` : '';
+      const escaped  = text
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+      return `<pre${langAttr}><code>${escaped}</code></pre>\n`;
+    };
+
+    marked.use({ renderer });
+
+    /* ── Render logic ─────────────────────────────────────────── */
+    let debounceTimer;
+
+    function render(md) {
+      if (!md || !md.trim()) {
+        output.innerHTML = '';
+        output.appendChild(emptyState);
+        emptyState.style.display = 'flex';
+        stats.innerHTML = '';
+        return;
+      }
+
+      emptyState.style.display = 'none';
+      output.innerHTML = marked.parse(md);
+      updateStats(md);
+    }
+
+    function updateStats(md) {
+      const lines = md.split('\n').length;
+      const words = md.trim().split(/\s+/).filter(Boolean).length;
+      const chars = md.length;
+      stats.innerHTML =
+        `<span>${lines} lines</span>` +
+        `<span>${words} words</span>` +
+        `<span>${chars} chars</span>`;
+    }
+
+    /* ── Live editing ─────────────────────────────────────────── */
+    input.addEventListener('input', () => {
+      clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(() => render(input.value), 120);
+    });
+
+    /* ── File upload ──────────────────────────────────────────── */
+    fileUpload.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (file) loadFile(file);
+    });
+
+    function loadFile(file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        input.value = e.target.result;
+        render(input.value);
+        fileName.textContent = file.name;
+        fileInfo.classList.add('visible');
+      };
+      reader.readAsText(file);
+    }
+
+    fileClear.addEventListener('click', () => {
+      input.value = '';
+      render('');
+      fileInfo.classList.remove('visible');
+      fileUpload.value = '';
+    });
+
+    /* ── Drag and drop ────────────────────────────────────────── */
+    let dragCounter = 0;
+
+    document.addEventListener('dragenter', (e) => {
+      e.preventDefault();
+      dragCounter++;
+      dropZone.classList.add('active');
+    });
+
+    document.addEventListener('dragleave', (e) => {
+      e.preventDefault();
+      dragCounter--;
+      if (dragCounter <= 0) {
+        dropZone.classList.remove('active');
+        dragCounter = 0;
+      }
+    });
+
+    document.addEventListener('dragover', (e) => e.preventDefault());
+
+    document.addEventListener('drop', (e) => {
+      e.preventDefault();
+      dragCounter = 0;
+      dropZone.classList.remove('active');
+      const file = e.dataTransfer.files[0];
+      if (file && (file.name.match(/\.(md|txt|markdown|mdown|mkd|mkdn|text)$/i) || file.type === 'text/plain' || file.type === 'text/markdown')) {
+        loadFile(file);
+      }
+    });
+
+    /* ── Toggle editor ────────────────────────────────────────── */
+    toggleBtn.addEventListener('click', () => {
+      inputPanel.classList.toggle('hidden');
+    });
+
+    /* ── Copy HTML ────────────────────────────────────────────── */
+    btnCopy.addEventListener('click', () => {
+      const html = output.innerHTML;
+      navigator.clipboard.writeText(html).then(() => {
+        const orig = btnCopy.textContent;
+        btnCopy.textContent = 'Copied!';
+        setTimeout(() => { btnCopy.textContent = orig; }, 1500);
+      });
+    });
+
+    /* ── Print ────────────────────────────────────────────────── */
+    btnPrint.addEventListener('click', () => window.print());
+
+    /* ── Keyboard shortcut: Ctrl+O to open file ───────────────── */
+    document.addEventListener('keydown', (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'o') {
+        e.preventDefault();
+        fileUpload.click();
+      }
+    });
+
+    /* ── Tab support in editor ────────────────────────────────── */
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Tab') {
+        e.preventDefault();
+        const start = input.selectionStart;
+        const end   = input.selectionEnd;
+        input.value = input.value.substring(0, start) + '    ' + input.value.substring(end);
+        input.selectionStart = input.selectionEnd = start + 4;
+      }
+    });
+  </script>
+</body>
+</html>

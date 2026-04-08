@@ -1,0 +1,20 @@
+[
+  {
+    "id": "tfs-dashboard",
+    "name": "Sprint Dashboard",
+    "description": "Real-time TFS Sprint Team Dashboard for CasepointARA. Track work items, burn data, and team velocity across sprints.",
+    "path": "tfs-dashboard/index.html",
+    "icon": "sprint",
+    "accentColor": "#6366f1",
+    "tags": ["TFS", "Sprint", "Dashboard"]
+  },
+  {
+    "id": "md-viewer",
+    "name": "Markdown Viewer",
+    "description": "Paste or upload Markdown files and preview rendered output with live editing, syntax highlighting, and export.",
+    "path": "md-viewer/index.html",
+    "icon": "markdown",
+    "accentColor": "#0ea5e9",
+    "tags": ["Markdown", "Viewer", "Documentation"]
+  }
+]
