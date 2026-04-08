@@ -840,6 +840,11 @@ tbody tr.task-level4:hover td { background: rgba(239,68,68,0.1) !important; }
       <select id="prioSelect" class="filter-select" onchange="onPrioSelect()" style="min-width:130px">
         <option value="All">All Priorities</option>
       </select>
+
+      <span class="filter-label">Discipline</span>
+      <select id="discSelect" class="filter-select" onchange="onDiscSelect()" style="min-width:130px">
+        <option value="All">All Disciplines</option>
+      </select>
     </div>
 
     <!-- Row 2: Assignee dropdown -->
@@ -1300,7 +1305,7 @@ function fetchMemberBurnData() {
         /* Aggregate per task per date */
         var existing = burnMap[member][dateStr].tasks.filter(function(t){ return t.id === item.id; })[0];
         if (existing) { existing.hours += delta; }
-        else { burnMap[member][dateStr].tasks.push({ id: item.id, title: item.title, type: item.type, hours: delta }); }
+        else { burnMap[member][dateStr].tasks.push({ id: item.id, title: item.title, type: item.type, discipline: item.discipline, hours: delta }); }
       });
       done++;
       document.getElementById('loaderMsg').textContent = 'Loading member burn data\u2026 ' + done + ' / ' + total;
@@ -1407,11 +1412,15 @@ function renderMemberDataGrid(burnMap) {
     }
   }
 
-  /* Collect members from all Tasks/Bugs, apply assignee filter */
+  /* Collect members from all Tasks/Bugs, apply assignee + discipline filter */
   var selAssignee = document.getElementById('assigneeSelect').value;
+  var selDisc     = document.getElementById('discSelect').value;
   var memberSet = {};
   allItems.forEach(function(i) {
-    if ((i.type === 'Task' || i.type === 'Bug') && i.assigneeName) memberSet[i.assigneeName] = true;
+    if ((i.type === 'Task' || i.type === 'Bug') && i.assigneeName) {
+      if (selDisc !== 'All' && (i.discipline || '') !== selDisc) return;
+      memberSet[i.assigneeName] = true;
+    }
   });
   var members = Object.keys(memberSet).sort();
   if (selAssignee !== 'All') members = members.filter(function(n) { return n === selAssignee; });
@@ -1440,25 +1449,30 @@ function renderMemberDataGrid(burnMap) {
       '<span>' + esc(name) + '</span></div></td>';
     orderedKeys.forEach(function(dk) {
       var cell = (burnMap[name] && burnMap[name][dk]) ? burnMap[name][dk] : null;
-      var hrs = cell ? cell.total : 0;
+      /* Filter tasks by discipline if selected */
+      var tasks = cell ? cell.tasks : [];
+      if (selDisc !== 'All') tasks = tasks.filter(function(t){ return (t.discipline || '') === selDisc; });
+      var hrs = 0;
+      tasks.forEach(function(t){ hrs += t.hours; });
       rowTotal += hrs;
       var cls = 'md-hours';
       if (hrs === 0 && dk === todayKey) cls = 'md-hours today-pending';
       else if (hrs === 0) cls = 'md-hours zero';
       var tip = '';
-      if (cell && cell.tasks.length) {
-        tip = cell.tasks.length + ' task' + (cell.tasks.length !== 1 ? 's' : '') + ' \u00b7 ' + fmtH(hrs) + 'h total\n';
-        cell.tasks.forEach(function(t) {
+      if (tasks.length) {
+        tip = tasks.length + ' task' + (tasks.length !== 1 ? 's' : '') + ' \u00b7 ' + fmtH(hrs) + 'h total\n';
+        tasks.forEach(function(t) {
           tip += '#' + t.id + ' [' + t.type + '] ' + t.title.substring(0, 45) + (t.title.length > 45 ? '\u2026' : '') + ' \u2192 ' + fmtH(t.hours) + 'h\n';
         });
       }
       bhtml += '<td class="' + cls + '"' + (tip ? ' title="' + esc(tip.trim()) + '"' : '') + ' style="cursor:' + (tip ? 'help' : 'default') + '">' + (hrs > 0 ? fmtH(hrs) + 'h' : '0') + '</td>';
     });
     bhtml += '<td class="md-total">' + fmtH(rowTotal) + 'h</td>';
-    /* Total Completed: sum (revised>0 ? revised : completed) for all member Tasks/Bugs */
+    /* Total Completed: sum (revised>0 ? revised : completed) for all member Tasks/Bugs, filtered by discipline */
     var tcTotal = 0;
     allItems.forEach(function(it) {
       if ((it.type === 'Task' || it.type === 'Bug') && it.assigneeName === name) {
+        if (selDisc !== 'All' && (it.discipline || '') !== selDisc) return;
         tcTotal += (it.revised != null && it.revised > 0) ? it.revised : (it.completed || 0);
       }
     });
@@ -1971,6 +1985,15 @@ function buildFilterChips() {
   });
   pSel.value = 'All';
 
+  /* Discipline dropdown */
+  var discs = unique(allItems.filter(function(i){ return i.discipline; }).map(function(i){ return i.discipline; })).sort();
+  var dSel = document.getElementById('discSelect');
+  dSel.innerHTML = '<option value="All">All Disciplines</option>';
+  discs.forEach(function(d){
+    var o = document.createElement('option'); o.value = d; o.textContent = d; dSel.appendChild(o);
+  });
+  dSel.value = 'All';
+
   /* Assignees dropdown — data already area-scoped from API */
   var names = unique(allItems.filter(function(i){ return i.assigneeName; }).map(function(i){ return i.assigneeName; })).sort();
   var mSel = document.getElementById('assigneeSelect');
@@ -2000,6 +2023,15 @@ function onPrioSelect() {
   var sel = document.getElementById('prioSelect');
   sel.classList.toggle('has-value', sel.value !== 'All');
   applyFilters();
+}
+function onDiscSelect() {
+  var sel = document.getElementById('discSelect');
+  sel.classList.toggle('has-value', sel.value !== 'All');
+  if (memberDataMode && memberDataCache) {
+    renderMemberDataGrid(memberDataCache.data);
+  } else {
+    applyFilters();
+  }
 }
 
 function onAreaSelect() {
@@ -2037,7 +2069,7 @@ function updateAssigneeBadge() {
 
 function clearFilters() {
   document.getElementById('searchBox').value = '';
-  ['typeSelect','stateSelect','prioSelect','assigneeSelect'].forEach(function(id){
+  ['typeSelect','stateSelect','prioSelect','discSelect','assigneeSelect'].forEach(function(id){
     var el = document.getElementById(id);
     el.value = 'All'; el.classList.remove('has-value');
   });
@@ -2071,11 +2103,13 @@ function renderTable() {
   var selType     = document.getElementById('typeSelect').value;
   var selState    = document.getElementById('stateSelect').value;
   var selPrio     = document.getElementById('prioSelect').value;
+  var selDisc     = document.getElementById('discSelect').value;
 
   var filtered = allItems.filter(function(item) {
     if (selType  !== 'All' && item.type  !== selType)                                          return false;
     if (selState !== 'All' && item.state !== selState)                                         return false;
     if (selPrio  !== 'All' && (item.priority==null || 'P'+item.priority !== selPrio))          return false;
+    if (selDisc  !== 'All' && (item.discipline || '') !== selDisc)                              return false;
     if (selAssignee !== 'All' && item.assigneeName    !== selAssignee)                         return false;
     if (search && item.title.toLowerCase().indexOf(search)<0 && String(item.id).indexOf(search)<0) return false;
     return true;
