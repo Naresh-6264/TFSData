@@ -16,5 +16,14 @@
     "icon": "markdown",
     "accentColor": "#0ea5e9",
     "tags": ["Markdown", "Viewer", "Documentation"]
+  },
+  {
+    "id": "ai-adoption-tracker",
+    "name": "AI Adoption Tracker",
+    "description": "TFS data analysis dashboard with sprint planning, AI usage analytics, feature progress tracking, and role-based access control.",
+    "path": "ai-adoption-tracker/index.html",
+    "icon": "analytics",
+    "accentColor": "#f59e0b",
+    "tags": ["TFS", "Analytics", "Sprint", "RBAC"]
   }
 ]

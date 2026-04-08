@@ -28,6 +28,10 @@ TFSData/
 ├── md-viewer/
 │   ├── index.html          ← Markdown Viewer (~970 lines)
 │   └── marked.umd.js       ← Markdown parsing library
+├── ai-adoption-tracker/
+│   ├── index.html              ← AI Adoption Tracker (~14000 lines)
+│   ├── auth-config.example.js  ← Template for auth config (committed)
+│   └── auth-config.js          ← Real auth config (gitignored, has cipher key + users)
 ├── everything-claude-code/  ← ECC plugin (gitignored)
 ├── CLAUDE.md
 └── README.md
@@ -110,6 +114,17 @@ Markdown file viewer/editor with live preview. Uses `marked.umd.js` (v15.0.7) fo
 - Live editing with real-time rendering (120ms debounce)
 - Copy HTML output, print support
 - Light/dark theme toggle
+
+### AI Adoption Tracker (`ai-adoption-tracker/index.html`)
+
+TFS data analysis dashboard with role-based access control. Single-file SPA (~14000 lines) with inline user registry.
+
+- **Allowed User System**: Two-stage auth — TFS PAT validates identity, then username is matched against XOR-encrypted whitelist loaded from external `auth-config.js` (gitignored)
+- **Auth config**: `auth-config.js` contains cipher key, user list, and taskCreatorUrl. Copy `auth-config.example.js` to set up.
+- **Three roles**: `super_admin` (all 7 tabs), `admin` (tabs 1-3, 5-6), `normal` (per-user tab list, max 3 areas)
+- **7 tabs**: Sprint Planning, Work Progress, AI Usage, AI Analytics, Feature Progress, Data Lookup, Encrypt Username (super_admin only)
+- Feature update capability restricted to admin/super_admin
+- CDN dependencies: html2canvas, jspdf, Google Fonts (requires internet)
 
 ## TFS API Details
 
