@@ -24,32 +24,45 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Prepare deployment
+      - name: Inject auth config
         run: |
-          mkdir _site
+          TARGET="ai-adoption-tracker/auth-config.js"
 
-          # Copy portal files
-          cp index.html _site/
-          cp tools.json _site/
+          echo "=== Step 1: Reading from secret variable ==="
+          echo "Variable AUTH_CONFIG_DATA length: ${#AUTH_CONFIG_DATA} characters"
+          echo "First 30 chars: $(echo "$AUTH_CONFIG_DATA" | head -c 30)..."
 
-          # Copy each tool
-          cp -r tfs-dashboard _site/
-          cp -r md-viewer _site/
-          cp -r ai-adoption-tracker _site/
-
-          # Inject auth config from secret
-          printf '%s\n' "$AUTH_CONFIG_DATA" > _site/ai-adoption-tracker/auth-config.js
-
-          # Verify
-          echo "=== Deployed files ==="
-          find _site -type f -name '*.html' -o -name '*.js' -o -name '*.json' | sort
           echo ""
-          if [ -s _site/ai-adoption-tracker/auth-config.js ]; then
-            echo "✓ auth-config.js created ($(wc -c < _site/ai-adoption-tracker/auth-config.js) bytes)"
-          else
-            echo "::error::auth-config.js is empty — check AUTH_CONFIG_DATA secret"
+          echo "=== Step 2: Creating file ==="
+          mkdir -p "$(dirname "$TARGET")"
+          printf '%s\n' "$AUTH_CONFIG_DATA" > "$TARGET"
+          echo "File created at: $(pwd)/$TARGET"
+
+          echo ""
+          echo "=== Step 3: Verifying file ==="
+          echo "File exists: $(test -f "$TARGET" && echo YES || echo NO)"
+          echo "File size: $(wc -c < "$TARGET") bytes"
+          echo "Line count: $(wc -l < "$TARGET") lines"
+          echo "File path: $(realpath "$TARGET")"
+
+          echo ""
+          echo "=== Step 4: File content preview ==="
+          head -3 "$TARGET"
+          echo "..."
+          tail -2 "$TARGET"
+
+          echo ""
+          echo "=== Step 5: Validation ==="
+          if [ ! -s "$TARGET" ]; then
+            echo "::error::$TARGET is empty — set AUTH_CONFIG_DATA in repo Settings > Variables"
             exit 1
           fi
+          if head -1 "$TARGET" | grep -q "var AUTH_CONFIG"; then
+            echo "✓ File starts with 'var AUTH_CONFIG' — valid JavaScript"
+          else
+            echo "::warning::File does NOT start with 'var AUTH_CONFIG' — may cause runtime error"
+          fi
+          echo "✓ auth-config.js ready for deployment"
         env:
           AUTH_CONFIG_DATA: ${{ secrets.AUTH_CONFIG_DATA }}
 
@@ -59,7 +72,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: _site
+          path: .
 
       - name: Deploy to GitHub Pages
         id: deployment
