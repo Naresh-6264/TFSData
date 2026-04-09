@@ -1150,7 +1150,10 @@
             <div id="projectStatus" style="font-size: 0.75rem; margin-top: 6px; color: #94a3b8;"></div>
             <div id="selectedProjects" style="font-size: 0.75rem; margin-top: 6px; color: #60a5fa;"></div>
         </div>
-        <button class="btn btn-primary" onclick="connectTFS()">🚀 Connect</button>
+        <div style="display: flex; gap: 10px; align-items: center;">
+            <button class="btn btn-primary" onclick="connectTFS()">🚀 Connect</button>
+            <button class="btn btn-secondary" onclick="window.open('admin.html','_blank')" title="Manage authorized users">👤 Admin</button>
+        </div>
         <div id="errorMsg"></div>
     </div>
 

@@ -23,6 +23,7 @@ TFSData/
 │   └── marked.umd.js           Markdown parsing library (marked v15.0.7)
 ├── ai-adoption-tracker/
 │   ├── index.html              AI Adoption Tracker
+│   ├── admin.html              Admin — user management page
 │   ├── auth-config.example.js  Auth config template (committed)
 │   └── auth-config.js          Real auth config (gitignored)
 ├── CLAUDE.md                   Claude Code project instructions
@@ -146,10 +147,13 @@ The tool uses a two-stage authentication model:
 2. Fill in the cipher key and encrypted user entries
 3. `auth-config.js` is gitignored — it never gets committed
 
-**Managing users:**
-1. Use the Encrypt Username tab (Tab 7, super_admin only) to encrypt a new username
-2. Add an entry to the `users` array in `auth-config.js`
-3. Set `role` and `tabs` array for the new user
+**Managing users (via admin page):**
+1. Open `admin.html` (next to `index.html` in the `ai-adoption-tracker/` folder)
+2. Log in with the admin credentials (stored in `auth-config.js` as a SHA-256 hash)
+3. Enter the user's TFS display name, select role and tabs
+4. Click **Encrypt** — a ready-to-paste JSON entry is generated
+5. Copy the entry and add it to the `users` array in `auth-config.js`
+6. The admin page also shows the full current user list (decrypted) and a decrypt/verify tool
 
 **Dependencies (CDN, requires internet):**
 - `html2canvas` v1.4.1
@@ -161,8 +165,9 @@ The tool uses a two-stage authentication model:
 | File | Purpose |
 |------|---------|
 | `index.html` | Main application (~14,000 lines) |
+| `admin.html` | Admin page — login-protected user management, encrypt/decrypt tool |
 | `auth-config.example.js` | Template config — committed to git, no real data |
-| `auth-config.js` | Real config with cipher key + users — **gitignored** |
+| `auth-config.js` | Real config with cipher key, users, and admin credentials — **gitignored** |
 
 ---
 

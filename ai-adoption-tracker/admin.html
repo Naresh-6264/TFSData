@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Adoption Tracker — Admin</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="auth-config.js"></script>
+    <style>
+        :root {
+            --bg-primary: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            --bg-secondary: #1e293b;
+            --bg-card: rgba(255,255,255,0.05);
+            --bg-input: rgba(0,0,0,0.3);
+            --border-color: rgba(255,255,255,0.1);
+            --border-color-strong: rgba(255,255,255,0.2);
+            --text-primary: #ffffff;
+            --text-secondary: #e2e8f0;
+            --text-muted: #94a3b8;
+            --accent-primary: #6366f1;
+            --accent-secondary: #8b5cf6;
+            --accent-gradient: linear-gradient(135deg, #6366f1, #8b5cf6);
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --table-header-bg: #0f172a;
+            --table-row-hover: rgba(255,255,255,0.05);
+            --shadow-color: rgba(0,0,0,0.3);
+        }
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex; align-items: center; justify-content: center;
+            padding: 24px;
+        }
+
+        /* ─── LOGIN ─── */
+        .login-card, .admin-panel {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            backdrop-filter: blur(16px);
+            box-shadow: 0 8px 32px var(--shadow-color);
+        }
+        .login-card {
+            width: 100%; max-width: 420px; padding: 40px;
+        }
+        .login-card h1 {
+            font-size: 22px; font-weight: 700; margin-bottom: 6px;
+            background: var(--accent-gradient);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .login-card .sub { font-size: 13px; color: var(--text-muted); margin-bottom: 28px; }
+        .form-group { margin-bottom: 18px; }
+        .form-group label {
+            display: block; font-size: 12px; font-weight: 600;
+            color: var(--text-muted); text-transform: uppercase;
+            letter-spacing: 0.5px; margin-bottom: 6px;
+        }
+        .form-group input {
+            width: 100%; padding: 10px 14px; font-size: 14px;
+            background: var(--bg-input); color: var(--text-primary);
+            border: 1px solid var(--border-color); border-radius: 8px;
+            outline: none; font-family: inherit;
+            transition: border-color 0.2s;
+        }
+        .form-group input:focus { border-color: var(--accent-primary); }
+        .btn {
+            display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+            padding: 10px 20px; font-size: 14px; font-weight: 600;
+            border: none; border-radius: 8px; cursor: pointer;
+            font-family: inherit; transition: all 0.2s;
+        }
+        .btn-primary {
+            background: var(--accent-gradient); color: #fff; width: 100%;
+        }
+        .btn-primary:hover { opacity: 0.9; transform: translateY(-1px); }
+        .btn-sm { padding: 7px 14px; font-size: 12px; }
+        .btn-success { background: var(--success); color: #fff; }
+        .btn-danger { background: var(--danger); color: #fff; }
+        .btn-outline {
+            background: transparent; color: var(--text-secondary);
+            border: 1px solid var(--border-color);
+        }
+        .btn-outline:hover { border-color: var(--accent-primary); color: var(--accent-primary); }
+        .error-msg {
+            background: rgba(239,68,68,0.15); border: 1px solid rgba(239,68,68,0.3);
+            border-radius: 8px; padding: 10px 14px; font-size: 13px;
+            color: #fca5a5; margin-bottom: 16px; display: none;
+        }
+
+        /* ─── ADMIN PANEL ─── */
+        .admin-panel {
+            width: 100%; max-width: 900px; padding: 32px; display: none;
+        }
+        body.authed { align-items: flex-start; }
+        .panel-header {
+            display: flex; align-items: center; justify-content: space-between;
+            margin-bottom: 28px; flex-wrap: wrap; gap: 12px;
+        }
+        .panel-header h1 {
+            font-size: 20px; font-weight: 700;
+            background: var(--accent-gradient);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .panel-header .user-badge {
+            font-size: 12px; color: var(--text-muted);
+            background: var(--bg-input); padding: 6px 14px;
+            border-radius: 20px; border: 1px solid var(--border-color);
+        }
+
+        /* ─── SECTIONS ─── */
+        .section { margin-bottom: 32px; }
+        .section h2 {
+            font-size: 15px; font-weight: 700; color: var(--text-secondary);
+            margin-bottom: 14px; display: flex; align-items: center; gap: 8px;
+        }
+        .encrypt-row {
+            display: flex; gap: 10px; align-items: flex-end; flex-wrap: wrap;
+        }
+        .encrypt-row .form-group { flex: 1; min-width: 200px; margin-bottom: 0; }
+        .encrypt-row select {
+            width: 100%; padding: 10px 14px; font-size: 14px;
+            background: var(--bg-input); color: var(--text-primary);
+            border: 1px solid var(--border-color); border-radius: 8px;
+            font-family: inherit; outline: none;
+        }
+        .encrypt-row select:focus { border-color: var(--accent-primary); }
+        .tabs-checkboxes {
+            display: flex; gap: 8px; flex-wrap: wrap; align-items: center;
+            padding-top: 22px;
+        }
+        .tabs-checkboxes label {
+            font-size: 12px; color: var(--text-muted);
+            display: flex; align-items: center; gap: 4px; cursor: pointer;
+        }
+        .tabs-checkboxes input[type="checkbox"] { accent-color: var(--accent-primary); }
+
+        /* ─── OUTPUT BOX ─── */
+        .output-box {
+            margin-top: 16px; display: none;
+        }
+        .output-box pre {
+            background: rgba(0,0,0,0.4); border: 1px solid var(--border-color);
+            border-radius: 8px; padding: 14px 18px; font-size: 13px;
+            color: var(--success); overflow-x: auto; white-space: pre-wrap;
+            word-break: break-all; font-family: 'Cascadia Code', 'Fira Code', monospace;
+            line-height: 1.6;
+        }
+        .output-actions {
+            display: flex; gap: 8px; margin-top: 10px;
+        }
+        .toast {
+            position: fixed; bottom: 24px; right: 24px;
+            background: var(--success); color: #fff; padding: 10px 20px;
+            border-radius: 8px; font-size: 13px; font-weight: 600;
+            opacity: 0; transform: translateY(10px);
+            transition: all 0.3s; pointer-events: none; z-index: 999;
+        }
+        .toast.show { opacity: 1; transform: translateY(0); }
+
+        /* ─── TABLE ─── */
+        .user-table-wrap {
+            overflow-x: auto; border-radius: 10px;
+            border: 1px solid var(--border-color);
+        }
+        .user-table {
+            width: 100%; border-collapse: collapse; font-size: 13px;
+        }
+        .user-table th {
+            background: var(--table-header-bg); padding: 10px 14px;
+            text-align: left; font-weight: 600; color: var(--text-muted);
+            font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .user-table td {
+            padding: 9px 14px; border-bottom: 1px solid var(--border-color);
+            color: var(--text-secondary); max-width: 200px;
+            overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+        }
+        .user-table tr:last-child td { border-bottom: none; }
+        .user-table tr:hover td { background: var(--table-row-hover); }
+        .role-badge {
+            display: inline-block; padding: 2px 10px; border-radius: 12px;
+            font-size: 11px; font-weight: 600;
+        }
+        .role-badge.super_admin { background: rgba(239,68,68,0.15); color: #fca5a5; }
+        .role-badge.admin { background: rgba(99,102,241,0.15); color: #a5b4fc; }
+        .role-badge.normal { background: rgba(16,185,129,0.15); color: #6ee7b7; }
+        .tab-pills { display: flex; gap: 4px; flex-wrap: wrap; }
+        .tab-pill {
+            background: rgba(255,255,255,0.08); padding: 1px 7px;
+            border-radius: 4px; font-size: 11px; color: var(--text-muted);
+        }
+        .back-link {
+            display: inline-flex; align-items: center; gap: 6px;
+            color: var(--text-muted); font-size: 13px; text-decoration: none;
+            margin-bottom: 16px;
+        }
+        .back-link:hover { color: var(--accent-primary); }
+        .count-badge {
+            background: rgba(99,102,241,0.15); color: #a5b4fc;
+            padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600;
+        }
+
+        @media (max-width: 600px) {
+            .encrypt-row { flex-direction: column; }
+            .tabs-checkboxes { padding-top: 0; }
+            .admin-panel { padding: 20px; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ─── LOGIN CARD ─── -->
+<div class="login-card" id="loginCard">
+    <h1>Admin Login</h1>
+    <p class="sub">AI Adoption Tracker — User Management</p>
+    <div class="error-msg" id="loginError"></div>
+    <div class="form-group">
+        <label>Username</label>
+        <input type="text" id="loginUser" autocomplete="username" autofocus>
+    </div>
+    <div class="form-group">
+        <label>Password</label>
+        <input type="password" id="loginPass" autocomplete="current-password">
+    </div>
+    <button class="btn btn-primary" id="loginBtn">Sign In</button>
+</div>
+
+<!-- ─── ADMIN PANEL ─── -->
+<div class="admin-panel" id="adminPanel">
+    <a href="index.html" class="back-link">&#8592; Back to Dashboard</a>
+    <div class="panel-header">
+        <h1>User Management</h1>
+        <span class="user-badge" id="adminBadge"></span>
+    </div>
+
+    <!-- Encrypt Section -->
+    <div class="section">
+        <h2>&#128274; Add New Authorized User</h2>
+        <div class="encrypt-row">
+            <div class="form-group">
+                <label>TFS Display Name</label>
+                <input type="text" id="encName" placeholder="e.g. John Smith">
+            </div>
+            <div class="form-group" style="max-width:160px">
+                <label>Role</label>
+                <select id="encRole">
+                    <option value="normal">Normal</option>
+                    <option value="admin" selected>Admin</option>
+                    <option value="super_admin">Super Admin</option>
+                </select>
+            </div>
+            <div class="tabs-checkboxes">
+                <label><input type="checkbox" value="1" class="tab-cb" checked> 1</label>
+                <label><input type="checkbox" value="2" class="tab-cb" checked> 2</label>
+                <label><input type="checkbox" value="3" class="tab-cb" checked> 3</label>
+                <label><input type="checkbox" value="4" class="tab-cb"> 4</label>
+                <label><input type="checkbox" value="5" class="tab-cb" checked> 5</label>
+                <label><input type="checkbox" value="6" class="tab-cb" checked> 6</label>
+                <label><input type="checkbox" value="7" class="tab-cb"> 7</label>
+            </div>
+            <button class="btn btn-primary btn-sm" id="encryptBtn">Encrypt</button>
+        </div>
+        <div class="output-box" id="outputBox">
+            <pre id="outputCode"></pre>
+            <div class="output-actions">
+                <button class="btn btn-success btn-sm" id="copyBtn">Copy Entry</button>
+                <button class="btn btn-outline btn-sm" id="copyNameBtn">Copy Encrypted Name Only</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Decrypt Section -->
+    <div class="section">
+        <h2>&#128275; Decrypt / Verify</h2>
+        <div class="encrypt-row">
+            <div class="form-group">
+                <label>Encrypted String</label>
+                <input type="text" id="decInput" placeholder="Paste Base64 encrypted name">
+            </div>
+            <button class="btn btn-outline btn-sm" id="decryptBtn" style="margin-bottom:0">Decrypt</button>
+        </div>
+        <div class="output-box" id="decOutputBox">
+            <pre id="decOutputCode"></pre>
+        </div>
+    </div>
+
+    <!-- Current Users -->
+    <div class="section">
+        <h2>&#128101; Current Authorized Users <span class="count-badge" id="userCount">0</span></h2>
+        <div class="user-table-wrap">
+            <table class="user-table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Decrypted Name</th>
+                        <th>Role</th>
+                        <th>Tabs</th>
+                        <th>Encrypted</th>
+                    </tr>
+                </thead>
+                <tbody id="userTableBody"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+/* ─── HELPERS ─── */
+function esc(str) {
+    return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function showToast(msg) {
+    var t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(function() { t.classList.remove('show'); }, 2000);
+}
+
+/* ─── SHA-256 ─── */
+function sha256(str) {
+    var encoder = new TextEncoder();
+    return crypto.subtle.digest('SHA-256', encoder.encode(str)).then(function(buf) {
+        return Array.from(new Uint8Array(buf)).map(function(b) {
+            return b.toString(16).padStart(2, '0');
+        }).join('');
+    });
+}
+
+/* ─── XOR CIPHER ─── */
+function getCipherKey() {
+    return (typeof AUTH_CONFIG !== 'undefined' && AUTH_CONFIG.cipherKey) ? AUTH_CONFIG.cipherKey : '';
+}
+
+function xorEncrypt(text) {
+    var key = getCipherKey();
+    if (!key || !text) return '';
+    var result = '';
+    for (var i = 0; i < text.length; i++) {
+        result += String.fromCharCode(text.charCodeAt(i) ^ key.charCodeAt(i % key.length));
+    }
+    return btoa(result);
+}
+
+function xorDecrypt(encoded) {
+    try {
+        var key = getCipherKey();
+        if (!key) return encoded;
+        var text = atob(encoded);
+        var result = '';
+        for (var i = 0; i < text.length; i++) {
+            result += String.fromCharCode(text.charCodeAt(i) ^ key.charCodeAt(i % key.length));
+        }
+        return result;
+    } catch (e) {
+        return '[decrypt error]';
+    }
+}
+
+/* ─── CONFIG CHECK ─── */
+var loginCard = document.getElementById('loginCard');
+var adminPanel = document.getElementById('adminPanel');
+var loginError = document.getElementById('loginError');
+
+if (typeof AUTH_CONFIG === 'undefined' || !AUTH_CONFIG.admin) {
+    loginError.textContent = 'auth-config.js is missing or has no admin credentials. See auth-config.example.js.';
+    loginError.style.display = 'block';
+    document.getElementById('loginBtn').disabled = true;
+}
+
+/* ─── LOGIN ─── */
+function doLogin() {
+    var user = document.getElementById('loginUser').value.trim();
+    var pass = document.getElementById('loginPass').value;
+
+    if (!user || !pass) {
+        loginError.textContent = 'Enter both username and password.';
+        loginError.style.display = 'block';
+        return;
+    }
+
+    if (typeof AUTH_CONFIG === 'undefined' || !AUTH_CONFIG.admin) {
+        loginError.textContent = 'Admin config not loaded.';
+        loginError.style.display = 'block';
+        return;
+    }
+
+    sha256(pass).then(function(hash) {
+        if (user === AUTH_CONFIG.admin.username && hash === AUTH_CONFIG.admin.passwordHash) {
+            loginCard.style.display = 'none';
+            adminPanel.style.display = 'block';
+            document.body.classList.add('authed');
+            document.getElementById('adminBadge').textContent = 'Signed in as ' + esc(user);
+            renderUserTable();
+        } else {
+            loginError.textContent = 'Invalid username or password.';
+            loginError.style.display = 'block';
+        }
+    });
+}
+
+document.getElementById('loginBtn').addEventListener('click', doLogin);
+document.getElementById('loginPass').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') doLogin();
+});
+document.getElementById('loginUser').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') document.getElementById('loginPass').focus();
+});
+
+/* ─── ENCRYPT ─── */
+var lastEncryptedName = '';
+var lastEntry = '';
+
+document.getElementById('encryptBtn').addEventListener('click', function() {
+    var name = document.getElementById('encName').value.trim();
+    if (!name) return;
+
+    var role = document.getElementById('encRole').value;
+    var tabs = [];
+    document.querySelectorAll('.tab-cb:checked').forEach(function(cb) {
+        tabs.push(parseInt(cb.value));
+    });
+    if (tabs.length === 0) tabs = [1];
+
+    var encrypted = xorEncrypt(name);
+    lastEncryptedName = encrypted;
+
+    var entry = '{ "name": "' + encrypted + '", "role": "' + role + '", "tabs": [' + tabs.join(', ') + '] }';
+    lastEntry = entry;
+
+    document.getElementById('outputCode').textContent =
+        '// Add this line to the "users" array in auth-config.js:\n' + entry + '\n\n' +
+        '// Decrypted name: ' + name + '\n' +
+        '// Role: ' + role + ' | Tabs: ' + tabs.join(', ');
+    document.getElementById('outputBox').style.display = 'block';
+});
+
+document.getElementById('copyBtn').addEventListener('click', function() {
+    if (!lastEntry) return;
+    navigator.clipboard.writeText(lastEntry).then(function() {
+        showToast('Copied full entry to clipboard');
+    });
+});
+
+document.getElementById('copyNameBtn').addEventListener('click', function() {
+    if (!lastEncryptedName) return;
+    navigator.clipboard.writeText(lastEncryptedName).then(function() {
+        showToast('Copied encrypted name to clipboard');
+    });
+});
+
+/* ─── DECRYPT ─── */
+document.getElementById('decryptBtn').addEventListener('click', function() {
+    var input = document.getElementById('decInput').value.trim();
+    if (!input) return;
+
+    var decrypted = xorDecrypt(input);
+    document.getElementById('decOutputCode').textContent = 'Decrypted: ' + decrypted;
+    document.getElementById('decOutputBox').style.display = 'block';
+});
+
+/* ─── ROLE PRESET ─── */
+document.getElementById('encRole').addEventListener('change', function() {
+    var role = this.value;
+    var checks = document.querySelectorAll('.tab-cb');
+    if (role === 'super_admin') {
+        checks.forEach(function(cb) { cb.checked = true; });
+    } else if (role === 'admin') {
+        checks.forEach(function(cb) {
+            cb.checked = [1,2,3,5,6].indexOf(parseInt(cb.value)) !== -1;
+        });
+    } else {
+        checks.forEach(function(cb) {
+            cb.checked = [1,2,3].indexOf(parseInt(cb.value)) !== -1;
+        });
+    }
+});
+
+/* ─── USER TABLE ─── */
+function renderUserTable() {
+    if (typeof AUTH_CONFIG === 'undefined' || !AUTH_CONFIG.users) return;
+
+    var users = AUTH_CONFIG.users;
+    var tbody = document.getElementById('userTableBody');
+    document.getElementById('userCount').textContent = users.length;
+    var html = '';
+
+    users.forEach(function(u, i) {
+        var decName = xorDecrypt(u.name);
+        var role = u.role || 'normal';
+        var tabs = Array.isArray(u.tabs) ? u.tabs : [];
+
+        var tabPills = '';
+        tabs.forEach(function(t) {
+            tabPills += '<span class="tab-pill">' + t + '</span>';
+        });
+
+        html += '<tr>' +
+            '<td>' + (i + 1) + '</td>' +
+            '<td title="' + esc(decName) + '">' + esc(decName) + '</td>' +
+            '<td><span class="role-badge ' + esc(role) + '">' + esc(role) + '</span></td>' +
+            '<td><div class="tab-pills">' + tabPills + '</div></td>' +
+            '<td title="' + esc(u.name) + '" style="font-family:monospace;font-size:11px;max-width:160px">' + esc(u.name) + '</td>' +
+            '</tr>';
+    });
+
+    tbody.innerHTML = html;
+}
+</script>
+</body>
+</html>

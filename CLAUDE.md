@@ -30,8 +30,9 @@ TFSData/
 │   └── marked.umd.js       ← Markdown parsing library
 ├── ai-adoption-tracker/
 │   ├── index.html              ← AI Adoption Tracker (~14000 lines)
+│   ├── admin.html              ← Admin page for user management
 │   ├── auth-config.example.js  ← Template for auth config (committed)
-│   └── auth-config.js          ← Real auth config (gitignored, has cipher key + users)
+│   └── auth-config.js          ← Real auth config (gitignored, has cipher key + users + admin creds)
 ├── everything-claude-code/  ← ECC plugin (gitignored)
 ├── CLAUDE.md
 └── README.md

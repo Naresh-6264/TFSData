@@ -8,10 +8,13 @@
  *   3. Do NOT commit auth-config.js to git (it is already gitignored)
  *
  * HOW TO GET ENCRYPTED USERNAMES:
- *   - Open the tool with a super_admin account
- *   - Go to Tab 7 (Encrypt Username)
+ *   - Open admin.html and log in with the admin credentials below
  *   - Type the user's TFS display name and click Encrypt
- *   - Copy the encrypted value into the "name" field below
+ *   - Copy the generated JSON entry into the "users" array below
+ *
+ * ADMIN PAGE:
+ *   - Open admin.html to manage users (encrypt names, view user list)
+ *   - Generate passwordHash with: echo -n "yourpassword" | sha256sum
  *
  * ROLES:
  *   - "super_admin" : All 7 tabs, can update features, can encrypt/decrypt usernames
@@ -32,6 +35,10 @@ var AUTH_CONFIG = {
     // Example: "k9X#mP2!vQzLrT8wNj5Fd3Yb"
     cipherKey: "REPLACE_WITH_YOUR_CIPHER_KEY",
     taskCreatorUrl: "",
+    admin: {
+        username: "REPLACE_WITH_ADMIN_USERNAME",
+        passwordHash: "REPLACE_WITH_SHA256_HASH_OF_PASSWORD"
+    },
     users: [
         { "name": "ENCRYPTED_USERNAME_HERE", "role": "super_admin", "tabs": [1, 2, 3, 4, 5, 6, 7] },
         { "name": "ENCRYPTED_USERNAME_HERE", "role": "admin", "tabs": [1, 2, 3, 5, 6] },
