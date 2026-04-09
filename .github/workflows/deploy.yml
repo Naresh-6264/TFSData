@@ -1,0 +1,79 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main, DevEnviournment]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Inject auth config
+        run: |
+          TARGET="ai-adoption-tracker/auth-config.js"
+
+          echo "=== Step 1: Reading from secret variable ==="
+          echo "Variable AUTH_CONFIG_DATA length: ${#AUTH_CONFIG_DATA} characters"
+          echo "First 30 chars: $(echo "$AUTH_CONFIG_DATA" | head -c 30)..."
+
+          echo ""
+          echo "=== Step 2: Creating file ==="
+          mkdir -p "$(dirname "$TARGET")"
+          printf '%s\n' "$AUTH_CONFIG_DATA" > "$TARGET"
+          echo "File created at: $(pwd)/$TARGET"
+
+          echo ""
+          echo "=== Step 3: Verifying file ==="
+          echo "File exists: $(test -f "$TARGET" && echo YES || echo NO)"
+          echo "File size: $(wc -c < "$TARGET") bytes"
+          echo "Line count: $(wc -l < "$TARGET") lines"
+          echo "File path: $(realpath "$TARGET")"
+
+          echo ""
+          echo "=== Step 4: File content preview ==="
+          head -3 "$TARGET"
+          echo "..."
+          tail -2 "$TARGET"
+
+          echo ""
+          echo "=== Step 5: Validation ==="
+          if [ ! -s "$TARGET" ]; then
+            echo "::error::$TARGET is empty — set AUTH_CONFIG_DATA in repo Settings > Variables"
+            exit 1
+          fi
+          if head -1 "$TARGET" | grep -q "var AUTH_CONFIG"; then
+            echo "✓ File starts with 'var AUTH_CONFIG' — valid JavaScript"
+          else
+            echo "::warning::File does NOT start with 'var AUTH_CONFIG' — may cause runtime error"
+          fi
+          echo "✓ auth-config.js ready for deployment"
+        env:
+          AUTH_CONFIG_DATA: ${{ secrets.AUTH_CONFIG_DATA }}
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: .
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

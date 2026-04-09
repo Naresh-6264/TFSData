@@ -1,1 +1,5 @@
 /everything-claude-code
+
+# Sensitive auth config (contains encrypted employee names and cipher key)
+# Copy auth-config.example.js to auth-config.js and fill in real data
+ai-adoption-tracker/auth-config.js
