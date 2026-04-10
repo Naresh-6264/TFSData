@@ -1,0 +1,2349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Performance Report</title>
+    <!-- Google Fonts - Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* ─── CSS VARIABLES ─── */
+        :root {
+            --bg-primary: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            --bg-secondary: #1e293b;
+            --bg-card: rgba(255,255,255,0.05);
+            --bg-card-hover: rgba(255,255,255,0.08);
+            --bg-input: rgba(0,0,0,0.3);
+            --border-color: rgba(255,255,255,0.1);
+            --border-color-strong: rgba(255,255,255,0.2);
+            --text-primary: #ffffff;
+            --text-secondary: #e2e8f0;
+            --text-muted: #94a3b8;
+            --accent-primary: #06b6d4;
+            --accent-secondary: #8b5cf6;
+            --accent-gradient: linear-gradient(135deg, #06b6d4, #8b5cf6);
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --info: #3b82f6;
+            --doughnut-bg: #1e293b;
+            --table-header-bg: rgba(0,0,0,0.3);
+            --table-row-hover: rgba(255,255,255,0.05);
+            --shadow-color: rgba(0,0,0,0.3);
+            --card-backdrop: blur(16px);
+            --bar-bg: rgba(255,255,255,0.08);
+            --print-text: #ffffff;
+        }
+
+        /* ─── LIGHT THEME ─── */
+        body.light-theme {
+            --bg-primary: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+            --bg-secondary: #ffffff;
+            --bg-card: rgba(255,255,255,0.85);
+            --bg-card-hover: rgba(255,255,255,0.95);
+            --bg-input: #ffffff;
+            --border-color: #cbd5e1;
+            --border-color-strong: #94a3b8;
+            --text-primary: #0f172a;
+            --text-secondary: #1e293b;
+            --text-muted: #475569;
+            --accent-primary: #0891b2;
+            --accent-secondary: #7c3aed;
+            --accent-gradient: linear-gradient(135deg, #0891b2, #7c3aed);
+            --success: #059669;
+            --warning: #d97706;
+            --danger: #dc2626;
+            --info: #2563eb;
+            --doughnut-bg: #ffffff;
+            --table-header-bg: #f1f5f9;
+            --table-row-hover: rgba(0,0,0,0.04);
+            --shadow-color: rgba(0,0,0,0.1);
+            --card-backdrop: blur(12px);
+            --bar-bg: rgba(0,0,0,0.06);
+            --print-text: #0f172a;
+        }
+
+        /* ─── RESET & BASE ─── */
+        *, *::before, *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* ─── SCROLLBAR ─── */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255,255,255,0.15);
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255,255,255,0.25);
+        }
+        body.light-theme ::-webkit-scrollbar-thumb {
+            background: rgba(0,0,0,0.15);
+        }
+
+        /* ─── LAYOUT ─── */
+        .app-container {
+            max-width: 1320px;
+            margin: 0 auto;
+            padding: 24px 28px;
+        }
+
+        /* ─── HEADER ─── */
+        .app-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 18px 24px;
+            background: var(--bg-card);
+            backdrop-filter: var(--card-backdrop);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            margin-bottom: 24px;
+        }
+        .app-header-left {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+        .app-logo {
+            width: 42px;
+            height: 42px;
+            border-radius: 12px;
+            background: var(--accent-gradient);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            color: #fff;
+            flex-shrink: 0;
+        }
+        .app-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+        }
+        .app-subtitle {
+            font-size: 0.78rem;
+            color: var(--text-muted);
+            margin-top: 1px;
+        }
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .theme-toggle-btn, .print-btn, .logout-btn {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            color: var(--text-muted);
+            padding: 8px 14px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            font-family: inherit;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .theme-toggle-btn:hover, .print-btn:hover, .logout-btn:hover {
+            background: var(--bg-card-hover);
+            border-color: var(--border-color-strong);
+            color: var(--text-primary);
+        }
+
+        /* ─── LOGIN PANEL ─── */
+        .login-panel {
+            max-width: 480px;
+            margin: 60px auto;
+            padding: 36px;
+            background: var(--bg-card);
+            backdrop-filter: var(--card-backdrop);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            box-shadow: 0 8px 32px var(--shadow-color);
+        }
+        .login-panel h2 {
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin-bottom: 6px;
+            letter-spacing: -0.02em;
+        }
+        .login-panel .login-desc {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 24px;
+        }
+        .form-group {
+            margin-bottom: 18px;
+        }
+        .form-group label {
+            display: block;
+            font-size: 0.78rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 10px 14px;
+            background: var(--bg-input);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            color: var(--text-primary);
+            font-size: 0.9rem;
+            font-family: inherit;
+            outline: none;
+            transition: border-color 0.2s ease;
+        }
+        .form-group input:focus {
+            border-color: var(--accent-primary);
+        }
+        .form-group input::placeholder {
+            color: var(--text-muted);
+            opacity: 0.6;
+        }
+        .pat-input-wrap {
+            position: relative;
+        }
+        .pat-input-wrap input {
+            padding-right: 44px;
+        }
+        .pat-eye-btn {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 1rem;
+            padding: 2px 4px;
+        }
+        .connect-btn {
+            width: 100%;
+            padding: 12px;
+            background: var(--accent-gradient);
+            border: none;
+            border-radius: 12px;
+            color: #ffffff;
+            font-size: 0.95rem;
+            font-weight: 600;
+            font-family: inherit;
+            cursor: pointer;
+            transition: opacity 0.2s ease, transform 0.1s ease;
+            margin-top: 6px;
+        }
+        .connect-btn:hover {
+            opacity: 0.9;
+        }
+        .connect-btn:active {
+            transform: scale(0.98);
+        }
+        .connect-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .login-status {
+            margin-top: 14px;
+            font-size: 0.82rem;
+            text-align: center;
+            min-height: 20px;
+        }
+        .login-status.error {
+            color: var(--danger);
+        }
+        .login-status.success {
+            color: var(--success);
+        }
+        .login-status.info {
+            color: var(--accent-primary);
+        }
+
+        /* ─── DASHBOARD CONTAINER ─── */
+        .dashboard-container {
+            display: none;
+        }
+        .dashboard-container.visible {
+            display: block;
+        }
+
+        /* ─── USER INFO BAR ─── */
+        .user-info-bar {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 14px 20px;
+            background: var(--bg-card);
+            backdrop-filter: var(--card-backdrop);
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        .user-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            background: var(--accent-gradient);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.85rem;
+            color: #fff;
+            flex-shrink: 0;
+        }
+        .user-details {
+            flex: 1;
+        }
+        .user-name {
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+        .user-role-badge {
+            display: inline-block;
+            font-size: 0.68rem;
+            font-weight: 600;
+            padding: 2px 8px;
+            border-radius: 6px;
+            background: var(--accent-primary);
+            color: #fff;
+            margin-left: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+        .user-email {
+            font-size: 0.78rem;
+            color: var(--text-muted);
+        }
+
+        /* ─── FILTER BAR ─── */
+        .filter-bar {
+            display: flex;
+            align-items: flex-end;
+            gap: 16px;
+            padding: 18px 20px;
+            background: var(--bg-card);
+            backdrop-filter: var(--card-backdrop);
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+        }
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            min-width: 180px;
+        }
+        .filter-group label {
+            font-size: 0.72rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        .filter-group select {
+            padding: 9px 14px;
+            background: var(--bg-input);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            color: var(--text-primary);
+            font-size: 0.85rem;
+            font-family: inherit;
+            outline: none;
+            cursor: pointer;
+            transition: border-color 0.2s ease;
+            min-width: 200px;
+        }
+        .filter-group select:focus {
+            border-color: var(--accent-primary);
+        }
+        .filter-group select option {
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+        }
+        .load-report-btn {
+            padding: 9px 24px;
+            background: var(--accent-gradient);
+            border: none;
+            border-radius: 10px;
+            color: #ffffff;
+            font-size: 0.85rem;
+            font-weight: 600;
+            font-family: inherit;
+            cursor: pointer;
+            transition: opacity 0.2s ease, transform 0.1s ease;
+            white-space: nowrap;
+        }
+        .load-report-btn:hover {
+            opacity: 0.9;
+        }
+        .load-report-btn:active {
+            transform: scale(0.97);
+        }
+        .load-report-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* ─── LOADING OVERLAY ─── */
+        .loading-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.5);
+            backdrop-filter: blur(4px);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        .loading-overlay.active {
+            display: flex;
+        }
+        .loading-box {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 32px 40px;
+            text-align: center;
+            box-shadow: 0 16px 48px var(--shadow-color);
+        }
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid var(--border-color);
+            border-top: 3px solid var(--accent-primary);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin: 0 auto 16px;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        .loading-text {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        /* ─── REPORT CONTENT ─── */
+        .report-content {
+            display: none;
+        }
+        .report-content.visible {
+            display: block;
+        }
+        .report-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 22px;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        .report-title {
+            font-size: 1.15rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+        }
+        .report-meta {
+            font-size: 0.78rem;
+            color: var(--text-muted);
+        }
+
+        /* ─── SUMMARY CARDS ROW ─── */
+        .cards-row {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        .summary-card {
+            background: var(--bg-card);
+            backdrop-filter: var(--card-backdrop);
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            padding: 20px;
+            transition: background 0.2s ease, border-color 0.2s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        .summary-card:hover {
+            background: var(--bg-card-hover);
+            border-color: var(--border-color-strong);
+        }
+        .summary-card .card-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            margin-bottom: 12px;
+            flex-shrink: 0;
+        }
+        .card-icon.cyan { background: rgba(6,182,212,0.15); color: var(--accent-primary); }
+        .card-icon.green { background: rgba(16,185,129,0.15); color: var(--success); }
+        .card-icon.purple { background: rgba(139,92,246,0.15); color: var(--accent-secondary); }
+        .card-icon.amber { background: rgba(245,158,11,0.15); color: var(--warning); }
+        .card-label {
+            font-size: 0.72rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 4px;
+        }
+        .card-value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            letter-spacing: -0.03em;
+            line-height: 1.1;
+        }
+        .card-sub {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        /* ─── SECTION PANELS ─── */
+        .section-panel {
+            background: var(--bg-card);
+            backdrop-filter: var(--card-backdrop);
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            padding: 22px;
+            margin-bottom: 24px;
+        }
+        .section-title {
+            font-size: 0.95rem;
+            font-weight: 700;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            letter-spacing: -0.01em;
+        }
+        .section-title .section-icon {
+            font-size: 1rem;
+            opacity: 0.8;
+        }
+
+        /* ─── WORK BREAKDOWN TABLE ─── */
+        .breakdown-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+        }
+        .breakdown-table th {
+            background: var(--table-header-bg);
+            color: var(--text-muted);
+            font-weight: 600;
+            font-size: 0.72rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            padding: 10px 14px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .breakdown-table th:not(:first-child) {
+            text-align: center;
+        }
+        .breakdown-table td {
+            padding: 10px 14px;
+            border-bottom: 1px solid var(--border-color);
+            color: var(--text-secondary);
+        }
+        .breakdown-table td:not(:first-child) {
+            text-align: center;
+        }
+        .breakdown-table tr:last-child td {
+            border-bottom: none;
+        }
+        .breakdown-table tr:hover {
+            background: var(--table-row-hover);
+        }
+        .breakdown-table .type-badge {
+            display: inline-block;
+            padding: 2px 10px;
+            border-radius: 6px;
+            font-size: 0.76rem;
+            font-weight: 600;
+        }
+        .type-badge.task { background: rgba(6,182,212,0.15); color: var(--accent-primary); }
+        .type-badge.bug { background: rgba(239,68,68,0.15); color: var(--danger); }
+        .type-badge.requirement { background: rgba(139,92,246,0.15); color: var(--accent-secondary); }
+        .total-row td {
+            font-weight: 700;
+            color: var(--text-primary);
+            border-top: 2px solid var(--border-color-strong);
+        }
+
+        /* ─── AI VS MANUAL ─── */
+        .ai-manual-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            align-items: center;
+        }
+        .doughnut-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 16px;
+        }
+        .doughnut {
+            width: 160px;
+            height: 160px;
+            border-radius: 50%;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 24px var(--shadow-color);
+        }
+        .doughnut::after {
+            content: '';
+            position: absolute;
+            width: 90px;
+            height: 90px;
+            border-radius: 50%;
+            background: var(--doughnut-bg);
+        }
+        .doughnut-label {
+            position: absolute;
+            z-index: 1;
+            font-size: 1.3rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+        }
+        .doughnut-legend {
+            display: flex;
+            gap: 20px;
+            font-size: 0.8rem;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .legend-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 3px;
+            flex-shrink: 0;
+        }
+        .legend-dot.ai { background: var(--accent-primary); }
+        .legend-dot.manual { background: var(--warning); }
+
+        .ai-stats {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        .ai-stat-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .ai-stat-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.85rem;
+            flex-shrink: 0;
+        }
+        .ai-stat-icon.ai-icon { background: rgba(6,182,212,0.15); color: var(--accent-primary); }
+        .ai-stat-icon.manual-icon { background: rgba(245,158,11,0.15); color: var(--warning); }
+        .ai-stat-info {
+            flex: 1;
+        }
+        .ai-stat-label {
+            font-size: 0.72rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+        .ai-stat-value {
+            font-size: 1rem;
+            font-weight: 600;
+        }
+        .ratio-bar-container {
+            margin-top: 4px;
+        }
+        .ratio-bar-label {
+            font-size: 0.72rem;
+            color: var(--text-muted);
+            margin-bottom: 6px;
+        }
+        .ratio-bar-track {
+            width: 100%;
+            height: 8px;
+            background: var(--bar-bg);
+            border-radius: 4px;
+            overflow: hidden;
+            display: flex;
+        }
+        .ratio-bar-ai {
+            height: 100%;
+            background: var(--accent-primary);
+            border-radius: 4px 0 0 4px;
+            transition: width 0.6s ease;
+        }
+        .ratio-bar-manual {
+            height: 100%;
+            background: var(--warning);
+            border-radius: 0 4px 4px 0;
+            transition: width 0.6s ease;
+        }
+
+        /* ─── VELOCITY TRENDS ─── */
+        .trend-bars {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .trend-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .trend-sprint-name {
+            width: 150px;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            text-align: right;
+            flex-shrink: 0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .trend-bar-container {
+            flex: 1;
+            height: 28px;
+            background: var(--bar-bg);
+            border-radius: 6px;
+            overflow: hidden;
+            position: relative;
+        }
+        .trend-bar {
+            height: 100%;
+            border-radius: 6px;
+            transition: width 0.8s ease;
+            min-width: 2px;
+            display: flex;
+            align-items: center;
+            padding-left: 10px;
+        }
+        .trend-bar-value {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: #fff;
+            white-space: nowrap;
+        }
+        .trend-value-outside {
+            width: 60px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-align: left;
+            flex-shrink: 0;
+        }
+        .trend-bar.current {
+            background: var(--accent-gradient);
+        }
+        .trend-bar.other {
+            background: linear-gradient(135deg, rgba(6,182,212,0.5), rgba(139,92,246,0.5));
+        }
+        .no-data-msg {
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            padding: 28px 0;
+        }
+
+        /* ─── QUALITY METRICS ─── */
+        .quality-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+        .quality-metric {
+            background: var(--bar-bg);
+            border-radius: 12px;
+            padding: 18px;
+            text-align: center;
+        }
+        .quality-metric-label {
+            font-size: 0.72rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 8px;
+        }
+        .quality-metric-value {
+            font-size: 1.6rem;
+            font-weight: 700;
+            letter-spacing: -0.03em;
+            margin-bottom: 6px;
+        }
+        .quality-metric-sub {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        /* Priority Distribution Stacked Bar */
+        .priority-bar-container {
+            margin-top: 12px;
+        }
+        .priority-bar-labels {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            margin-bottom: 6px;
+        }
+        .priority-stacked-bar {
+            width: 100%;
+            height: 20px;
+            background: var(--bar-bg);
+            border-radius: 6px;
+            overflow: hidden;
+            display: flex;
+        }
+        .priority-segment {
+            height: 100%;
+            transition: width 0.6s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.65rem;
+            font-weight: 600;
+            color: #fff;
+        }
+        .priority-segment.p1 { background: var(--danger); }
+        .priority-segment.p2 { background: var(--warning); }
+        .priority-segment.p3 { background: var(--info); }
+        .priority-segment.p4 { background: #6b7280; }
+        .priority-legend {
+            display: flex;
+            gap: 14px;
+            margin-top: 8px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        .priority-legend-item {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 0.72rem;
+            color: var(--text-muted);
+        }
+        .priority-legend-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 2px;
+            flex-shrink: 0;
+        }
+
+        /* Estimation Accuracy Gauge */
+        .accuracy-gauge {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+        .accuracy-indicator {
+            font-size: 0.75rem;
+            font-weight: 600;
+            padding: 2px 10px;
+            border-radius: 6px;
+        }
+        .accuracy-indicator.good { background: rgba(16,185,129,0.15); color: var(--success); }
+        .accuracy-indicator.warning { background: rgba(245,158,11,0.15); color: var(--warning); }
+        .accuracy-indicator.danger { background: rgba(239,68,68,0.15); color: var(--danger); }
+
+        /* ─── DETAILED ITEMS TABLE ─── */
+        .items-table-wrap {
+            overflow-x: auto;
+            margin-top: 6px;
+        }
+        .items-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.8rem;
+        }
+        .items-table th {
+            background: var(--table-header-bg);
+            color: var(--text-muted);
+            font-weight: 600;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            padding: 8px 12px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+            white-space: nowrap;
+        }
+        .items-table td {
+            padding: 7px 12px;
+            border-bottom: 1px solid var(--border-color);
+            color: var(--text-secondary);
+        }
+        .items-table tr:last-child td {
+            border-bottom: none;
+        }
+        .items-table tr:hover {
+            background: var(--table-row-hover);
+        }
+        .state-badge {
+            display: inline-block;
+            padding: 1px 8px;
+            border-radius: 4px;
+            font-size: 0.72rem;
+            font-weight: 600;
+        }
+        .state-badge.done, .state-badge.closed, .state-badge.resolved {
+            background: rgba(16,185,129,0.15);
+            color: var(--success);
+        }
+        .state-badge.active {
+            background: rgba(59,130,246,0.15);
+            color: var(--info);
+        }
+        .state-badge.new {
+            background: rgba(139,92,246,0.15);
+            color: var(--accent-secondary);
+        }
+
+        /* ─── RESPONSIVE ─── */
+        @media (max-width: 900px) {
+            .cards-row {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .ai-manual-grid {
+                grid-template-columns: 1fr;
+            }
+            .quality-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        @media (max-width: 600px) {
+            .cards-row {
+                grid-template-columns: 1fr;
+            }
+            .app-header {
+                flex-direction: column;
+                gap: 12px;
+                text-align: center;
+            }
+            .filter-bar {
+                flex-direction: column;
+            }
+            .filter-group select {
+                min-width: 100%;
+            }
+            .trend-sprint-name {
+                width: 100px;
+                font-size: 0.72rem;
+            }
+        }
+
+        /* ─── PRINT STYLES ─── */
+        @media print {
+            body {
+                background: #ffffff !important;
+                color: #0f172a !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            .app-header, .filter-bar, .user-info-bar {
+                display: none !important;
+            }
+            .login-panel {
+                display: none !important;
+            }
+            .loading-overlay {
+                display: none !important;
+            }
+            .app-container {
+                max-width: 100%;
+                padding: 12px;
+            }
+            .report-content {
+                display: block !important;
+            }
+            .section-panel, .summary-card {
+                break-inside: avoid;
+                border: 1px solid #cbd5e1 !important;
+                background: #ffffff !important;
+                box-shadow: none !important;
+                backdrop-filter: none !important;
+            }
+            .print-btn, .logout-btn, .theme-toggle-btn {
+                display: none !important;
+            }
+            .card-value, .quality-metric-value, .doughnut-label,
+            .section-title, .report-title, .card-label,
+            .breakdown-table td, .items-table td {
+                color: #0f172a !important;
+            }
+            .breakdown-table th, .items-table th {
+                background: #f1f5f9 !important;
+                color: #334155 !important;
+            }
+            .text-muted-print {
+                color: #475569 !important;
+            }
+            .trend-bar-value {
+                color: #ffffff !important;
+            }
+        }
+
+        /* ─── ANIMATIONS ─── */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .fade-in {
+            animation: fadeIn 0.4s ease forwards;
+        }
+        .delay-1 { animation-delay: 0.05s; }
+        .delay-2 { animation-delay: 0.1s; }
+        .delay-3 { animation-delay: 0.15s; }
+        .delay-4 { animation-delay: 0.2s; }
+        .delay-5 { animation-delay: 0.25s; }
+
+        /* ─── LIGHT THEME OVERRIDES ─── */
+        body.light-theme .login-panel,
+        body.light-theme .section-panel,
+        body.light-theme .summary-card {
+            background: #ffffff;
+            border: 1px solid #cbd5e1;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+        body.light-theme .form-group input,
+        body.light-theme .filter-group select {
+            background: #ffffff;
+            border: 1px solid #94a3b8;
+            color: #0f172a;
+        }
+        body.light-theme .filter-group select option {
+            background: #ffffff;
+            color: #0f172a;
+        }
+        body.light-theme .loading-box {
+            background: #ffffff;
+            border: 1px solid #cbd5e1;
+        }
+        body.light-theme .quality-metric {
+            background: #f1f5f9;
+        }
+        body.light-theme .user-info-bar,
+        body.light-theme .filter-bar,
+        body.light-theme .app-header {
+            background: rgba(255,255,255,0.85);
+            border: 1px solid #cbd5e1;
+        }
+    </style>
+</head>
+<body>
+    <!-- ─── APP SHELL ─── -->
+    <div class="app-container">
+        <!-- ─── HEADER ─── -->
+        <header class="app-header">
+            <div class="app-header-left">
+                <div class="app-logo">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+                        <circle cx="9" cy="7" r="4"/>
+                        <path d="M22 21v-2a4 4 0 0 0-3-3.87"/>
+                        <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                    </svg>
+                </div>
+                <div>
+                    <div class="app-title">User Performance Report</div>
+                    <div class="app-subtitle">TFS Sprint Performance Analytics</div>
+                </div>
+            </div>
+            <div class="header-actions">
+                <button class="theme-toggle-btn" id="themeToggle" onclick="toggleTheme()" title="Toggle theme">
+                    <span id="themeIcon">&#9790;</span> Theme
+                </button>
+                <button class="print-btn" id="printBtn" onclick="window.print()" title="Print report" style="display:none;">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+                    Print
+                </button>
+                <button class="logout-btn" id="logoutBtn" onclick="logout()" title="Disconnect" style="display:none;">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                    Logout
+                </button>
+            </div>
+        </header>
+
+        <!-- ─── LOGIN PANEL ─── -->
+        <div class="login-panel" id="loginPanel">
+            <h2>Connect to TFS</h2>
+            <p class="login-desc">Enter your TFS server URL and Personal Access Token to authenticate.</p>
+            <div class="form-group">
+                <label for="tfsUrlInput">TFS Server URL</label>
+                <input type="text" id="tfsUrlInput" placeholder="https://tfs.casepoint.in/tfs/Casepoint" value="https://tfs.casepoint.in/tfs/Casepoint" autocomplete="url">
+            </div>
+            <div class="form-group">
+                <label for="patInput">Personal Access Token</label>
+                <div class="pat-input-wrap">
+                    <input type="password" id="patInput" placeholder="Paste your PAT here" autocomplete="off">
+                    <button class="pat-eye-btn" onclick="togglePatVisibility()" title="Show/hide PAT">&#128065;</button>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="proxyInput">CORS Proxy URL <span style="font-weight:400;color:var(--text-muted);font-size:0.8rem;">(optional — for GitHub Pages or external hosting)</span></label>
+                <input type="text" id="proxyInput" placeholder="https://your-proxy.workers.dev/?url=" autocomplete="url">
+            </div>
+            <button class="connect-btn" id="connectBtn" onclick="connect()">Connect</button>
+            <div class="login-status" id="loginStatus"></div>
+        </div>
+
+        <!-- ─── DASHBOARD (hidden until auth) ─── -->
+        <div class="dashboard-container" id="dashboardContainer">
+            <!-- User Info Bar -->
+            <div class="user-info-bar" id="userInfoBar">
+                <div class="user-avatar" id="userAvatar">?</div>
+                <div class="user-details">
+                    <div>
+                        <span class="user-name" id="displayUserName">-</span>
+                        <span class="user-role-badge" id="userRoleBadge">-</span>
+                    </div>
+                    <div class="user-email" id="displayUserEmail">-</div>
+                </div>
+            </div>
+
+            <!-- Filter Bar -->
+            <div class="filter-bar">
+                <div class="filter-group">
+                    <label for="sprintSelect">Sprint / Iteration</label>
+                    <select id="sprintSelect" onchange="onSprintChange()">
+                        <option value="">Loading sprints...</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="memberSelect">Team Member</label>
+                    <select id="memberSelect">
+                        <option value="">Select a sprint first</option>
+                    </select>
+                </div>
+                <button class="load-report-btn" id="loadReportBtn" onclick="loadReport()" disabled>Load Report</button>
+            </div>
+
+            <!-- Report Content -->
+            <div class="report-content" id="reportContent">
+                <!-- Report Header -->
+                <div class="report-header">
+                    <div>
+                        <div class="report-title" id="reportTitle">Performance Report</div>
+                        <div class="report-meta" id="reportMeta"></div>
+                    </div>
+                </div>
+
+                <!-- Row 1: Summary Cards -->
+                <div class="cards-row" id="summaryCards">
+                    <div class="summary-card fade-in delay-1">
+                        <div class="card-icon cyan">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                        </div>
+                        <div class="card-label">Tasks Completed</div>
+                        <div class="card-value" id="cardCompleted">-</div>
+                        <div class="card-sub" id="cardCompletedSub"></div>
+                    </div>
+                    <div class="summary-card fade-in delay-2">
+                        <div class="card-icon green">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                        </div>
+                        <div class="card-label">Hours Delivered</div>
+                        <div class="card-value" id="cardHours">-</div>
+                        <div class="card-sub" id="cardHoursSub"></div>
+                    </div>
+                    <div class="summary-card fade-in delay-3">
+                        <div class="card-icon purple">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+                        </div>
+                        <div class="card-label">AI Adoption</div>
+                        <div class="card-value" id="cardAI">-</div>
+                        <div class="card-sub" id="cardAISub"></div>
+                    </div>
+                    <div class="summary-card fade-in delay-4">
+                        <div class="card-icon amber">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                        </div>
+                        <div class="card-label">Bug Resolution Rate</div>
+                        <div class="card-value" id="cardBugs">-</div>
+                        <div class="card-sub" id="cardBugsSub"></div>
+                    </div>
+                </div>
+
+                <!-- Row 2: Work Breakdown -->
+                <div class="section-panel fade-in delay-2">
+                    <div class="section-title">
+                        <span class="section-icon">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg>
+                        </span>
+                        Work Breakdown
+                    </div>
+                    <div class="items-table-wrap">
+                        <table class="breakdown-table" id="breakdownTable">
+                            <thead>
+                                <tr>
+                                    <th>Type</th>
+                                    <th>New</th>
+                                    <th>Active</th>
+                                    <th>Resolved</th>
+                                    <th>Closed</th>
+                                    <th>Total Items</th>
+                                    <th>Total Hours</th>
+                                </tr>
+                            </thead>
+                            <tbody id="breakdownBody">
+                                <tr><td colspan="7" class="no-data-msg">Load a report to see breakdown</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Row 3: AI vs Manual -->
+                <div class="section-panel fade-in delay-3">
+                    <div class="section-title">
+                        <span class="section-icon">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a10 10 0 1 0 10 10"/><path d="M12 2v10l7-5"/></svg>
+                        </span>
+                        AI vs Manual Execution
+                    </div>
+                    <div class="ai-manual-grid" id="aiManualGrid">
+                        <div class="doughnut-container">
+                            <div class="doughnut" id="aiDoughnut">
+                                <span class="doughnut-label" id="doughnutLabel">-%</span>
+                            </div>
+                            <div class="doughnut-legend">
+                                <div class="legend-item"><div class="legend-dot ai"></div> AI Tasks</div>
+                                <div class="legend-item"><div class="legend-dot manual"></div> Manual Tasks</div>
+                            </div>
+                        </div>
+                        <div class="ai-stats" id="aiStatsContainer">
+                            <div class="ai-stat-row">
+                                <div class="ai-stat-icon ai-icon">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/></svg>
+                                </div>
+                                <div class="ai-stat-info">
+                                    <div class="ai-stat-label">AI Tasks</div>
+                                    <div class="ai-stat-value" id="aiTaskCount">- tasks / - hrs</div>
+                                </div>
+                            </div>
+                            <div class="ai-stat-row">
+                                <div class="ai-stat-icon manual-icon">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                                </div>
+                                <div class="ai-stat-info">
+                                    <div class="ai-stat-label">Manual Tasks</div>
+                                    <div class="ai-stat-value" id="manualTaskCount">- tasks / - hrs</div>
+                                </div>
+                            </div>
+                            <div class="ratio-bar-container">
+                                <div class="ratio-bar-label">AI / Manual Ratio</div>
+                                <div class="ratio-bar-track">
+                                    <div class="ratio-bar-ai" id="ratioBarAI" style="width: 0%;"></div>
+                                    <div class="ratio-bar-manual" id="ratioBarManual" style="width: 100%;"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Row 4: Sprint Velocity Trends -->
+                <div class="section-panel fade-in delay-4">
+                    <div class="section-title">
+                        <span class="section-icon">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                        </span>
+                        Sprint Velocity Trends
+                    </div>
+                    <div class="trend-bars" id="trendBars">
+                        <div class="no-data-msg">Load a report to see trends</div>
+                    </div>
+                </div>
+
+                <!-- Row 5: Quality Metrics -->
+                <div class="section-panel fade-in delay-5">
+                    <div class="section-title">
+                        <span class="section-icon">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                        </span>
+                        Quality Metrics
+                    </div>
+                    <div class="quality-grid" id="qualityGrid">
+                        <div class="quality-metric">
+                            <div class="quality-metric-label">Bug-to-Task Ratio</div>
+                            <div class="quality-metric-value" id="bugTaskRatio">-</div>
+                            <div class="quality-metric-sub" id="bugTaskRatioSub">bugs per task</div>
+                        </div>
+                        <div class="quality-metric">
+                            <div class="quality-metric-label">Priority Distribution</div>
+                            <div id="priorityDistribution">
+                                <div class="priority-stacked-bar" id="priorityBar"></div>
+                                <div class="priority-legend" id="priorityLegend"></div>
+                            </div>
+                        </div>
+                        <div class="quality-metric">
+                            <div class="quality-metric-label">Estimation Accuracy</div>
+                            <div class="accuracy-gauge" id="accuracyGauge">
+                                <div class="quality-metric-value" id="estimationAccuracy">-</div>
+                                <div class="accuracy-indicator" id="accuracyIndicator">-</div>
+                                <div class="quality-metric-sub" id="accuracySub">completed / estimated</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Row 6: Detailed Work Items -->
+                <div class="section-panel fade-in delay-5">
+                    <div class="section-title">
+                        <span class="section-icon">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                        </span>
+                        Detailed Work Items
+                        <span style="font-weight:400; font-size:0.78rem; color:var(--text-muted); margin-left:8px;" id="itemsCount">(0 items)</span>
+                    </div>
+                    <div class="items-table-wrap">
+                        <table class="items-table" id="itemsTable">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Type</th>
+                                    <th>Title</th>
+                                    <th>State</th>
+                                    <th>Priority</th>
+                                    <th>Orig Est</th>
+                                    <th>Completed</th>
+                                    <th>Remaining</th>
+                                    <th>Exec Type</th>
+                                </tr>
+                            </thead>
+                            <tbody id="itemsBody">
+                                <tr><td colspan="9" class="no-data-msg">No items loaded</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div><!-- end report-content -->
+        </div><!-- end dashboard-container -->
+    </div><!-- end app-container -->
+
+    <!-- ─── LOADING OVERLAY ─── -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-box">
+            <div class="spinner"></div>
+            <div class="loading-text" id="loadingText">Loading...</div>
+        </div>
+    </div>
+
+    <script>
+    /* ─── GLOBALS & STATE ─── */
+    let tfsUrl = '';
+    let pat = '';
+    let authHeaders = {};
+    let currentUser = '';
+    let sprints = [];
+    let currentItems = [];
+    let currentMetrics = {};
+    let trendData = [];
+    let execTypeFieldEnabled = true;
+    const PROJECT = 'CasepointARA';
+
+    /* ─── LOCALSTORAGE KEYS ─── */
+    const LS_PAT = 'perf_report_pat';
+    const LS_URL = 'perf_report_url';
+    const LS_THEME = 'perf_report_theme';
+    const LS_PROXY = 'perf_report_proxy';
+    let corsProxy = '';
+
+    /* ─── HTML ESCAPE ─── */
+    function esc(str) {
+        if (str == null) return '';
+        const s = String(str);
+        const div = document.createElement('div');
+        div.appendChild(document.createTextNode(s));
+        return div.innerHTML;
+    }
+
+    /* ─── THEME ─── */
+    function toggleTheme() {
+        const isLight = document.body.classList.toggle('light-theme');
+        localStorage.setItem(LS_THEME, isLight ? 'light' : 'dark');
+        document.getElementById('themeIcon').innerHTML = isLight ? '&#9728;' : '&#9790;';
+    }
+
+    function loadTheme() {
+        const saved = localStorage.getItem(LS_THEME);
+        if (saved === 'light') {
+            document.body.classList.add('light-theme');
+            document.getElementById('themeIcon').innerHTML = '&#9728;';
+        }
+    }
+
+    /* ─── PAT VISIBILITY ─── */
+    function togglePatVisibility() {
+        const inp = document.getElementById('patInput');
+        if (inp.type === 'password') {
+            inp.type = 'text';
+        } else {
+            inp.type = 'password';
+        }
+    }
+
+    /* ─── LOADING ─── */
+    function showLoading(msg) {
+        document.getElementById('loadingText').textContent = msg || 'Loading...';
+        document.getElementById('loadingOverlay').classList.add('active');
+    }
+
+    function hideLoading() {
+        document.getElementById('loadingOverlay').classList.remove('active');
+    }
+
+    /* ─── LOGIN STATUS ─── */
+    function setStatus(msg, type) {
+        const el = document.getElementById('loginStatus');
+        el.textContent = msg;
+        el.className = 'login-status ' + (type || '');
+    }
+
+    /* ─── API FETCH WITH AUTH ─── */
+    function proxyUrl(url) {
+        return corsProxy ? corsProxy + encodeURIComponent(url) : url;
+    }
+
+    async function apiFetch(url, options = {}) {
+        const headers = {};
+        // Use explicit Basic auth only if proxy is configured
+        // Otherwise rely on browser NTLM/Negotiate (credentials: 'include')
+        if (corsProxy) {
+            Object.assign(headers, authHeaders);
+        }
+        if (options.method && options.method !== 'GET') {
+            headers['Content-Type'] = 'application/json';
+        }
+        Object.assign(headers, options.headers || {});
+
+        const resp = await fetch(proxyUrl(url), { ...options, credentials: 'include', headers });
+        if (!resp.ok) {
+            throw new Error(`API error ${resp.status}: ${resp.statusText}`);
+        }
+        return resp;
+    }
+
+    /* ─── BATCH FETCH WORK ITEMS ─── */
+    async function fetchWorkItemsBatch(ids, fieldsList) {
+        if (!ids || ids.length === 0) return [];
+
+        const fields = fieldsList || [
+            'System.Id',
+            'System.WorkItemType',
+            'System.Title',
+            'System.State',
+            'System.AssignedTo',
+            'System.IterationPath',
+            'System.AreaPath',
+            'Microsoft.VSTS.Scheduling.OriginalEstimate',
+            'Microsoft.VSTS.Scheduling.RemainingWork',
+            'Microsoft.VSTS.Scheduling.CompletedWork',
+            'Microsoft.VSTS.Common.Priority',
+            'Microsoft.VSTS.Common.Discipline'
+        ];
+
+        if (execTypeFieldEnabled) {
+            fields.push('Casepoint.TFS.CustomFields.TaskExecutionType');
+        }
+
+        const fieldStr = fields.join(',');
+        const batchSize = 200;
+        const results = [];
+
+        for (let i = 0; i < ids.length; i += batchSize) {
+            const batch = ids.slice(i, i + batchSize).join(',');
+            try {
+                const resp = await apiFetch(`${tfsUrl}/${encodeURIComponent(PROJECT)}/_apis/wit/workitems?ids=${batch}&fields=${fieldStr}&api-version=2.0`);
+                const data = await resp.json();
+                if (data.value) {
+                    results.push(...data.value);
+                }
+            } catch (err) {
+                /* Auto-disable TaskExecutionType on 400 error */
+                if (err.message && err.message.includes('400') && execTypeFieldEnabled) {
+                    execTypeFieldEnabled = false;
+                    const retryFields = fields.filter(f => f !== 'Casepoint.TFS.CustomFields.TaskExecutionType');
+                    const retryFieldStr = retryFields.join(',');
+                    const retryResp = await apiFetch(`${tfsUrl}/${encodeURIComponent(PROJECT)}/_apis/wit/workitems?ids=${batch}&fields=${retryFieldStr}&api-version=2.0`);
+                    const retryData = await retryResp.json();
+                    if (retryData.value) {
+                        results.push(...retryData.value);
+                    }
+                } else {
+                    throw err;
+                }
+            }
+        }
+
+        return results;
+    }
+
+    /* ─── MAP ITEM ─── */
+    function mapItem(raw) {
+        const f = raw.fields || {};
+        const assignedRaw = f['System.AssignedTo'] || '';
+        const assignee = typeof assignedRaw === 'object' ? (assignedRaw.displayName || '') : assignedRaw;
+        const execType = f['Casepoint.TFS.CustomFields.TaskExecutionType'] || 'Manual';
+
+        return {
+            id: f['System.Id'],
+            type: f['System.WorkItemType'] || '',
+            title: f['System.Title'] || '',
+            state: f['System.State'] || '',
+            assignee: assignee,
+            iteration: f['System.IterationPath'] || '',
+            area: f['System.AreaPath'] || '',
+            orig: f['Microsoft.VSTS.Scheduling.OriginalEstimate'] != null ? +f['Microsoft.VSTS.Scheduling.OriginalEstimate'] : null,
+            remaining: f['Microsoft.VSTS.Scheduling.RemainingWork'] != null ? +f['Microsoft.VSTS.Scheduling.RemainingWork'] : null,
+            completed: f['Microsoft.VSTS.Scheduling.CompletedWork'] != null ? +f['Microsoft.VSTS.Scheduling.CompletedWork'] : null,
+            priority: f['Microsoft.VSTS.Common.Priority'] != null ? +f['Microsoft.VSTS.Common.Priority'] : null,
+            discipline: f['Microsoft.VSTS.Common.Discipline'] || '',
+            execType: execType
+        };
+    }
+
+    /* ─── CONNECT (AUTH FLOW) ─── */
+    async function connect() {
+        const urlVal = document.getElementById('tfsUrlInput').value.trim().replace(/\/+$/, '');
+        const patVal = document.getElementById('patInput').value.trim();
+
+        if (!urlVal) {
+            setStatus('Please enter the TFS server URL.', 'error');
+            return;
+        }
+        if (!patVal) {
+            setStatus('Please enter your Personal Access Token.', 'error');
+            return;
+        }
+
+        const btn = document.getElementById('connectBtn');
+        btn.disabled = true;
+        setStatus('Connecting...', 'info');
+
+        try {
+            /* Store credentials */
+            tfsUrl = urlVal;
+            pat = patVal;
+            authHeaders = { 'Authorization': 'Basic ' + btoa(':' + pat) };
+
+            /* Store proxy */
+            const proxyVal = (document.getElementById('proxyInput').value || '').trim().replace(/\/+$/, '');
+            corsProxy = proxyVal;
+
+            /* Validate PAT by loading iterations via proxy (same pattern as tfs-dashboard) */
+            const iterUrl = `${tfsUrl}/${encodeURIComponent(PROJECT)}/_apis/wit/classificationnodes/iterations?$depth=3&api-version=2.0`;
+            const iterResp = await apiFetch(iterUrl);
+
+            /* PAT is valid — persist */
+            localStorage.setItem(LS_PAT, patVal);
+            localStorage.setItem(LS_URL, urlVal);
+            if (proxyVal) localStorage.setItem(LS_PROXY, proxyVal);
+            else localStorage.removeItem(LS_PROXY);
+
+            setStatus('Connected! Loading dashboard...', 'success');
+
+            /* Show dashboard */
+            document.getElementById('loginPanel').style.display = 'none';
+            document.getElementById('dashboardContainer').classList.add('visible');
+            document.getElementById('printBtn').style.display = '';
+            document.getElementById('logoutBtn').style.display = '';
+
+            /* Populate user info bar (PAT user — display generic) */
+            currentUser = '';
+            document.getElementById('userAvatar').textContent = '?';
+            document.getElementById('displayUserName').textContent = 'TFS User';
+            document.getElementById('userRoleBadge').textContent = 'connected';
+            document.getElementById('displayUserEmail').textContent = '';
+
+            /* Load sprints */
+            await loadSprints();
+
+        } catch (err) {
+            const msg = err.message || 'Connection failed.';
+            const isNetworkError = msg === 'Failed to fetch' || msg.includes('NetworkError') || msg.includes('CORS');
+            if (isNetworkError) {
+                const statusEl = document.getElementById('loginStatus');
+                statusEl.className = 'login-status error';
+                statusEl.innerHTML = `<strong>Cannot reach TFS server.</strong> This is usually caused by an untrusted SSL certificate or CORS restrictions.<br><br>
+                    <strong>Option 1:</strong> <a href="https://tfs.casepoint.in/tfs/Casepoint" target="_blank" style="color:#60a5fa;">Open TFS in a new tab</a>, accept the certificate, then retry.<br><br>
+                    <strong>Option 2:</strong> Enter a CORS Proxy URL above (e.g., <code style="background:rgba(255,255,255,0.1);padding:2px 6px;border-radius:3px;">https://your-proxy.workers.dev/?url=</code>)`;
+            } else {
+                setStatus(msg, 'error');
+            }
+        } finally {
+            btn.disabled = false;
+        }
+    }
+
+    /* ─── LOAD SPRINTS (iteration tree walker) ─── */
+    async function loadSprints() {
+        showLoading('Loading sprint iterations...');
+        try {
+            const url = `${tfsUrl}/${encodeURIComponent(PROJECT)}/_apis/wit/classificationnodes/iterations?$depth=4&api-version=2.0`;
+            const resp = await apiFetch(url);
+            const data = await resp.json();
+
+            const found = [];
+            function walk(node, parentPath) {
+                const nodePath = parentPath ? parentPath + '\\' + node.name : node.name;
+
+                /* Collect sprints that are children of PI iterations */
+                if (node.children) {
+                    node.children.forEach(child => walk(child, nodePath));
+                }
+
+                /* Check if this is a sprint/iteration with dates */
+                if (node.attributes && node.attributes.startDate && node.attributes.finishDate) {
+                    found.push({
+                        name: node.name,
+                        path: nodePath,
+                        fullPath: PROJECT + '\\' + nodePath,
+                        start: new Date(node.attributes.startDate),
+                        finish: new Date(node.attributes.finishDate),
+                        parentPath: parentPath || ''
+                    });
+                }
+            }
+
+            if (data.children) {
+                data.children.forEach(child => walk(child, ''));
+            } else {
+                walk(data, '');
+            }
+
+            /* Sort by start date descending */
+            found.sort((a, b) => (b.start || 0) - (a.start || 0));
+            sprints = found;
+
+            /* Populate dropdown */
+            const sel = document.getElementById('sprintSelect');
+            sel.innerHTML = '';
+
+            if (found.length === 0) {
+                sel.innerHTML = '<option value="">No sprints found</option>';
+                hideLoading();
+                return;
+            }
+
+            /* Find current sprint */
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            let currentIdx = 0;
+
+            found.forEach((s, i) => {
+                const opt = document.createElement('option');
+                opt.value = s.path;
+                const dateRange = s.start && s.finish
+                    ? ` (${formatDate(s.start)} - ${formatDate(s.finish)})`
+                    : '';
+                opt.textContent = s.name + dateRange;
+                sel.appendChild(opt);
+
+                if (s.start && s.finish) {
+                    const start = new Date(s.start);
+                    start.setHours(0, 0, 0, 0);
+                    const finish = new Date(s.finish);
+                    finish.setHours(0, 0, 0, 0);
+                    if (today >= start && today <= finish) {
+                        currentIdx = i;
+                    }
+                }
+            });
+
+            sel.selectedIndex = currentIdx;
+            await onSprintChange();
+
+        } catch (err) {
+            alert('Failed to load sprints: ' + err.message);
+        } finally {
+            hideLoading();
+        }
+    }
+
+    /* ─── ON SPRINT CHANGE ─── */
+    async function onSprintChange() {
+        const sprintPath = document.getElementById('sprintSelect').value;
+        if (!sprintPath) return;
+
+        await loadTeamMembers(sprintPath);
+    }
+
+    /* ─── LOAD TEAM MEMBERS (distinct assignees) ─── */
+    async function loadTeamMembers(sprintPath) {
+        const memberSel = document.getElementById('memberSelect');
+        memberSel.innerHTML = '<option value="">Loading members...</option>';
+        document.getElementById('loadReportBtn').disabled = true;
+
+        try {
+            const iterPath = PROJECT + '\\' + sprintPath;
+            const wiql = `SELECT [System.Id], [System.AssignedTo] FROM WorkItems WHERE [System.IterationPath] = '${iterPath.replace(/'/g, "''")}' AND [System.WorkItemType] IN ('Task', 'Bug', 'Requirement') ORDER BY [System.AssignedTo]`;
+
+            const resp = await apiFetch(`${tfsUrl}/${encodeURIComponent(PROJECT)}/_apis/wit/wiql?api-version=2.0`, {
+                method: 'POST',
+                body: JSON.stringify({ query: wiql })
+            });
+            const data = await resp.json();
+            const ids = (data.workItems || []).map(wi => wi.id);
+
+            if (ids.length === 0) {
+                memberSel.innerHTML = '<option value="">No work items in this sprint</option>';
+                return;
+            }
+
+            /* Fetch items to get assignee names */
+            const items = await fetchWorkItemsBatch(ids, ['System.Id', 'System.AssignedTo']);
+            const members = new Set();
+
+            items.forEach(item => {
+                const raw = item.fields['System.AssignedTo'] || '';
+                const name = typeof raw === 'object' ? (raw.displayName || '') : raw;
+                if (name.trim()) {
+                    members.add(name.trim());
+                }
+            });
+
+            const sorted = [...members].sort((a, b) => a.localeCompare(b));
+
+            memberSel.innerHTML = '';
+            if (sorted.length === 0) {
+                memberSel.innerHTML = '<option value="">No assigned members found</option>';
+                return;
+            }
+
+            /* Default: select current user if in list */
+            let defaultIdx = 0;
+            sorted.forEach((m, i) => {
+                const opt = document.createElement('option');
+                opt.value = m;
+                opt.textContent = m;
+                memberSel.appendChild(opt);
+                if (m.toLowerCase().replace(/\s+/g, ' ').trim() === currentUser.toLowerCase().replace(/\s+/g, ' ').trim()) {
+                    defaultIdx = i;
+                }
+            });
+            memberSel.selectedIndex = defaultIdx;
+            document.getElementById('loadReportBtn').disabled = false;
+
+        } catch (err) {
+            memberSel.innerHTML = '<option value="">Error loading members</option>';
+            console.error('loadTeamMembers error:', err);
+        }
+    }
+
+    /* ─── LOAD REPORT ─── */
+    async function loadReport() {
+        const sprintPath = document.getElementById('sprintSelect').value;
+        const member = document.getElementById('memberSelect').value;
+
+        if (!sprintPath || !member) {
+            alert('Please select a sprint and team member.');
+            return;
+        }
+
+        showLoading('Loading work items for ' + member + '...');
+        document.getElementById('loadReportBtn').disabled = true;
+
+        try {
+            /* Load user data for selected sprint */
+            const items = await loadUserData(member, sprintPath);
+            currentItems = items;
+
+            /* Calculate metrics */
+            currentMetrics = calcMetrics(items);
+
+            /* Load trend data (cross-sprint in same PI) */
+            showLoading('Loading sprint velocity trends...');
+            trendData = await loadUserTrends(member, sprintPath);
+
+            /* Render everything */
+            renderReportHeader(member, sprintPath);
+            renderCards(currentMetrics);
+            renderBreakdown(currentMetrics);
+            renderAIChart(currentMetrics);
+            renderTrends(trendData, sprintPath);
+            renderQuality(currentMetrics);
+            renderItemsTable(items);
+
+            /* Show report */
+            document.getElementById('reportContent').classList.add('visible');
+
+        } catch (err) {
+            alert('Error loading report: ' + err.message);
+            console.error('loadReport error:', err);
+        } finally {
+            hideLoading();
+            document.getElementById('loadReportBtn').disabled = false;
+        }
+    }
+
+    /* ─── LOAD USER DATA ─── */
+    async function loadUserData(user, sprintPath) {
+        const iterPath = PROJECT + '\\' + sprintPath;
+        const wiql = `SELECT [System.Id] FROM WorkItems WHERE [System.AssignedTo] = '${user.replace(/'/g, "''")}' AND [System.IterationPath] = '${iterPath.replace(/'/g, "''")}' AND [System.WorkItemType] IN ('Task', 'Bug', 'Requirement') ORDER BY [System.WorkItemType]`;
+
+        const resp = await apiFetch(`${tfsUrl}/${encodeURIComponent(PROJECT)}/_apis/wit/wiql?api-version=2.0`, {
+            method: 'POST',
+            body: JSON.stringify({ query: wiql })
+        });
+        const data = await resp.json();
+        const ids = (data.workItems || []).map(wi => wi.id);
+
+        if (ids.length === 0) return [];
+
+        const rawItems = await fetchWorkItemsBatch(ids);
+        return rawItems.map(mapItem);
+    }
+
+    /* ─── LOAD USER TRENDS (cross-sprint in same PI) ─── */
+    async function loadUserTrends(user, selectedSprintPath) {
+        /* Find the parent PI for the selected sprint */
+        const selectedSprint = sprints.find(s => s.path === selectedSprintPath);
+        if (!selectedSprint) return [];
+
+        const parentPath = selectedSprint.parentPath;
+        if (!parentPath) return [];
+
+        /* Find all sprints under the same parent */
+        const siblings = sprints.filter(s => s.parentPath === parentPath);
+        siblings.sort((a, b) => (a.start || 0) - (b.start || 0));
+
+        if (siblings.length <= 1) {
+            /* Try broader: find sprints with similar parent prefix */
+            const pathParts = parentPath.split('\\');
+            if (pathParts.length >= 1) {
+                const broadParent = pathParts[0];
+                const broadSiblings = sprints.filter(s =>
+                    s.parentPath && s.parentPath.startsWith(broadParent)
+                );
+                broadSiblings.sort((a, b) => (a.start || 0) - (b.start || 0));
+                if (broadSiblings.length > 1) {
+                    return await fetchTrendsForSprints(user, broadSiblings.slice(-10));
+                }
+            }
+            return await fetchTrendsForSprints(user, siblings);
+        }
+
+        /* Limit to last 10 sprints */
+        return await fetchTrendsForSprints(user, siblings.slice(-10));
+    }
+
+    async function fetchTrendsForSprints(user, sprintsList) {
+        const trends = [];
+
+        for (const sp of sprintsList) {
+            try {
+                const iterPath = PROJECT + '\\' + sp.path;
+                const wiql = `SELECT [System.Id] FROM WorkItems WHERE [System.AssignedTo] = '${user.replace(/'/g, "''")}' AND [System.IterationPath] = '${iterPath.replace(/'/g, "''")}' AND [System.WorkItemType] IN ('Task', 'Bug', 'Requirement')`;
+
+                const resp = await apiFetch(`${tfsUrl}/${encodeURIComponent(PROJECT)}/_apis/wit/wiql?api-version=2.0`, {
+                    method: 'POST',
+                    body: JSON.stringify({ query: wiql })
+                });
+                const data = await resp.json();
+                const ids = (data.workItems || []).map(wi => wi.id);
+
+                let totalCompleted = 0;
+                let itemCount = 0;
+
+                if (ids.length > 0) {
+                    const rawItems = await fetchWorkItemsBatch(ids, [
+                        'System.Id',
+                        'Microsoft.VSTS.Scheduling.CompletedWork'
+                    ]);
+                    rawItems.forEach(item => {
+                        const cw = item.fields['Microsoft.VSTS.Scheduling.CompletedWork'];
+                        if (cw != null) totalCompleted += +cw;
+                        itemCount++;
+                    });
+                }
+
+                trends.push({
+                    name: sp.name,
+                    path: sp.path,
+                    hours: totalCompleted,
+                    items: itemCount
+                });
+            } catch (e) {
+                trends.push({
+                    name: sp.name,
+                    path: sp.path,
+                    hours: 0,
+                    items: 0
+                });
+            }
+        }
+
+        return trends;
+    }
+
+    /* ─── CALCULATE METRICS ─── */
+    function calcMetrics(items) {
+        const totalItems = items.length;
+        const doneStates = ['Done', 'Closed', 'Resolved'];
+
+        /* Tasks completed */
+        const completedItems = items.filter(i => doneStates.includes(i.state));
+        const tasksCompleted = completedItems.length;
+
+        /* Hours delivered */
+        let hoursDelivered = 0;
+        let hoursEstimated = 0;
+        let hoursRemaining = 0;
+        items.forEach(i => {
+            if (i.completed != null) hoursDelivered += i.completed;
+            if (i.orig != null) hoursEstimated += i.orig;
+            if (i.remaining != null) hoursRemaining += i.remaining;
+        });
+
+        /* AI adoption */
+        const aiItems = items.filter(i => {
+            const et = (i.execType || '').toLowerCase();
+            return et.includes('ai');
+        });
+        const manualItems = items.filter(i => {
+            const et = (i.execType || '').toLowerCase();
+            return !et.includes('ai');
+        });
+        const aiPercent = totalItems > 0 ? (aiItems.length / totalItems * 100) : 0;
+
+        let aiHours = 0;
+        aiItems.forEach(i => { if (i.completed != null) aiHours += i.completed; });
+        let manualHours = 0;
+        manualItems.forEach(i => { if (i.completed != null) manualHours += i.completed; });
+
+        /* Bug resolution rate */
+        const allBugs = items.filter(i => i.type === 'Bug');
+        const resolvedBugs = allBugs.filter(i => doneStates.includes(i.state));
+        const bugResolutionRate = allBugs.length > 0 ? (resolvedBugs.length / allBugs.length * 100) : 0;
+
+        /* Work breakdown by type */
+        const typeBreakdown = {};
+        const types = ['Task', 'Bug', 'Requirement'];
+        types.forEach(t => {
+            const typeItems = items.filter(i => i.type === t);
+            const newCount = typeItems.filter(i => i.state === 'New').length;
+            const activeCount = typeItems.filter(i => i.state === 'Active').length;
+            const resolvedCount = typeItems.filter(i => i.state === 'Resolved').length;
+            const closedCount = typeItems.filter(i => ['Closed', 'Done'].includes(i.state)).length;
+            let typeHours = 0;
+            typeItems.forEach(i => { if (i.completed != null) typeHours += i.completed; });
+
+            typeBreakdown[t] = {
+                new: newCount,
+                active: activeCount,
+                resolved: resolvedCount,
+                closed: closedCount,
+                total: typeItems.length,
+                hours: typeHours
+            };
+        });
+
+        /* Priority distribution */
+        const priorityDist = { 1: 0, 2: 0, 3: 0, 4: 0 };
+        items.forEach(i => {
+            const p = i.priority;
+            if (p && p >= 1 && p <= 4) {
+                priorityDist[p]++;
+            }
+        });
+
+        /* Bug-to-task ratio */
+        const taskCount = items.filter(i => i.type === 'Task').length;
+        const bugCount = allBugs.length;
+        const bugTaskRatio = taskCount > 0 ? (bugCount / taskCount) : 0;
+
+        /* Estimation accuracy: avg(CompletedWork / OriginalEstimate) */
+        let accuracySum = 0;
+        let accuracyCount = 0;
+        items.forEach(i => {
+            if (i.completed != null && i.orig != null && i.orig > 0) {
+                accuracySum += (i.completed / i.orig);
+                accuracyCount++;
+            }
+        });
+        const estimationAccuracy = accuracyCount > 0 ? (accuracySum / accuracyCount * 100) : 0;
+
+        return {
+            totalItems,
+            tasksCompleted,
+            hoursDelivered,
+            hoursEstimated,
+            hoursRemaining,
+            aiPercent,
+            aiCount: aiItems.length,
+            aiHours,
+            manualCount: manualItems.length,
+            manualHours,
+            bugResolutionRate,
+            allBugsCount: allBugs.length,
+            resolvedBugsCount: resolvedBugs.length,
+            typeBreakdown,
+            priorityDist,
+            bugTaskRatio,
+            bugCount,
+            taskCount,
+            estimationAccuracy,
+            accuracyCount
+        };
+    }
+
+    /* ─── RENDER: REPORT HEADER ─── */
+    function renderReportHeader(member, sprintPath) {
+        const sprint = sprints.find(s => s.path === sprintPath);
+        const sprintName = sprint ? sprint.name : sprintPath;
+        const dateRange = sprint && sprint.start && sprint.finish
+            ? `${formatDate(sprint.start)} - ${formatDate(sprint.finish)}`
+            : '';
+
+        document.getElementById('reportTitle').textContent = `Performance Report: ${esc(member)}`;
+        document.getElementById('reportMeta').textContent = `${sprintName}${dateRange ? ' | ' + dateRange : ''} | Generated ${formatDate(new Date())}`;
+    }
+
+    /* ─── RENDER: SUMMARY CARDS ─── */
+    function renderCards(m) {
+        document.getElementById('cardCompleted').textContent = m.tasksCompleted;
+        document.getElementById('cardCompletedSub').textContent = `of ${m.totalItems} total items`;
+
+        document.getElementById('cardHours').textContent = round(m.hoursDelivered);
+        document.getElementById('cardHoursSub').textContent = `${round(m.hoursEstimated)} estimated | ${round(m.hoursRemaining)} remaining`;
+
+        document.getElementById('cardAI').textContent = round(m.aiPercent) + '%';
+        document.getElementById('cardAISub').textContent = `${m.aiCount} AI / ${m.manualCount} Manual tasks`;
+
+        document.getElementById('cardBugs').textContent = m.allBugsCount > 0 ? round(m.bugResolutionRate) + '%' : 'N/A';
+        document.getElementById('cardBugsSub').textContent = m.allBugsCount > 0
+            ? `${m.resolvedBugsCount} of ${m.allBugsCount} bugs resolved`
+            : 'No bugs in this sprint';
+    }
+
+    /* ─── RENDER: WORK BREAKDOWN TABLE ─── */
+    function renderBreakdown(m) {
+        const tbody = document.getElementById('breakdownBody');
+        let html = '';
+
+        const types = ['Task', 'Bug', 'Requirement'];
+        let totalNew = 0, totalActive = 0, totalResolved = 0, totalClosed = 0, totalItems = 0, totalHours = 0;
+
+        types.forEach(t => {
+            const bd = m.typeBreakdown[t];
+            if (!bd) return;
+
+            const badgeClass = t.toLowerCase();
+            totalNew += bd.new;
+            totalActive += bd.active;
+            totalResolved += bd.resolved;
+            totalClosed += bd.closed;
+            totalItems += bd.total;
+            totalHours += bd.hours;
+
+            html += `<tr>
+                <td><span class="type-badge ${badgeClass}">${esc(t)}</span></td>
+                <td>${bd.new}</td>
+                <td>${bd.active}</td>
+                <td>${bd.resolved}</td>
+                <td>${bd.closed}</td>
+                <td>${bd.total}</td>
+                <td>${round(bd.hours)}</td>
+            </tr>`;
+        });
+
+        /* Total row */
+        html += `<tr class="total-row">
+            <td><strong>Total</strong></td>
+            <td>${totalNew}</td>
+            <td>${totalActive}</td>
+            <td>${totalResolved}</td>
+            <td>${totalClosed}</td>
+            <td>${totalItems}</td>
+            <td>${round(totalHours)}</td>
+        </tr>`;
+
+        tbody.innerHTML = html;
+    }
+
+    /* ─── RENDER: AI VS MANUAL CHART ─── */
+    function renderAIChart(m) {
+        const aiPct = m.aiPercent;
+        const manualPct = 100 - aiPct;
+        const aiDeg = (aiPct / 100) * 360;
+
+        /* Doughnut */
+        const doughnut = document.getElementById('aiDoughnut');
+        if (m.totalItems === 0) {
+            doughnut.style.background = 'var(--bar-bg)';
+        } else {
+            doughnut.style.background = `conic-gradient(var(--accent-primary) 0deg ${aiDeg}deg, var(--warning) ${aiDeg}deg 360deg)`;
+        }
+        document.getElementById('doughnutLabel').textContent = round(aiPct) + '%';
+
+        /* Stats */
+        document.getElementById('aiTaskCount').textContent = `${m.aiCount} tasks / ${round(m.aiHours)} hrs`;
+        document.getElementById('manualTaskCount').textContent = `${m.manualCount} tasks / ${round(m.manualHours)} hrs`;
+
+        /* Ratio bar */
+        document.getElementById('ratioBarAI').style.width = round(aiPct) + '%';
+        document.getElementById('ratioBarManual').style.width = round(manualPct) + '%';
+    }
+
+    /* ─── RENDER: SPRINT VELOCITY TRENDS ─── */
+    function renderTrends(trends, selectedPath) {
+        const container = document.getElementById('trendBars');
+
+        if (!trends || trends.length === 0) {
+            container.innerHTML = '<div class="no-data-msg">No trend data available for this PI</div>';
+            return;
+        }
+
+        const maxHours = Math.max(...trends.map(t => t.hours), 1);
+        let html = '';
+
+        trends.forEach(t => {
+            const pct = (t.hours / maxHours) * 100;
+            const isCurrent = t.path === selectedPath;
+            const barClass = isCurrent ? 'current' : 'other';
+
+            html += `<div class="trend-row">
+                <div class="trend-sprint-name" title="${esc(t.name)}">${esc(t.name)}</div>
+                <div class="trend-bar-container">
+                    <div class="trend-bar ${barClass}" style="width: ${Math.max(pct, 2)}%;">
+                        ${pct > 20 ? '<span class="trend-bar-value">' + round(t.hours) + ' hrs</span>' : ''}
+                    </div>
+                </div>
+                <div class="trend-value-outside">${round(t.hours)} hrs</div>
+            </div>`;
+        });
+
+        container.innerHTML = html;
+    }
+
+    /* ─── RENDER: QUALITY METRICS ─── */
+    function renderQuality(m) {
+        /* Bug-to-Task ratio */
+        document.getElementById('bugTaskRatio').textContent = round(m.bugTaskRatio, 2);
+        document.getElementById('bugTaskRatioSub').textContent = `${m.bugCount} bugs / ${m.taskCount} tasks`;
+
+        /* Priority distribution */
+        const total = m.priorityDist[1] + m.priorityDist[2] + m.priorityDist[3] + m.priorityDist[4];
+        const barEl = document.getElementById('priorityBar');
+        const legendEl = document.getElementById('priorityLegend');
+
+        if (total === 0) {
+            barEl.innerHTML = '<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:0.72rem;color:var(--text-muted);">No priority data</div>';
+            legendEl.innerHTML = '';
+        } else {
+            const p1Pct = (m.priorityDist[1] / total * 100);
+            const p2Pct = (m.priorityDist[2] / total * 100);
+            const p3Pct = (m.priorityDist[3] / total * 100);
+            const p4Pct = (m.priorityDist[4] / total * 100);
+
+            let barHtml = '';
+            if (p1Pct > 0) barHtml += `<div class="priority-segment p1" style="width:${p1Pct}%;" title="P1: ${m.priorityDist[1]}">${p1Pct > 8 ? 'P1' : ''}</div>`;
+            if (p2Pct > 0) barHtml += `<div class="priority-segment p2" style="width:${p2Pct}%;" title="P2: ${m.priorityDist[2]}">${p2Pct > 8 ? 'P2' : ''}</div>`;
+            if (p3Pct > 0) barHtml += `<div class="priority-segment p3" style="width:${p3Pct}%;" title="P3: ${m.priorityDist[3]}">${p3Pct > 8 ? 'P3' : ''}</div>`;
+            if (p4Pct > 0) barHtml += `<div class="priority-segment p4" style="width:${p4Pct}%;" title="P4: ${m.priorityDist[4]}">${p4Pct > 8 ? 'P4' : ''}</div>`;
+            barEl.innerHTML = barHtml;
+
+            legendEl.innerHTML = `
+                <div class="priority-legend-item"><div class="priority-legend-dot" style="background:var(--danger);"></div> P1: ${m.priorityDist[1]}</div>
+                <div class="priority-legend-item"><div class="priority-legend-dot" style="background:var(--warning);"></div> P2: ${m.priorityDist[2]}</div>
+                <div class="priority-legend-item"><div class="priority-legend-dot" style="background:var(--info);"></div> P3: ${m.priorityDist[3]}</div>
+                <div class="priority-legend-item"><div class="priority-legend-dot" style="background:#6b7280;"></div> P4: ${m.priorityDist[4]}</div>`;
+        }
+
+        /* Estimation accuracy */
+        const acc = m.estimationAccuracy;
+        const accEl = document.getElementById('estimationAccuracy');
+        const indEl = document.getElementById('accuracyIndicator');
+        const subEl = document.getElementById('accuracySub');
+
+        if (m.accuracyCount === 0) {
+            accEl.textContent = 'N/A';
+            indEl.textContent = 'No data';
+            indEl.className = 'accuracy-indicator';
+            subEl.textContent = 'No items with both estimate and completion';
+        } else {
+            accEl.textContent = round(acc) + '%';
+
+            if (acc >= 85 && acc <= 115) {
+                indEl.textContent = 'On Target';
+                indEl.className = 'accuracy-indicator good';
+            } else if (acc > 115) {
+                indEl.textContent = 'Underestimated';
+                indEl.className = 'accuracy-indicator warning';
+            } else if (acc < 85 && acc >= 50) {
+                indEl.textContent = 'Overestimated';
+                indEl.className = 'accuracy-indicator warning';
+            } else {
+                indEl.textContent = acc > 115 ? 'Severely Under' : 'Severely Over';
+                indEl.className = 'accuracy-indicator danger';
+            }
+
+            subEl.textContent = `Based on ${m.accuracyCount} items with estimates`;
+        }
+    }
+
+    /* ─── RENDER: DETAILED ITEMS TABLE ─── */
+    function renderItemsTable(items) {
+        const tbody = document.getElementById('itemsBody');
+        const countEl = document.getElementById('itemsCount');
+        countEl.textContent = `(${items.length} items)`;
+
+        if (items.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="9" class="no-data-msg">No work items found</td></tr>';
+            return;
+        }
+
+        /* Sort: Done/Closed first, then by type, then by ID */
+        const doneStates = ['Done', 'Closed', 'Resolved'];
+        const sorted = [...items].sort((a, b) => {
+            const aDone = doneStates.includes(a.state) ? 0 : 1;
+            const bDone = doneStates.includes(b.state) ? 0 : 1;
+            if (aDone !== bDone) return aDone - bDone;
+            if (a.type !== b.type) return a.type.localeCompare(b.type);
+            return (a.id || 0) - (b.id || 0);
+        });
+
+        let html = '';
+        sorted.forEach(item => {
+            const stateClass = item.state.toLowerCase().replace(/\s+/g, '');
+            const typeClass = item.type.toLowerCase();
+            const execTypeDisplay = item.execType || 'Manual';
+            const isAI = execTypeDisplay.toLowerCase().includes('ai');
+
+            html += `<tr>
+                <td>${item.id || '-'}</td>
+                <td><span class="type-badge ${typeClass}">${esc(item.type)}</span></td>
+                <td title="${esc(item.title)}">${esc(truncate(item.title, 60))}</td>
+                <td><span class="state-badge ${stateClass}">${esc(item.state)}</span></td>
+                <td>${item.priority != null ? 'P' + item.priority : '-'}</td>
+                <td>${item.orig != null ? round(item.orig) : '-'}</td>
+                <td>${item.completed != null ? round(item.completed) : '-'}</td>
+                <td>${item.remaining != null ? round(item.remaining) : '-'}</td>
+                <td style="color: ${isAI ? 'var(--accent-primary)' : 'var(--text-muted)'}; font-weight: ${isAI ? '600' : '400'};">${esc(execTypeDisplay)}</td>
+            </tr>`;
+        });
+
+        tbody.innerHTML = html;
+    }
+
+    /* ─── LOGOUT ─── */
+    function logout() {
+        tfsUrl = '';
+        pat = '';
+        authHeaders = {};
+        currentUser = '';
+        sprints = [];
+        currentItems = [];
+        currentMetrics = {};
+        trendData = [];
+
+        localStorage.removeItem(LS_PAT);
+        localStorage.removeItem(LS_URL);
+
+        document.getElementById('loginPanel').style.display = '';
+        document.getElementById('dashboardContainer').classList.remove('visible');
+        document.getElementById('reportContent').classList.remove('visible');
+        document.getElementById('printBtn').style.display = 'none';
+        document.getElementById('logoutBtn').style.display = 'none';
+
+        document.getElementById('tfsUrlInput').value = '';
+        document.getElementById('patInput').value = '';
+        setStatus('', '');
+    }
+
+    /* ─── UTILITY FUNCTIONS ─── */
+    function formatDate(d) {
+        if (!d) return '';
+        const dd = String(d.getDate()).padStart(2, '0');
+        const mm = String(d.getMonth() + 1).padStart(2, '0');
+        const yyyy = d.getFullYear();
+        return `${dd}/${mm}/${yyyy}`;
+    }
+
+    function round(val, decimals) {
+        if (val == null || isNaN(val)) return '0';
+        const d = decimals != null ? decimals : 1;
+        const factor = Math.pow(10, d);
+        const rounded = Math.round(val * factor) / factor;
+        return d === 0 ? String(Math.round(val)) : String(rounded);
+    }
+
+    function truncate(str, maxLen) {
+        if (!str) return '';
+        if (str.length <= maxLen) return str;
+        return str.substring(0, maxLen) + '...';
+    }
+
+    /* ─── INIT ─── */
+    function init() {
+        loadTheme();
+
+        /* Restore saved URL, PAT, and proxy (fall back to TFS Dashboard settings) */
+        const savedUrl = localStorage.getItem(LS_URL) || '';
+        const savedPat = localStorage.getItem(LS_PAT) || localStorage.getItem('tfs_dashboard_pat') || '';
+        const savedProxy = localStorage.getItem(LS_PROXY) || localStorage.getItem('tfs_dashboard_proxy') || '';
+        if (savedUrl) document.getElementById('tfsUrlInput').value = savedUrl;
+        if (savedPat) document.getElementById('patInput').value = savedPat;
+        if (savedProxy) {
+            corsProxy = savedProxy;
+            document.getElementById('proxyInput').value = savedProxy;
+        }
+
+        /* Keyboard shortcut: Enter to connect */
+        document.getElementById('patInput').addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') connect();
+        });
+        document.getElementById('tfsUrlInput').addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') document.getElementById('patInput').focus();
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>

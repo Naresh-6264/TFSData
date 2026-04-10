@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8"><title>TFS API Test</title></head>
+<body style="font-family:monospace;background:#1e293b;color:#e2e8f0;padding:20px">
+<h2>TFS API Test</h2>
+<script src="tfs-api.js"></script>
+<pre id="log">Loading...</pre>
+<script>
+var log = document.getElementById('log');
+function out(msg) { log.textContent += '\n' + msg; }
+
+log.textContent = 'Testing TFS API...\n';
+
+/* PAT is loaded from localStorage (same key as TFS Dashboard) — never hardcoded.
+   If missing, prompt the user once and persist it locally. */
+var LS_PAT_KEY = 'tfs_dashboard_pat';
+var LS_PROXY_KEY = 'tfs_dashboard_proxy';
+var pat = localStorage.getItem(LS_PAT_KEY) || '';
+if (!pat) {
+    pat = (window.prompt('Enter your TFS Personal Access Token (PAT):') || '').trim();
+    if (!pat) {
+        out('FAILED: No PAT provided. Reload the page and enter your PAT to run the tests.');
+        throw new Error('Missing PAT');
+    }
+    localStorage.setItem(LS_PAT_KEY, pat);
+}
+var proxy = localStorage.getItem(LS_PROXY_KEY) || '';
+TFS.configure({ pat: pat, proxyUrl: proxy });
+out('Proxy: ' + (TFS.config.proxyUrl || 'NONE (direct)'));
+
+out('1. Testing connectionData...');
+TFS.testConnection()
+    .then(function(user) {
+        out('   OK — User: ' + user.displayName + ' (' + user.account + ')');
+        out('\n2. Loading areas...');
+        return TFS.getAreas();
+    })
+    .then(function(areas) {
+        out('   OK — ' + areas.length + ' areas: ' + areas.slice(0,5).map(function(a){return a.name}).join(', ') + '...');
+        out('\n3. Loading sprints...');
+        return TFS.getSprints();
+    })
+    .then(function(sprints) {
+        out('   OK — ' + sprints.length + ' sprints. Latest: ' + sprints[0].name);
+        out('\n4. WIQL query (PI-2026-2_2)...');
+        return TFS.wiql("SELECT [System.Id] FROM WorkItems WHERE [System.IterationPath] UNDER 'CasepointARA\\PI-2026-2_2' AND [System.WorkItemType] IN ('Task','Bug') AND [System.State] <> 'Removed'");
+    })
+    .then(function(ids) {
+        out('   OK — ' + ids.length + ' items found');
+        out('\n5. Batch fetch first 3...');
+        return TFS.getWorkItems(ids.slice(0,3));
+    })
+    .then(function(items) {
+        items.forEach(function(raw) {
+            var item = TFS.mapItem(raw);
+            out('   ' + item.id + ' | ' + item.type + ' | ' + item.state + ' | ' + item.area + ' | ' + item.assignee + ' | ' + item.title.substring(0,40));
+        });
+        out('\n=== ALL TESTS PASSED ===');
+    })
+    .catch(function(err) {
+        out('\n   FAILED: ' + err.message);
+        out('\nTip: Open https://tfs.casepoint.in/tfs/Casepoint in a new tab first, then refresh this page.');
+    });
+</script>
+</body></html>

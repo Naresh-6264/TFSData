@@ -1,0 +1,1901 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Punch Time Calculator</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* ─── CSS VARIABLES ─── */
+        :root {
+            --bg-primary: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            --bg-card: rgba(255,255,255,0.05);
+            --bg-card-hover: rgba(255,255,255,0.08);
+            --bg-input: rgba(0,0,0,0.3);
+            --border-color: rgba(255,255,255,0.1);
+            --border-color-strong: rgba(255,255,255,0.2);
+            --text-primary: #ffffff;
+            --text-secondary: #e2e8f0;
+            --text-muted: #94a3b8;
+            --accent-primary: #10b981;
+            --accent-secondary: #059669;
+            --accent-gradient: linear-gradient(135deg, #10b981, #059669);
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --info: #06b6d4;
+            --shadow-color: rgba(0,0,0,0.3);
+            --tab-bg: rgba(255,255,255,0.03);
+            --tab-active-bg: rgba(16,185,129,0.15);
+            --tab-active-border: #10b981;
+            --timeline-bg: rgba(255,255,255,0.05);
+            --calendar-today: rgba(16,185,129,0.25);
+        }
+
+        /* ─── LIGHT THEME ─── */
+        body.light-theme {
+            --bg-primary: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+            --bg-card: #ffffff;
+            --bg-card-hover: #f8fafc;
+            --bg-input: #ffffff;
+            --border-color: #cbd5e1;
+            --border-color-strong: #94a3b8;
+            --text-primary: #0f172a;
+            --text-secondary: #1e293b;
+            --text-muted: #475569;
+            --accent-primary: #059669;
+            --accent-secondary: #047857;
+            --accent-gradient: linear-gradient(135deg, #059669, #047857);
+            --success: #059669;
+            --warning: #d97706;
+            --danger: #dc2626;
+            --info: #0891b2;
+            --shadow-color: rgba(0,0,0,0.1);
+            --tab-bg: rgba(0,0,0,0.02);
+            --tab-active-bg: rgba(5,150,105,0.1);
+            --tab-active-border: #059669;
+            --timeline-bg: rgba(0,0,0,0.04);
+            --calendar-today: rgba(5,150,105,0.15);
+        }
+
+        body.light-theme .glass-card,
+        body.light-theme .summary-card,
+        body.light-theme .settings-section {
+            background: #ffffff;
+            border: 1px solid #cbd5e1;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            backdrop-filter: none;
+        }
+
+        body.light-theme textarea,
+        body.light-theme input[type="text"],
+        body.light-theme input[type="number"],
+        body.light-theme input[type="date"],
+        body.light-theme select {
+            background: #ffffff;
+            border-color: #cbd5e1;
+            color: #0f172a;
+        }
+
+        body.light-theme .results-table th {
+            background: #f1f5f9;
+        }
+
+        body.light-theme .results-table tr:hover {
+            background: rgba(0,0,0,0.03);
+        }
+
+        body.light-theme .anomaly-tag {
+            color: #0f172a;
+        }
+
+        /* ─── RESET & BASE ─── */
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* ─── LAYOUT ─── */
+        .app-container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 24px 20px 60px;
+        }
+
+        /* ─── HEADER ─── */
+        .app-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 28px;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .app-header h1 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            background: var(--accent-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .app-header h1 .icon-clock {
+            font-size: 1.5rem;
+            -webkit-text-fill-color: var(--accent-primary);
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .theme-toggle {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 8px 14px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-family: inherit;
+            transition: all 0.2s;
+            backdrop-filter: blur(12px);
+        }
+
+        .theme-toggle:hover {
+            background: var(--bg-card-hover);
+            border-color: var(--border-color-strong);
+        }
+
+        .back-link {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.85rem;
+            transition: color 0.2s;
+        }
+
+        .back-link:hover {
+            color: var(--accent-primary);
+        }
+
+        /* ─── TAB BAR ─── */
+        .tab-bar {
+            display: flex;
+            gap: 4px;
+            background: var(--tab-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 4px;
+            margin-bottom: 24px;
+            overflow-x: auto;
+        }
+
+        .tab-btn {
+            flex: 1;
+            min-width: 120px;
+            padding: 10px 16px;
+            background: transparent;
+            border: 2px solid transparent;
+            border-radius: 8px;
+            color: var(--text-muted);
+            font-family: inherit;
+            font-size: 0.85rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.25s;
+            white-space: nowrap;
+            text-align: center;
+        }
+
+        .tab-btn:hover {
+            color: var(--text-secondary);
+            background: var(--bg-card);
+        }
+
+        .tab-btn.active {
+            color: var(--accent-primary);
+            background: var(--tab-active-bg);
+            border-color: var(--tab-active-border);
+            font-weight: 600;
+        }
+
+        .tab-panel {
+            display: none;
+        }
+
+        .tab-panel.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ─── GLASS CARD ─── */
+        .glass-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            padding: 24px;
+            margin-bottom: 20px;
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            transition: all 0.2s;
+        }
+
+        .glass-card h2 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .glass-card h2 .section-icon {
+            color: var(--accent-primary);
+        }
+
+        /* ─── FORM ELEMENTS ─── */
+        textarea, input[type="text"], input[type="number"], input[type="date"], select {
+            width: 100%;
+            background: var(--bg-input);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-family: 'Inter', monospace;
+            font-size: 0.9rem;
+            padding: 12px 14px;
+            transition: border-color 0.2s;
+            outline: none;
+        }
+
+        textarea:focus, input:focus, select:focus {
+            border-color: var(--accent-primary);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 160px;
+            line-height: 1.7;
+        }
+
+        label {
+            display: block;
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: var(--text-muted);
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+
+        /* ─── BUTTONS ─── */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 10px 22px;
+            border: none;
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: var(--accent-gradient);
+            color: #ffffff;
+        }
+
+        .btn-primary:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 16px rgba(16,185,129,0.3);
+        }
+
+        .btn-secondary {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
+        }
+
+        .btn-secondary:hover {
+            background: var(--bg-card-hover);
+            border-color: var(--border-color-strong);
+        }
+
+        .btn-danger {
+            background: var(--danger);
+            color: #ffffff;
+        }
+
+        .btn-danger:hover {
+            opacity: 0.9;
+        }
+
+        .btn-sm {
+            padding: 6px 14px;
+            font-size: 0.8rem;
+        }
+
+        /* ─── SUMMARY CARDS ─── */
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 14px;
+            margin-bottom: 20px;
+        }
+
+        .summary-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 18px;
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            text-align: center;
+        }
+
+        .summary-card .card-label {
+            font-size: 0.75rem;
+            font-weight: 500;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 6px;
+        }
+
+        .summary-card .card-value {
+            font-size: 1.6rem;
+            font-weight: 700;
+            line-height: 1.2;
+        }
+
+        .summary-card .card-sub {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        .val-success { color: var(--success); }
+        .val-warning { color: var(--warning); }
+        .val-danger { color: var(--danger); }
+        .val-info { color: var(--info); }
+        .val-neutral { color: var(--text-secondary); }
+
+        /* ─── RESULTS TABLE ─── */
+        .table-wrap {
+            overflow-x: auto;
+            margin-bottom: 20px;
+        }
+
+        .results-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+        }
+
+        .results-table th {
+            background: rgba(0,0,0,0.2);
+            color: var(--text-muted);
+            font-weight: 600;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            padding: 10px 14px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .results-table td {
+            padding: 10px 14px;
+            border-bottom: 1px solid var(--border-color);
+            color: var(--text-secondary);
+        }
+
+        .results-table tr:hover {
+            background: rgba(255,255,255,0.03);
+        }
+
+        .results-table .mono {
+            font-family: 'Courier New', monospace;
+            font-weight: 500;
+        }
+
+        /* ─── ANOMALY TAGS ─── */
+        .anomaly-tag {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+        }
+
+        .anomaly-short {
+            background: rgba(245,158,11,0.2);
+            color: var(--warning);
+        }
+
+        .anomaly-odd {
+            background: rgba(239,68,68,0.2);
+            color: var(--danger);
+        }
+
+        .anomaly-gap {
+            background: rgba(239,68,68,0.2);
+            color: var(--danger);
+        }
+
+        /* ─── TIMELINE BAR ─── */
+        .timeline-container {
+            margin-bottom: 20px;
+        }
+
+        .timeline-container h3 {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-bottom: 10px;
+        }
+
+        .timeline-axis {
+            position: relative;
+            height: 44px;
+            background: var(--timeline-bg);
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            overflow: hidden;
+        }
+
+        .timeline-block {
+            position: absolute;
+            top: 4px;
+            height: 24px;
+            border-radius: 4px;
+            transition: opacity 0.2s;
+        }
+
+        .timeline-block.work {
+            background: var(--success);
+            opacity: 0.8;
+        }
+
+        .timeline-block.work:hover {
+            opacity: 1;
+        }
+
+        .timeline-block-label {
+            position: absolute;
+            top: 30px;
+            font-size: 0.6rem;
+            color: var(--text-muted);
+            white-space: nowrap;
+        }
+
+        .timeline-ticks {
+            display: flex;
+            justify-content: space-between;
+            padding: 4px 0 0;
+        }
+
+        .timeline-ticks span {
+            font-size: 0.65rem;
+            color: var(--text-muted);
+        }
+
+        /* ─── WEEKLY VIEW ─── */
+        .weekly-row {
+            display: grid;
+            grid-template-columns: 100px 110px 1fr 90px;
+            gap: 10px;
+            align-items: start;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .weekly-row:last-child {
+            border-bottom: none;
+        }
+
+        .weekly-day-label {
+            font-weight: 600;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            padding-top: 8px;
+        }
+
+        .weekly-date-input {
+            padding-top: 4px;
+        }
+
+        .weekly-date-input input {
+            font-size: 0.8rem;
+            padding: 8px 10px;
+        }
+
+        .weekly-times textarea {
+            min-height: 80px;
+            font-size: 0.8rem;
+            line-height: 1.6;
+        }
+
+        .weekly-total {
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--accent-primary);
+            padding-top: 8px;
+            text-align: right;
+        }
+
+        .weekly-bar-container {
+            margin-top: 20px;
+        }
+
+        .weekly-bar-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 8px;
+        }
+
+        .weekly-bar-label {
+            width: 50px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-align: right;
+        }
+
+        .weekly-bar-track {
+            flex: 1;
+            height: 28px;
+            background: var(--timeline-bg);
+            border-radius: 6px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .weekly-bar-fill {
+            height: 100%;
+            border-radius: 6px;
+            background: var(--accent-gradient);
+            transition: width 0.4s ease;
+            display: flex;
+            align-items: center;
+            padding-left: 10px;
+        }
+
+        .weekly-bar-fill span {
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: #ffffff;
+            white-space: nowrap;
+        }
+
+        .weekly-bar-target {
+            position: absolute;
+            top: 0;
+            height: 100%;
+            width: 2px;
+            background: var(--warning);
+            z-index: 2;
+        }
+
+        .weekly-bar-value {
+            width: 55px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+
+        /* ─── MONTHLY CALENDAR ─── */
+        .month-nav {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 18px;
+        }
+
+        .month-nav .btn {
+            padding: 6px 12px;
+            font-size: 0.8rem;
+        }
+
+        .month-nav .month-label {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            min-width: 180px;
+            text-align: center;
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 4px;
+            margin-bottom: 20px;
+        }
+
+        .calendar-header {
+            text-align: center;
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            padding: 8px 4px;
+        }
+
+        .calendar-cell {
+            aspect-ratio: 1;
+            min-height: 64px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            padding: 6px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: default;
+            transition: all 0.2s;
+            position: relative;
+        }
+
+        .calendar-cell.empty {
+            border-color: transparent;
+            background: transparent;
+        }
+
+        .calendar-cell .cal-day {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            margin-bottom: 2px;
+        }
+
+        .calendar-cell .cal-hours {
+            font-size: 0.85rem;
+            font-weight: 700;
+        }
+
+        .calendar-cell.cal-green {
+            background: rgba(16,185,129,0.15);
+            border-color: rgba(16,185,129,0.3);
+        }
+        .calendar-cell.cal-green .cal-hours { color: var(--success); }
+
+        .calendar-cell.cal-yellow {
+            background: rgba(245,158,11,0.12);
+            border-color: rgba(245,158,11,0.3);
+        }
+        .calendar-cell.cal-yellow .cal-hours { color: var(--warning); }
+
+        .calendar-cell.cal-gray {
+            background: var(--timeline-bg);
+        }
+        .calendar-cell.cal-gray .cal-hours { color: var(--text-muted); }
+
+        .calendar-cell.cal-today {
+            box-shadow: 0 0 0 2px var(--accent-primary);
+        }
+
+        /* ─── SETTINGS ─── */
+        .settings-section {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            padding: 24px;
+            margin-bottom: 16px;
+            backdrop-filter: blur(16px);
+        }
+
+        .settings-section h3 {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 14px;
+        }
+
+        .settings-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+        }
+
+        .settings-row label {
+            margin-bottom: 0;
+            text-transform: none;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            letter-spacing: 0;
+        }
+
+        .settings-row input[type="number"],
+        .settings-row input[type="range"] {
+            width: 120px;
+        }
+
+        .settings-row input[type="range"] {
+            accent-color: var(--accent-primary);
+            background: transparent;
+            border: none;
+            padding: 0;
+        }
+
+        .slider-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .slider-value {
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--accent-primary);
+            min-width: 30px;
+            text-align: center;
+        }
+
+        .workdays-grid {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .workday-check {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            cursor: pointer;
+        }
+
+        .workday-check input[type="checkbox"] {
+            accent-color: var(--accent-primary);
+            width: 16px;
+            height: 16px;
+        }
+
+        .settings-row select {
+            width: 200px;
+        }
+
+        /* ─── EMPTY STATE ─── */
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-muted);
+        }
+
+        .empty-state .empty-icon {
+            font-size: 2.5rem;
+            margin-bottom: 12px;
+            opacity: 0.5;
+        }
+
+        .empty-state p {
+            font-size: 0.9rem;
+        }
+
+        /* ─── TOAST ─── */
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            padding: 12px 20px;
+            border-radius: 10px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: #ffffff;
+            z-index: 9999;
+            transform: translateY(80px);
+            opacity: 0;
+            transition: all 0.35s ease;
+            backdrop-filter: blur(12px);
+        }
+
+        .toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        .toast-success { background: rgba(16,185,129,0.9); }
+        .toast-warning { background: rgba(245,158,11,0.9); }
+        .toast-error { background: rgba(239,68,68,0.9); }
+
+        /* ─── CONFIRM DIALOG ─── */
+        .confirm-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+            backdrop-filter: blur(4px);
+        }
+
+        .confirm-box {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            padding: 28px;
+            max-width: 400px;
+            width: 90%;
+            backdrop-filter: blur(24px);
+            text-align: center;
+        }
+
+        .confirm-box h3 {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 10px;
+        }
+
+        .confirm-box p {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            margin-bottom: 20px;
+        }
+
+        .confirm-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        .hidden { display: none !important; }
+
+        /* ─── RESPONSIVE ─── */
+        @media (max-width: 700px) {
+            .app-container { padding: 14px 10px 40px; }
+            .app-header h1 { font-size: 1.3rem; }
+            .tab-btn { min-width: 90px; font-size: 0.78rem; padding: 8px 10px; }
+            .summary-grid { grid-template-columns: repeat(2, 1fr); }
+            .weekly-row { grid-template-columns: 1fr; gap: 6px; }
+            .weekly-day-label { padding-top: 0; }
+            .weekly-total { text-align: left; }
+            .settings-row { flex-direction: column; align-items: flex-start; }
+            .settings-row select, .settings-row input[type="number"] { width: 100%; }
+            .calendar-cell { min-height: 50px; }
+            .calendar-cell .cal-hours { font-size: 0.7rem; }
+        }
+    </style>
+</head>
+<body>
+    <!-- ─── APP SHELL ─── -->
+    <div class="app-container">
+        <header class="app-header">
+            <h1><span class="icon-clock">&#9201;</span> Punch Time Calculator</h1>
+            <div class="header-actions">
+                <a href="../" class="back-link">&#8592; Portal</a>
+                <button class="theme-toggle" id="themeToggle" title="Toggle theme">&#9790; Dark</button>
+            </div>
+        </header>
+
+        <!-- ─── TAB BAR ─── -->
+        <div class="tab-bar" role="tablist">
+            <button class="tab-btn active" data-tab="daily" role="tab" aria-selected="true">Daily Calculator</button>
+            <button class="tab-btn" data-tab="weekly" role="tab" aria-selected="false">Weekly View</button>
+            <button class="tab-btn" data-tab="monthly" role="tab" aria-selected="false">Monthly View</button>
+            <button class="tab-btn" data-tab="settings" role="tab" aria-selected="false">Settings</button>
+        </div>
+
+        <!-- ═══════════════════════════════════════════════════════ -->
+        <!-- ─── TAB 1: DAILY CALCULATOR ─── -->
+        <!-- ═══════════════════════════════════════════════════════ -->
+        <div class="tab-panel active" id="panel-daily" role="tabpanel">
+            <div class="glass-card">
+                <h2><span class="section-icon">&#128197;</span> Daily Punch Times</h2>
+                <label for="dailyInput">Paste times (one per line, alternating IN / OUT)</label>
+                <textarea id="dailyInput" placeholder="9:11:17 AM&#10;1:35:35 PM&#10;2:00:29 PM&#10;5:33:33 PM"></textarea>
+                <div style="margin-top: 14px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                    <button class="btn btn-primary" id="btnCalculate">&#9654; Calculate</button>
+                    <button class="btn btn-secondary btn-sm" id="btnClearDaily">Clear</button>
+                    <label style="margin: 0; text-transform: none; display: flex; align-items: center; gap: 6px; font-size: 0.82rem; color: var(--text-muted);">
+                        <span>Date:</span>
+                        <input type="date" id="dailyDate" style="width: 160px; padding: 6px 10px; font-size: 0.82rem;">
+                    </label>
+                </div>
+            </div>
+
+            <!-- Daily results (hidden until calculated) -->
+            <div id="dailyResults" class="hidden">
+                <!-- Summary cards -->
+                <div class="summary-grid" id="dailySummary"></div>
+
+                <!-- Timeline -->
+                <div class="glass-card timeline-container" id="dailyTimeline"></div>
+
+                <!-- Sessions table -->
+                <div class="glass-card">
+                    <h2><span class="section-icon">&#128203;</span> Sessions</h2>
+                    <div class="table-wrap" id="dailyTableWrap"></div>
+                </div>
+
+                <!-- Anomalies -->
+                <div class="glass-card hidden" id="dailyAnomalies">
+                    <h2><span class="section-icon">&#9888;</span> Anomalies</h2>
+                    <div id="anomalyList"></div>
+                </div>
+
+                <!-- Save indicator -->
+                <div style="text-align: center; margin-top: 8px;">
+                    <button class="btn btn-secondary btn-sm" id="btnSaveDaily">&#128190; Save to History</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ═══════════════════════════════════════════════════════ -->
+        <!-- ─── TAB 2: WEEKLY VIEW ─── -->
+        <!-- ═══════════════════════════════════════════════════════ -->
+        <div class="tab-panel" id="panel-weekly" role="tabpanel">
+            <div class="glass-card">
+                <h2><span class="section-icon">&#128197;</span> Weekly Punch Times</h2>
+                <div style="display: flex; gap: 10px; margin-bottom: 14px; flex-wrap: wrap; align-items: center;">
+                    <label style="margin: 0; text-transform: none; font-size: 0.82rem; color: var(--text-muted);">Week starting:</label>
+                    <input type="date" id="weekStartDate" style="width: 160px; padding: 6px 10px; font-size: 0.82rem;">
+                    <button class="btn btn-primary btn-sm" id="btnCalcWeekly">&#9654; Calculate All</button>
+                    <button class="btn btn-secondary btn-sm" id="btnSaveWeekly">&#128190; Save Week</button>
+                </div>
+                <div id="weeklyRows"></div>
+            </div>
+
+            <!-- Weekly Summary -->
+            <div id="weeklySummarySection" class="hidden">
+                <div class="summary-grid" id="weeklySummary"></div>
+                <div class="glass-card">
+                    <h2><span class="section-icon">&#128202;</span> Daily Hours Chart</h2>
+                    <div id="weeklyChart"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ═══════════════════════════════════════════════════════ -->
+        <!-- ─── TAB 3: MONTHLY VIEW ─── -->
+        <!-- ═══════════════════════════════════════════════════════ -->
+        <div class="tab-panel" id="panel-monthly" role="tabpanel">
+            <div class="glass-card">
+                <h2><span class="section-icon">&#128197;</span> Monthly Overview</h2>
+                <div class="month-nav">
+                    <button class="btn btn-secondary btn-sm" id="btnPrevMonth">&#9664; Prev</button>
+                    <span class="month-label" id="monthLabel"></span>
+                    <button class="btn btn-secondary btn-sm" id="btnNextMonth">Next &#9654;</button>
+                </div>
+                <div class="calendar-grid" id="calendarGrid"></div>
+            </div>
+            <div class="summary-grid" id="monthlySummary"></div>
+        </div>
+
+        <!-- ═══════════════════════════════════════════════════════ -->
+        <!-- ─── TAB 4: SETTINGS ─── -->
+        <!-- ═══════════════════════════════════════════════════════ -->
+        <div class="tab-panel" id="panel-settings" role="tabpanel">
+            <div class="settings-section">
+                <h3>&#9881; Target Hours</h3>
+                <div class="settings-row">
+                    <label>Daily target hours</label>
+                    <div class="slider-group">
+                        <input type="range" id="settingsTarget" min="1" max="14" step="0.5" value="9">
+                        <span class="slider-value" id="settingsTargetVal">9</span>
+                        <span style="font-size: 0.8rem; color: var(--text-muted);">hrs</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="settings-section">
+                <h3>&#128197; Working Days</h3>
+                <div class="settings-row">
+                    <label>Select the days you typically work</label>
+                    <div class="workdays-grid" id="workdaysGrid"></div>
+                </div>
+            </div>
+
+            <div class="settings-section">
+                <h3>&#128339; Display Preferences</h3>
+                <div class="settings-row">
+                    <label>Time format</label>
+                    <select id="settingsTimeFormat">
+                        <option value="12h">12-hour (AM/PM)</option>
+                        <option value="24h">24-hour</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="settings-section">
+                <h3>&#128465; Data Management</h3>
+                <div class="settings-row">
+                    <label>Remove all saved punch data and reset settings</label>
+                    <button class="btn btn-danger btn-sm" id="btnClearAll">Clear All Data</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast"></div>
+
+    <script>
+    /* ─── CONSTANTS ─── */
+    const STORE_KEY = 'punch_calc_store';
+    const DAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    const FULL_DAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    const MONTH_NAMES = [
+        'January', 'February', 'March', 'April', 'May', 'June',
+        'July', 'August', 'September', 'October', 'November', 'December'
+    ];
+    const WEEKLY_DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    const TIME_REGEX = /^(\d{1,2}):(\d{2}):(\d{2})\s*(AM|PM)$/i;
+
+    /* ─── STATE ─── */
+    let store = loadStore();
+    let currentMonthYear = { month: new Date().getMonth(), year: new Date().getFullYear() };
+    let lastDailyResult = null;
+
+    /* ─── HELPERS ─── */
+
+    /** HTML-escape user text */
+    function esc(str) {
+        const el = document.createElement('span');
+        el.textContent = str == null ? '' : String(str);
+        return el.innerHTML;
+    }
+
+    /** Deep-clone via JSON (simple objects only) */
+    function clone(obj) {
+        return JSON.parse(JSON.stringify(obj));
+    }
+
+    /** Load store from localStorage */
+    function loadStore() {
+        try {
+            const raw = localStorage.getItem(STORE_KEY);
+            if (raw) {
+                const parsed = JSON.parse(raw);
+                return {
+                    punch_settings: Object.assign({ targetHours: 8.5, workDays: [1,2,3,4,5,6], timeFormat: '12h' }, parsed.punch_settings || {}),
+                    punch_data: parsed.punch_data || {},
+                    punch_theme: parsed.punch_theme || 'dark'
+                };
+            }
+        } catch (e) { /* ignore */ }
+        return {
+            punch_settings: { targetHours: 8.5, workDays: [1,2,3,4,5,6], timeFormat: '12h' },
+            punch_data: {},
+            punch_theme: 'dark'
+        };
+    }
+
+    /** Persist store to localStorage */
+    function saveStore() {
+        try {
+            localStorage.setItem(STORE_KEY, JSON.stringify(store));
+        } catch (e) {
+            showToast('Failed to save data', 'error');
+        }
+    }
+
+    /** Get target hours from settings */
+    function getTarget() {
+        return store.punch_settings.targetHours || 9;
+    }
+
+    /** Parse a time string like "9:11:17 AM" to minutes since midnight */
+    function parseTimeToMinutes(str) {
+        const trimmed = str.trim();
+        const match = trimmed.match(TIME_REGEX);
+        if (!match) return null;
+        let hours = parseInt(match[1], 10);
+        const mins = parseInt(match[2], 10);
+        const secs = parseInt(match[3], 10);
+        const period = match[4].toUpperCase();
+        if (hours < 1 || hours > 12 || mins > 59 || secs > 59) return null;
+        if (period === 'AM' && hours === 12) hours = 0;
+        else if (period === 'PM' && hours !== 12) hours += 12;
+        return hours * 60 + mins + secs / 60;
+    }
+
+    /** Format minutes since midnight to display string */
+    function formatMinutes(totalMins, format) {
+        format = format || store.punch_settings.timeFormat || '12h';
+        const h = Math.floor(totalMins / 60);
+        const m = Math.floor(totalMins % 60);
+        const s = Math.round((totalMins % 1) * 60);
+        if (format === '24h') {
+            return String(h).padStart(2, '0') + ':' + String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+        }
+        const period = h >= 12 ? 'PM' : 'AM';
+        const h12 = h === 0 ? 12 : h > 12 ? h - 12 : h;
+        return h12 + ':' + String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0') + ' ' + period;
+    }
+
+    /** Format a duration in minutes to "Xh Ym" */
+    function formatDuration(mins) {
+        if (mins < 0) mins = 0;
+        const h = Math.floor(mins / 60);
+        const m = Math.round(mins % 60);
+        if (h === 0) return m + 'm';
+        return h + 'h ' + m + 'm';
+    }
+
+    /** Format a duration in minutes to decimal hours "X.XX hrs" */
+    function formatDecimalHours(mins) {
+        return (mins / 60).toFixed(2) + ' hrs';
+    }
+
+    /** Get today's date string YYYY-MM-DD */
+    function todayStr() {
+        const d = new Date();
+        return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+    }
+
+    /** Get Monday of the current week */
+    function getMondayOfWeek(dateStr) {
+        const d = dateStr ? new Date(dateStr + 'T00:00:00') : new Date();
+        const day = d.getDay();
+        const diff = d.getDate() - day + (day === 0 ? -6 : 1);
+        const monday = new Date(d);
+        monday.setDate(diff);
+        return monday.getFullYear() + '-' + String(monday.getMonth() + 1).padStart(2, '0') + '-' + String(monday.getDate()).padStart(2, '0');
+    }
+
+    /** Add days to a date string */
+    function addDays(dateStr, n) {
+        const d = new Date(dateStr + 'T00:00:00');
+        d.setDate(d.getDate() + n);
+        return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+    }
+
+    /** Show toast notification */
+    function showToast(msg, type) {
+        type = type || 'success';
+        const toast = document.getElementById('toast');
+        toast.textContent = msg;
+        toast.className = 'toast toast-' + type + ' show';
+        clearTimeout(showToast._timer);
+        showToast._timer = setTimeout(() => {
+            toast.classList.remove('show');
+        }, 2800);
+    }
+
+    /* ─── CORE CALCULATION ─── */
+
+    /**
+     * Parse raw text into time entries, pair them, compute sessions.
+     * Returns { sessions: [...], totalWork, totalBreak, anomalies: [...], entries: [...] }
+     */
+    function calculatePunches(rawText) {
+        const lines = rawText.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+        const entries = [];
+
+        for (let i = 0; i < lines.length; i++) {
+            const mins = parseTimeToMinutes(lines[i]);
+            if (mins !== null) {
+                entries.push({ index: i, raw: lines[i], minutes: mins });
+            }
+        }
+
+        if (entries.length === 0) {
+            return { sessions: [], totalWork: 0, totalBreak: 0, anomalies: [{ type: 'odd', message: 'No valid time entries found' }], entries: [] };
+        }
+
+        const sessions = [];
+        const anomalies = [];
+        let totalWork = 0;
+        let totalBreak = 0;
+
+        // Pair sequentially: even index = IN, odd index = OUT
+        for (let i = 0; i < entries.length; i += 2) {
+            const inEntry = entries[i];
+            const outEntry = (i + 1 < entries.length) ? entries[i + 1] : null;
+
+            if (!outEntry) {
+                // Odd entry - no matching OUT
+                anomalies.push({ type: 'odd', message: 'Entry #' + (i + 1) + ' (' + inEntry.raw + ') has no matching OUT punch' });
+                sessions.push({
+                    num: sessions.length + 1,
+                    inTime: inEntry.minutes,
+                    outTime: null,
+                    duration: 0,
+                    inRaw: inEntry.raw,
+                    outRaw: null,
+                    anomaly: 'odd'
+                });
+                continue;
+            }
+
+            let duration = outEntry.minutes - inEntry.minutes;
+
+            // Handle overnight (OUT < IN)
+            if (duration < 0) {
+                duration += 24 * 60;
+            }
+
+            const session = {
+                num: sessions.length + 1,
+                inTime: inEntry.minutes,
+                outTime: outEntry.minutes,
+                duration: duration,
+                inRaw: inEntry.raw,
+                outRaw: outEntry.raw,
+                anomaly: null
+            };
+
+            // Flag short sessions < 5 minutes
+            if (duration < 5) {
+                session.anomaly = 'short';
+                anomalies.push({ type: 'short', message: 'Session #' + session.num + ' is only ' + formatDuration(duration) + ' (< 5 min)' });
+            }
+
+            // Flag suspiciously long gaps > 12 hours
+            if (duration > 12 * 60) {
+                session.anomaly = 'gap';
+                anomalies.push({ type: 'gap', message: 'Session #' + session.num + ' spans ' + formatDuration(duration) + ' (> 12 hours)' });
+            }
+
+            totalWork += duration;
+            sessions.push(session);
+        }
+
+        // Calculate breaks between sessions
+        for (let i = 1; i < sessions.length; i++) {
+            const prev = sessions[i - 1];
+            const curr = sessions[i];
+            if (prev.outTime !== null && curr.inTime !== null) {
+                let breakDur = curr.inTime - prev.outTime;
+                if (breakDur < 0) breakDur += 24 * 60;
+                totalBreak += breakDur;
+            }
+        }
+
+        return { sessions, totalWork, totalBreak, anomalies, entries };
+    }
+
+    /* ─── DAILY CALCULATOR RENDERING ─── */
+
+    function renderDailySummary(result) {
+        const target = getTarget() * 60;
+        const diff = result.totalWork - target;
+        const diffLabel = diff >= 0 ? 'Overtime' : 'Deficit';
+        const diffClass = diff >= 0 ? 'val-success' : 'val-danger';
+        const diffIcon = diff >= 0 ? '+' : '-';
+
+        let html = '';
+        html += '<div class="summary-card"><div class="card-label">Total Work</div>';
+        html += '<div class="card-value val-success">' + esc(formatDuration(result.totalWork)) + '</div>';
+        html += '<div class="card-sub">' + esc(formatDecimalHours(result.totalWork)) + '</div></div>';
+
+        html += '<div class="summary-card"><div class="card-label">Total Break</div>';
+        html += '<div class="card-value val-info">' + esc(formatDuration(result.totalBreak)) + '</div>';
+        html += '<div class="card-sub">' + esc(formatDecimalHours(result.totalBreak)) + '</div></div>';
+
+        html += '<div class="summary-card"><div class="card-label">' + esc(diffLabel) + '</div>';
+        html += '<div class="card-value ' + diffClass + '">' + diffIcon + esc(formatDuration(Math.abs(diff))) + '</div>';
+        html += '<div class="card-sub">vs ' + esc(getTarget()) + 'h target</div></div>';
+
+        const remaining = target - result.totalWork;
+        if (remaining > 0) {
+            html += '<div class="summary-card"><div class="card-label">Remaining</div>';
+            html += '<div class="card-value val-warning">' + esc(formatDuration(remaining)) + '</div>';
+            html += '<div class="card-sub">' + esc(formatDecimalHours(remaining)) + ' to go</div></div>';
+        } else {
+            html += '<div class="summary-card"><div class="card-label">Remaining</div>';
+            html += '<div class="card-value val-success">Done!</div>';
+            html += '<div class="card-sub">Target met</div></div>';
+        }
+
+        html += '<div class="summary-card"><div class="card-label">Sessions</div>';
+        html += '<div class="card-value val-neutral">' + esc(String(result.sessions.length)) + '</div>';
+        html += '<div class="card-sub">' + esc(String(result.entries.length)) + ' entries</div></div>';
+
+        document.getElementById('dailySummary').innerHTML = html;
+    }
+
+    function renderDailyTimeline(result) {
+        const container = document.getElementById('dailyTimeline');
+        if (result.sessions.length === 0) {
+            container.classList.add('hidden');
+            return;
+        }
+        container.classList.remove('hidden');
+
+        // Determine axis range
+        const allMins = [];
+        result.sessions.forEach(s => {
+            allMins.push(s.inTime);
+            if (s.outTime !== null) allMins.push(s.outTime);
+        });
+        let axisStart = Math.floor(Math.min(...allMins) / 60) * 60; // round down to hour
+        let axisEnd = Math.ceil(Math.max(...allMins) / 60) * 60; // round up to hour
+        if (axisEnd - axisStart < 120) axisEnd = axisStart + 120;
+        const axisRange = axisEnd - axisStart;
+
+        let html = '<h3>Timeline</h3>';
+        html += '<div class="timeline-axis">';
+
+        result.sessions.forEach(s => {
+            if (s.outTime === null) return;
+            const leftPct = ((s.inTime - axisStart) / axisRange * 100).toFixed(2);
+            const widthPct = ((s.duration) / axisRange * 100).toFixed(2);
+            html += '<div class="timeline-block work" style="left:' + leftPct + '%;width:' + widthPct + '%" title="' + esc(formatMinutes(s.inTime)) + ' - ' + esc(formatMinutes(s.outTime)) + ' (' + esc(formatDuration(s.duration)) + ')"></div>';
+        });
+
+        html += '</div>';
+
+        // Tick marks
+        html += '<div class="timeline-ticks">';
+        const tickCount = Math.min(Math.floor(axisRange / 60) + 1, 16);
+        const tickStep = axisRange / (tickCount - 1);
+        for (let i = 0; i < tickCount; i++) {
+            const mins = axisStart + tickStep * i;
+            html += '<span>' + esc(formatMinutes(mins)) + '</span>';
+        }
+        html += '</div>';
+
+        container.innerHTML = html;
+    }
+
+    function renderDailyTable(result) {
+        if (result.sessions.length === 0) {
+            document.getElementById('dailyTableWrap').innerHTML = '<div class="empty-state"><div class="empty-icon">&#128203;</div><p>No sessions to display</p></div>';
+            return;
+        }
+
+        let html = '<table class="results-table"><thead><tr>';
+        html += '<th>#</th><th>IN</th><th>OUT</th><th>Duration</th><th>Status</th>';
+        html += '</tr></thead><tbody>';
+
+        result.sessions.forEach(s => {
+            html += '<tr>';
+            html += '<td>' + esc(String(s.num)) + '</td>';
+            html += '<td class="mono">' + esc(formatMinutes(s.inTime)) + '</td>';
+            html += '<td class="mono">' + (s.outTime !== null ? esc(formatMinutes(s.outTime)) : '<span style="color:var(--danger)">Missing</span>') + '</td>';
+            html += '<td class="mono">' + (s.duration > 0 ? esc(formatDuration(s.duration)) : '-') + '</td>';
+            html += '<td>';
+            if (s.anomaly === 'short') {
+                html += '<span class="anomaly-tag anomaly-short">Short (&lt;5m)</span>';
+            } else if (s.anomaly === 'odd') {
+                html += '<span class="anomaly-tag anomaly-odd">No OUT</span>';
+            } else if (s.anomaly === 'gap') {
+                html += '<span class="anomaly-tag anomaly-gap">Long (&gt;12h)</span>';
+            } else {
+                html += '<span style="color:var(--success);">&#10003;</span>';
+            }
+            html += '</td></tr>';
+        });
+
+        html += '</tbody></table>';
+        document.getElementById('dailyTableWrap').innerHTML = html;
+    }
+
+    function renderDailyAnomalies(result) {
+        const section = document.getElementById('dailyAnomalies');
+        const list = document.getElementById('anomalyList');
+
+        if (result.anomalies.length === 0) {
+            section.classList.add('hidden');
+            return;
+        }
+
+        section.classList.remove('hidden');
+        let html = '';
+        result.anomalies.forEach(a => {
+            const cls = a.type === 'short' ? 'anomaly-short' : (a.type === 'odd' ? 'anomaly-odd' : 'anomaly-gap');
+            html += '<div style="margin-bottom:6px;"><span class="anomaly-tag ' + cls + '">' + esc(a.type) + '</span> <span style="font-size:0.85rem; color:var(--text-secondary);">' + esc(a.message) + '</span></div>';
+        });
+        list.innerHTML = html;
+    }
+
+    function runDailyCalculation() {
+        const raw = document.getElementById('dailyInput').value.trim();
+        if (!raw) {
+            showToast('Please paste some time entries first', 'warning');
+            return;
+        }
+
+        const result = calculatePunches(raw);
+        lastDailyResult = result;
+
+        document.getElementById('dailyResults').classList.remove('hidden');
+        renderDailySummary(result);
+        renderDailyTimeline(result);
+        renderDailyTable(result);
+        renderDailyAnomalies(result);
+    }
+
+    function saveDailyToStore() {
+        if (!lastDailyResult) {
+            showToast('Calculate first before saving', 'warning');
+            return;
+        }
+        const dateVal = document.getElementById('dailyDate').value || todayStr();
+        const raw = document.getElementById('dailyInput').value.trim();
+
+        store.punch_data[dateVal] = {
+            raw: raw,
+            totalMinutes: Math.round(lastDailyResult.totalWork),
+            breakMinutes: Math.round(lastDailyResult.totalBreak),
+            sessions: lastDailyResult.sessions.length
+        };
+        saveStore();
+        showToast('Saved data for ' + dateVal, 'success');
+    }
+
+    /* ─── WEEKLY VIEW ─── */
+
+    function initWeeklyView() {
+        const weekStartInput = document.getElementById('weekStartDate');
+        if (!weekStartInput.value) {
+            weekStartInput.value = getMondayOfWeek();
+        }
+        renderWeeklyRows();
+    }
+
+    function renderWeeklyRows() {
+        const startDate = document.getElementById('weekStartDate').value || getMondayOfWeek();
+        const container = document.getElementById('weeklyRows');
+        let html = '';
+
+        for (let i = 0; i < 6; i++) {
+            const dateStr = addDays(startDate, i);
+            const dayName = WEEKLY_DAYS[i];
+            const saved = store.punch_data[dateStr];
+            const rawVal = saved ? saved.raw : '';
+
+            html += '<div class="weekly-row" data-date="' + esc(dateStr) + '">';
+            html += '<div class="weekly-day-label">' + esc(dayName) + '</div>';
+            html += '<div class="weekly-date-input"><input type="date" value="' + esc(dateStr) + '" class="weekly-date" readonly></div>';
+            html += '<div class="weekly-times"><textarea class="weekly-textarea" placeholder="Paste times..." data-date="' + esc(dateStr) + '">' + esc(rawVal) + '</textarea></div>';
+            html += '<div class="weekly-total" id="weekly-total-' + esc(dateStr) + '">-</div>';
+            html += '</div>';
+        }
+
+        container.innerHTML = html;
+
+        // Pre-compute totals for days that have data
+        for (let i = 0; i < 6; i++) {
+            const dateStr = addDays(startDate, i);
+            const saved = store.punch_data[dateStr];
+            if (saved && saved.totalMinutes > 0) {
+                const el = document.getElementById('weekly-total-' + dateStr);
+                if (el) el.textContent = formatDuration(saved.totalMinutes);
+            }
+        }
+    }
+
+    function calculateWeekly() {
+        const startDate = document.getElementById('weekStartDate').value || getMondayOfWeek();
+        const textareas = document.querySelectorAll('.weekly-textarea');
+        const dailyData = [];
+        let totalWeekMins = 0;
+        let daysWorked = 0;
+
+        textareas.forEach((ta, idx) => {
+            const dateStr = addDays(startDate, idx);
+            const raw = ta.value.trim();
+            const totalEl = document.getElementById('weekly-total-' + dateStr);
+
+            if (!raw) {
+                if (totalEl) totalEl.textContent = '-';
+                dailyData.push({ date: dateStr, day: WEEKLY_DAYS[idx], totalMinutes: 0, raw: '' });
+                return;
+            }
+
+            const result = calculatePunches(raw);
+            const totalMins = Math.round(result.totalWork);
+
+            if (totalEl) totalEl.textContent = formatDuration(totalMins);
+
+            totalWeekMins += totalMins;
+            if (totalMins > 0) daysWorked++;
+
+            dailyData.push({ date: dateStr, day: WEEKLY_DAYS[idx], totalMinutes: totalMins, raw: raw });
+        });
+
+        renderWeeklySummary(totalWeekMins, daysWorked, dailyData);
+    }
+
+    function renderWeeklySummary(totalMins, daysWorked, dailyData) {
+        const section = document.getElementById('weeklySummarySection');
+        section.classList.remove('hidden');
+
+        const target = getTarget();
+        const workDaysInWeek = store.punch_settings.workDays.length;
+        const expectedMins = workDaysInWeek * target * 60;
+        const diff = totalMins - expectedMins;
+        const avgDaily = daysWorked > 0 ? totalMins / daysWorked : 0;
+        const diffLabel = diff >= 0 ? 'Surplus' : 'Deficit';
+        const diffClass = diff >= 0 ? 'val-success' : 'val-danger';
+        const diffSign = diff >= 0 ? '+' : '-';
+
+        let html = '';
+        html += '<div class="summary-card"><div class="card-label">Total Hours</div>';
+        html += '<div class="card-value val-success">' + esc(formatDuration(totalMins)) + '</div>';
+        html += '<div class="card-sub">' + esc(formatDecimalHours(totalMins)) + '</div></div>';
+
+        html += '<div class="summary-card"><div class="card-label">Avg Daily</div>';
+        html += '<div class="card-value val-info">' + esc(formatDuration(avgDaily)) + '</div>';
+        html += '<div class="card-sub">' + esc(String(daysWorked)) + ' days worked</div></div>';
+
+        html += '<div class="summary-card"><div class="card-label">' + esc(diffLabel) + '</div>';
+        html += '<div class="card-value ' + diffClass + '">' + diffSign + esc(formatDuration(Math.abs(diff))) + '</div>';
+        html += '<div class="card-sub">vs ' + esc(String(workDaysInWeek)) + ' x ' + esc(String(target)) + 'h</div></div>';
+
+        document.getElementById('weeklySummary').innerHTML = html;
+
+        // Bar chart
+        const maxMins = Math.max(...dailyData.map(d => d.totalMinutes), target * 60);
+        let chartHtml = '';
+        dailyData.forEach(d => {
+            const pct = maxMins > 0 ? (d.totalMinutes / maxMins * 100) : 0;
+            const targetPct = maxMins > 0 ? (target * 60 / maxMins * 100) : 0;
+            const barColor = d.totalMinutes >= target * 60 ? 'var(--accent-gradient)' : 'linear-gradient(135deg, var(--warning), #d97706)';
+
+            chartHtml += '<div class="weekly-bar-row">';
+            chartHtml += '<div class="weekly-bar-label">' + esc(d.day) + '</div>';
+            chartHtml += '<div class="weekly-bar-track">';
+            if (d.totalMinutes > 0) {
+                chartHtml += '<div class="weekly-bar-fill" style="width:' + pct.toFixed(1) + '%;background:' + barColor + '"><span>' + esc(formatDuration(d.totalMinutes)) + '</span></div>';
+            }
+            chartHtml += '<div class="weekly-bar-target" style="left:' + targetPct.toFixed(1) + '%" title="Target: ' + esc(String(target)) + 'h"></div>';
+            chartHtml += '</div>';
+            chartHtml += '<div class="weekly-bar-value">' + (d.totalMinutes > 0 ? esc(formatDecimalHours(d.totalMinutes)) : '-') + '</div>';
+            chartHtml += '</div>';
+        });
+
+        document.getElementById('weeklyChart').innerHTML = chartHtml;
+    }
+
+    function saveWeekly() {
+        const startDate = document.getElementById('weekStartDate').value || getMondayOfWeek();
+        const textareas = document.querySelectorAll('.weekly-textarea');
+        let saved = 0;
+
+        textareas.forEach((ta, idx) => {
+            const dateStr = addDays(startDate, idx);
+            const raw = ta.value.trim();
+            if (!raw) return;
+
+            const result = calculatePunches(raw);
+            store.punch_data[dateStr] = {
+                raw: raw,
+                totalMinutes: Math.round(result.totalWork),
+                breakMinutes: Math.round(result.totalBreak),
+                sessions: result.sessions.length
+            };
+            saved++;
+        });
+
+        if (saved > 0) {
+            saveStore();
+            showToast('Saved ' + saved + ' day(s) to history', 'success');
+        } else {
+            showToast('No data to save', 'warning');
+        }
+    }
+
+    /* ─── MONTHLY VIEW ─── */
+
+    function renderMonthlyView() {
+        const { month, year } = currentMonthYear;
+        document.getElementById('monthLabel').textContent = MONTH_NAMES[month] + ' ' + year;
+
+        const grid = document.getElementById('calendarGrid');
+        const target = getTarget();
+        const today = todayStr();
+
+        // Day headers
+        let html = '';
+        ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].forEach(d => {
+            html += '<div class="calendar-header">' + d + '</div>';
+        });
+
+        // First day of month
+        const firstDay = new Date(year, month, 1).getDay();
+        const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+        // Empty cells before first day
+        for (let i = 0; i < firstDay; i++) {
+            html += '<div class="calendar-cell empty"></div>';
+        }
+
+        let totalMonthMins = 0;
+        let expectedDays = 0;
+        let workedDays = 0;
+
+        for (let d = 1; d <= daysInMonth; d++) {
+            const dateStr = year + '-' + String(month + 1).padStart(2, '0') + '-' + String(d).padStart(2, '0');
+            const dayOfWeek = new Date(year, month, d).getDay();
+            const isWorkDay = store.punch_settings.workDays.includes(dayOfWeek);
+            const saved = store.punch_data[dateStr];
+            const mins = saved ? saved.totalMinutes : 0;
+            const hours = (mins / 60).toFixed(1);
+            const isToday = dateStr === today;
+
+            // Check if this work day is in the past or today
+            const dateObj = new Date(year, month, d);
+            const todayObj = new Date();
+            todayObj.setHours(0, 0, 0, 0);
+            if (isWorkDay && dateObj <= todayObj) {
+                expectedDays++;
+            }
+
+            if (mins > 0) {
+                totalMonthMins += mins;
+                workedDays++;
+            }
+
+            let cellClass = 'calendar-cell';
+            if (isToday) cellClass += ' cal-today';
+
+            if (mins > 0 && mins >= target * 60) {
+                cellClass += ' cal-green';
+            } else if (mins > 0) {
+                cellClass += ' cal-yellow';
+            } else {
+                cellClass += ' cal-gray';
+            }
+
+            html += '<div class="' + cellClass + '" title="' + esc(dateStr) + (mins > 0 ? ': ' + esc(formatDuration(mins)) : '') + '">';
+            html += '<span class="cal-day">' + d + '</span>';
+            if (mins > 0) {
+                html += '<span class="cal-hours">' + esc(hours) + 'h</span>';
+            }
+            html += '</div>';
+        }
+
+        grid.innerHTML = html;
+
+        // Monthly summary
+        const expectedMins = expectedDays * target * 60;
+        const diff = totalMonthMins - expectedMins;
+        const diffLabel = diff >= 0 ? 'Surplus' : 'Deficit';
+        const diffClass = diff >= 0 ? 'val-success' : 'val-danger';
+        const diffSign = diff >= 0 ? '+' : '-';
+
+        let summaryHtml = '';
+        summaryHtml += '<div class="summary-card"><div class="card-label">Total Hours</div>';
+        summaryHtml += '<div class="card-value val-success">' + esc(formatDuration(totalMonthMins)) + '</div>';
+        summaryHtml += '<div class="card-sub">' + esc(formatDecimalHours(totalMonthMins)) + '</div></div>';
+
+        summaryHtml += '<div class="summary-card"><div class="card-label">Expected</div>';
+        summaryHtml += '<div class="card-value val-info">' + esc(formatDuration(expectedMins)) + '</div>';
+        summaryHtml += '<div class="card-sub">' + esc(String(expectedDays)) + ' work days x ' + esc(String(target)) + 'h</div></div>';
+
+        summaryHtml += '<div class="summary-card"><div class="card-label">' + esc(diffLabel) + '</div>';
+        summaryHtml += '<div class="card-value ' + diffClass + '">' + diffSign + esc(formatDuration(Math.abs(diff))) + '</div>';
+        summaryHtml += '<div class="card-sub">' + esc(String(workedDays)) + ' days with data</div></div>';
+
+        document.getElementById('monthlySummary').innerHTML = summaryHtml;
+    }
+
+    /* ─── SETTINGS ─── */
+
+    function initSettings() {
+        const targetSlider = document.getElementById('settingsTarget');
+        const targetVal = document.getElementById('settingsTargetVal');
+        targetSlider.value = store.punch_settings.targetHours;
+        targetVal.textContent = store.punch_settings.targetHours;
+
+        targetSlider.addEventListener('input', () => {
+            const val = parseFloat(targetSlider.value);
+            targetVal.textContent = val;
+            store.punch_settings.targetHours = val;
+            saveStore();
+        });
+
+        // Working days
+        const grid = document.getElementById('workdaysGrid');
+        const dayLabels = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+        let html = '';
+        dayLabels.forEach((name, idx) => {
+            const checked = store.punch_settings.workDays.includes(idx) ? 'checked' : '';
+            html += '<label class="workday-check"><input type="checkbox" value="' + idx + '" ' + checked + ' class="workday-cb"> ' + name + '</label>';
+        });
+        grid.innerHTML = html;
+
+        grid.querySelectorAll('.workday-cb').forEach(cb => {
+            cb.addEventListener('change', () => {
+                const selected = [];
+                grid.querySelectorAll('.workday-cb:checked').forEach(c => selected.push(parseInt(c.value, 10)));
+                store.punch_settings.workDays = selected.sort();
+                saveStore();
+            });
+        });
+
+        // Time format
+        const formatSelect = document.getElementById('settingsTimeFormat');
+        formatSelect.value = store.punch_settings.timeFormat || '12h';
+        formatSelect.addEventListener('change', () => {
+            store.punch_settings.timeFormat = formatSelect.value;
+            saveStore();
+        });
+
+        // Clear all data
+        document.getElementById('btnClearAll').addEventListener('click', () => {
+            showConfirm('Clear All Data?', 'This will remove all saved punch data and reset settings to defaults. This cannot be undone.', () => {
+                localStorage.removeItem(STORE_KEY);
+                store = loadStore();
+                initSettings();
+                initWeeklyView();
+                renderMonthlyView();
+                showToast('All data cleared', 'success');
+            });
+        });
+    }
+
+    /* ─── CONFIRM DIALOG ─── */
+
+    function showConfirm(title, message, onConfirm) {
+        const existing = document.querySelector('.confirm-overlay');
+        if (existing) existing.remove();
+
+        const overlay = document.createElement('div');
+        overlay.className = 'confirm-overlay';
+        overlay.innerHTML = '<div class="confirm-box">' +
+            '<h3>' + esc(title) + '</h3>' +
+            '<p>' + esc(message) + '</p>' +
+            '<div class="confirm-actions">' +
+            '<button class="btn btn-secondary btn-sm" id="confirmCancel">Cancel</button>' +
+            '<button class="btn btn-danger btn-sm" id="confirmOk">Confirm</button>' +
+            '</div></div>';
+        document.body.appendChild(overlay);
+
+        document.getElementById('confirmCancel').addEventListener('click', () => overlay.remove());
+        document.getElementById('confirmOk').addEventListener('click', () => {
+            overlay.remove();
+            onConfirm();
+        });
+        overlay.addEventListener('click', (e) => {
+            if (e.target === overlay) overlay.remove();
+        });
+    }
+
+    /* ─── THEME ─── */
+
+    function applyTheme(theme) {
+        const btn = document.getElementById('themeToggle');
+        if (theme === 'light') {
+            document.body.classList.add('light-theme');
+            btn.innerHTML = '&#9728; Light';
+        } else {
+            document.body.classList.remove('light-theme');
+            btn.innerHTML = '&#9790; Dark';
+        }
+        store.punch_theme = theme;
+        saveStore();
+    }
+
+    /* ─── TAB NAVIGATION ─── */
+
+    function switchTab(tabId) {
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            const isActive = btn.getAttribute('data-tab') === tabId;
+            btn.classList.toggle('active', isActive);
+            btn.setAttribute('aria-selected', isActive ? 'true' : 'false');
+        });
+
+        document.querySelectorAll('.tab-panel').forEach(panel => {
+            panel.classList.toggle('active', panel.id === 'panel-' + tabId);
+        });
+
+        // Refresh views when switching tabs
+        if (tabId === 'weekly') {
+            initWeeklyView();
+        } else if (tabId === 'monthly') {
+            renderMonthlyView();
+        }
+    }
+
+    /* ─── EVENT BINDINGS ─── */
+
+    function bindEvents() {
+        // Tab switching
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', () => switchTab(btn.getAttribute('data-tab')));
+        });
+
+        // Theme toggle
+        document.getElementById('themeToggle').addEventListener('click', () => {
+            const next = document.body.classList.contains('light-theme') ? 'dark' : 'light';
+            applyTheme(next);
+        });
+
+        // Daily calculator
+        document.getElementById('btnCalculate').addEventListener('click', runDailyCalculation);
+        document.getElementById('btnClearDaily').addEventListener('click', () => {
+            document.getElementById('dailyInput').value = '';
+            document.getElementById('dailyResults').classList.add('hidden');
+            lastDailyResult = null;
+        });
+        document.getElementById('btnSaveDaily').addEventListener('click', saveDailyToStore);
+
+        // Set daily date to today
+        const dailyDateInput = document.getElementById('dailyDate');
+        if (!dailyDateInput.value) {
+            dailyDateInput.value = todayStr();
+        }
+
+        // Weekly
+        document.getElementById('btnCalcWeekly').addEventListener('click', calculateWeekly);
+        document.getElementById('btnSaveWeekly').addEventListener('click', saveWeekly);
+        document.getElementById('weekStartDate').addEventListener('change', renderWeeklyRows);
+
+        // Monthly navigation
+        document.getElementById('btnPrevMonth').addEventListener('click', () => {
+            currentMonthYear.month--;
+            if (currentMonthYear.month < 0) {
+                currentMonthYear.month = 11;
+                currentMonthYear.year--;
+            }
+            renderMonthlyView();
+        });
+        document.getElementById('btnNextMonth').addEventListener('click', () => {
+            currentMonthYear.month++;
+            if (currentMonthYear.month > 11) {
+                currentMonthYear.month = 0;
+                currentMonthYear.year++;
+            }
+            renderMonthlyView();
+        });
+
+        // Keyboard shortcut: Ctrl+Enter to calculate on daily tab
+        document.getElementById('dailyInput').addEventListener('keydown', (e) => {
+            if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+                e.preventDefault();
+                runDailyCalculation();
+            }
+        });
+    }
+
+    /* ─── BOOT ─── */
+
+    function boot() {
+        applyTheme(store.punch_theme || 'dark');
+        bindEvents();
+        initSettings();
+        initWeeklyView();
+        renderMonthlyView();
+
+        // Pre-populate daily textarea if there's saved data for today
+        const todayData = store.punch_data[todayStr()];
+        if (todayData && todayData.raw) {
+            document.getElementById('dailyInput').value = todayData.raw;
+        }
+    }
+
+    // Start
+    document.addEventListener('DOMContentLoaded', boot);
+    </script>
+</body>
+</html>
