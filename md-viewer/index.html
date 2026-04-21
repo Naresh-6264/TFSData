@@ -7,83 +7,323 @@
   <!-- Apply saved theme BEFORE paint to prevent flash of wrong theme -->
   <script>
     (function() {
+      var THEMES = {
+        'material-light': 'light', 'soft-light': 'light',
+        'material-dark': 'dark', 'dracula': 'dark', 'nord-dark': 'dark',
+        'github-dark': 'dark', 'amoled-dark': 'dark',
+        'vscode-dark': 'dark', 'md-theme': 'dark'
+      };
       var s = localStorage.getItem('md-viewer-theme');
-      if (!s) s = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      /* Migrate legacy values */
+      if (!s || !THEMES[s]) s = 'vscode-dark';
       document.documentElement.setAttribute('data-theme', s);
+      document.documentElement.setAttribute('data-theme-mode', THEMES[s]);
     })();
   </script>
   <script src="marked.umd.js"></script>
   <style>
-    /* ── Reset & Base ───────────────────────────────────────────── */
+    /* ══════════════════════════════════════════════════════════════
+       DESIGN TOKEN SYSTEM — Scalable Multi-Theme Architecture
+       ══════════════════════════════════════════════════════════════
+       Token hierarchy:
+         :root           — shared constants (radius, fonts, timing)
+         [data-theme=*]  — per-theme color overrides
+       All UI elements consume tokens only — NO hardcoded colors.
+       To add a new theme: add one [data-theme] block + one <option>.
+    ══════════════════════════════════════════════════════════════ */
+
+    /* ── Reset ──────────────────────────────────────────────────── */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-    /* ── Light Mode (default) ─────────────────────────────────── */
+    /* ── Shared constants (theme-independent) ──────────────────── */
     :root {
-      --bg:          #FFFFFF;
-      --surface:     #F5F5F5;
-      --surface-alt: #E8E8E8;
-      --border:      #D1D5DB;
-      --text:        #111827;
-      --text-muted:  #4B5563;
-      --disabled:    #9CA3AF;
-      --accent:      #2563EB;
-      --accent-alt:  #1D4ED8;
-      --green:       #16A34A;
-      --red:         #DC2626;
-      --yellow:      #A16207;
-      --peach:       #C2410C;
-      --mauve:       #7C3AED;
-      --pink:        #DB2777;
-      --teal:        #0D9488;
       --radius:      8px;
       --font-mono:   'Cascadia Code', 'Fira Code', 'JetBrains Mono', 'Consolas', monospace;
       --font-sans:   'Segoe UI', 'Inter', -apple-system, sans-serif;
-      --shadow:      0 1px 3px rgba(0,0,0,0.08);
-      --code-bg:     #F3F4F6;
-      --code-text:   #C2410C;
-      --row-stripe:  rgba(0, 0, 0, 0.025);
+      --transition:  0.3s ease;
     }
 
-    /* ── Dark Mode ────────────────────────────────────────────── */
-    [data-theme="dark"] {
-      --bg:          #111827;
-      --surface:     #1F2937;
-      --surface-alt: #374151;
-      --border:      #374151;
-      --text:        #F9FAFB;
-      --text-muted:  #D1D5DB;
-      --disabled:    #6B7280;
-      --accent:      #60A5FA;
-      --accent-alt:  #3B82F6;
-      --green:       #4ADE80;
-      --red:         #F87171;
-      --yellow:      #FDE68A;
-      --peach:       #FDBA74;
-      --mauve:       #C4B5FD;
-      --pink:        #F9A8D4;
-      --teal:        #5EEAD4;
-      --shadow:      0 1px 3px rgba(0,0,0,0.3);
-      --code-bg:     #1F2937;
-      --code-text:   #FDBA74;
-      --row-stripe:  rgba(255, 255, 255, 0.03);
+    /* ═══════════════════════════════════════════════════════════
+       LIGHT THEMES
+       ═══════════════════════════════════════════════════════════ */
+
+    /* ── 1. Material Light ────────────────────────────────────── */
+    [data-theme="material-light"] {
+      --bg:             #FFFFFF;
+      --surface:        #F5F5F5;
+      --surface-alt:    #EEEEEE;
+      --border:         #D1D5DB;
+      --text-primary:   #212121;
+      --text-secondary: #616161;
+      --text-muted:     #9E9E9E;
+      --disabled:       #BDBDBD;
+      --accent:         #1A73E8;
+      --accent-alt:     #1557B0;
+      --accent-hover:   #1565C0;
+      --green:          #2E7D32;
+      --red:            #C62828;
+      --yellow:         #F9A825;
+      --peach:          #E65100;
+      --mauve:          #7B1FA2;
+      --pink:           #AD1457;
+      --teal:           #00838F;
+      --shadow:         0 1px 3px rgba(0,0,0,0.08);
+      --code-bg:        #F5F5F5;
+      --code-text:      #E65100;
+      --row-stripe:     rgba(0, 0, 0, 0.02);
+      --highlight-bg:   rgba(250, 204, 21, 0.4);
+      --highlight-text: #212121;
     }
+
+    /* ── 2. Soft Neutral Light ────────────────────────────────── */
+    [data-theme="soft-light"] {
+      --bg:             #FAFAFA;
+      --surface:        #FFFFFF;
+      --surface-alt:    #F0F0F5;
+      --border:         #D4D4D8;
+      --text-primary:   #1F2933;
+      --text-secondary: #52606D;
+      --text-muted:     #9AA5B1;
+      --disabled:       #CBD2D9;
+      --accent:         #6366F1;
+      --accent-alt:     #4F46E5;
+      --accent-hover:   #4338CA;
+      --green:          #059669;
+      --red:            #DC2626;
+      --yellow:         #D97706;
+      --peach:          #EA580C;
+      --mauve:          #7C3AED;
+      --pink:           #DB2777;
+      --teal:           #0D9488;
+      --shadow:         0 1px 4px rgba(0,0,0,0.06);
+      --code-bg:        #F4F4F5;
+      --code-text:      #EA580C;
+      --row-stripe:     rgba(0, 0, 0, 0.02);
+      --highlight-bg:   rgba(250, 204, 21, 0.45);
+      --highlight-text: #1F2933;
+    }
+
+    /* ═══════════════════════════════════════════════════════════
+       DARK THEMES
+       ═══════════════════════════════════════════════════════════ */
+
+    /* ── 3. Material Dark ─────────────────────────────────────── */
+    [data-theme="material-dark"] {
+      --bg:             #121212;
+      --surface:        #1E1E1E;
+      --surface-alt:    #2C2C2C;
+      --border:         #383838;
+      --text-primary:   #E0E0E0;
+      --text-secondary: #ABABAB;
+      --text-muted:     #757575;
+      --disabled:       #555555;
+      --accent:         #90CAF9;
+      --accent-alt:     #64B5F6;
+      --accent-hover:   #BBDEFB;
+      --green:          #81C784;
+      --red:            #EF5350;
+      --yellow:         #FFF176;
+      --peach:          #FFB74D;
+      --mauve:          #CE93D8;
+      --pink:           #F48FB1;
+      --teal:           #80CBC4;
+      --shadow:         0 1px 4px rgba(0,0,0,0.5);
+      --code-bg:        #1E1E1E;
+      --code-text:      #FFB74D;
+      --row-stripe:     rgba(255, 255, 255, 0.02);
+      --highlight-bg:   rgba(255, 241, 118, 0.3);
+      --highlight-text: #E0E0E0;
+    }
+
+    /* ── 4. Dracula ───────────────────────────────────────────── */
+    [data-theme="dracula"] {
+      --bg:             #282A36;
+      --surface:        #343746;
+      --surface-alt:    #44475A;
+      --border:         #44475A;
+      --text-primary:   #F8F8F2;
+      --text-secondary: #CFCFC2;
+      --text-muted:     #6272A4;
+      --disabled:       #565A6E;
+      --accent:         #BD93F9;
+      --accent-alt:     #9B6FD7;
+      --accent-hover:   #CAA9FA;
+      --green:          #50FA7B;
+      --red:            #FF5555;
+      --yellow:         #F1FA8C;
+      --peach:          #FFB86C;
+      --mauve:          #BD93F9;
+      --pink:           #FF79C6;
+      --teal:           #8BE9FD;
+      --shadow:         0 1px 4px rgba(0,0,0,0.45);
+      --code-bg:        #343746;
+      --code-text:      #FFB86C;
+      --row-stripe:     rgba(255, 255, 255, 0.025);
+      --highlight-bg:   rgba(241, 250, 140, 0.3);
+      --highlight-text: #F8F8F2;
+    }
+
+    /* ── 5. Nord Dark ─────────────────────────────────────────── */
+    [data-theme="nord-dark"] {
+      --bg:             #2E3440;
+      --surface:        #3B4252;
+      --surface-alt:    #434C5E;
+      --border:         #434C5E;
+      --text-primary:   #ECEFF4;
+      --text-secondary: #D8DEE9;
+      --text-muted:     #7B88A1;
+      --disabled:       #4C566A;
+      --accent:         #88C0D0;
+      --accent-alt:     #81A1C1;
+      --accent-hover:   #A3D4E0;
+      --green:          #A3BE8C;
+      --red:            #BF616A;
+      --yellow:         #EBCB8B;
+      --peach:          #D08770;
+      --mauve:          #B48EAD;
+      --pink:           #B48EAD;
+      --teal:           #8FBCBB;
+      --shadow:         0 1px 4px rgba(0,0,0,0.4);
+      --code-bg:        #3B4252;
+      --code-text:      #D08770;
+      --row-stripe:     rgba(255, 255, 255, 0.02);
+      --highlight-bg:   rgba(235, 203, 139, 0.3);
+      --highlight-text: #ECEFF4;
+    }
+
+    /* ── 6. GitHub Dark ───────────────────────────────────────── */
+    [data-theme="github-dark"] {
+      --bg:             #0D1117;
+      --surface:        #161B22;
+      --surface-alt:    #21262D;
+      --border:         #30363D;
+      --text-primary:   #C9D1D9;
+      --text-secondary: #8B949E;
+      --text-muted:     #6E7681;
+      --disabled:       #484F58;
+      --accent:         #58A6FF;
+      --accent-alt:     #388BFD;
+      --accent-hover:   #79C0FF;
+      --green:          #3FB950;
+      --red:            #F85149;
+      --yellow:         #E3B341;
+      --peach:          #D29922;
+      --mauve:          #BC8CFF;
+      --pink:           #F778BA;
+      --teal:           #39D2C0;
+      --shadow:         0 1px 4px rgba(0,0,0,0.5);
+      --code-bg:        #161B22;
+      --code-text:      #D29922;
+      --row-stripe:     rgba(255, 255, 255, 0.02);
+      --highlight-bg:   rgba(227, 179, 65, 0.3);
+      --highlight-text: #C9D1D9;
+    }
+
+    /* ── 7. AMOLED Dark ───────────────────────────────────────── */
+    [data-theme="amoled-dark"] {
+      --bg:             #000000;
+      --surface:        #121212;
+      --surface-alt:    #1A1A1A;
+      --border:         #252525;
+      --text-primary:   #FFFFFF;
+      --text-secondary: #B3B3B3;
+      --text-muted:     #666666;
+      --disabled:       #444444;
+      --accent:         #00E5FF;
+      --accent-alt:     #00B8D4;
+      --accent-hover:   #18FFFF;
+      --green:          #00E676;
+      --red:            #FF1744;
+      --yellow:         #FFEA00;
+      --peach:          #FF9100;
+      --mauve:          #E040FB;
+      --pink:           #FF4081;
+      --teal:           #1DE9B6;
+      --shadow:         0 1px 4px rgba(0,0,0,0.7);
+      --code-bg:        #121212;
+      --code-text:      #FF9100;
+      --row-stripe:     rgba(255, 255, 255, 0.03);
+      --highlight-bg:   rgba(255, 234, 0, 0.3);
+      --highlight-text: #FFFFFF;
+    }
+
+    /* ── 8. VS Code Dark ──────────────────────────────────────── */
+    [data-theme="vscode-dark"] {
+      --bg:             #1E1E1E;
+      --surface:        #252526;
+      --surface-alt:    #2D2D2D;
+      --border:         #3C3C3C;
+      --text-primary:   #D4D4D4;
+      --text-secondary: #ADADAD;
+      --text-muted:     #808080;
+      --disabled:       #5A5A5A;
+      --accent:         #569CD6;
+      --accent-alt:     #4E94CE;
+      --accent-hover:   #9CDCFE;
+      --green:          #6A9955;
+      --red:            #F44747;
+      --yellow:         #DCDCAA;
+      --peach:          #CE9178;
+      --mauve:          #C586C0;
+      --pink:           #C586C0;
+      --teal:           #4EC9B0;
+      --shadow:         0 1px 4px rgba(0,0,0,0.5);
+      --code-bg:        #252526;
+      --code-text:      #CE9178;
+      --row-stripe:     rgba(255, 255, 255, 0.02);
+      --highlight-bg:   rgba(220, 220, 170, 0.3);
+      --highlight-text: #D4D4D4;
+    }
+
+    /* ── 9. MD Theme (Classic) ────────────────────────────────── */
+    [data-theme="md-theme"] {
+      --bg:             #111827;
+      --surface:        #1F2937;
+      --surface-alt:    #374151;
+      --border:         #374151;
+      --text-primary:   #F9FAFB;
+      --text-secondary: #E5E7EB;
+      --text-muted:     #D1D5DB;
+      --disabled:       #6B7280;
+      --accent:         #60A5FA;
+      --accent-alt:     #3B82F6;
+      --accent-hover:   #93C5FD;
+      --green:          #4ADE80;
+      --red:            #F87171;
+      --yellow:         #FDE68A;
+      --peach:          #FDBA74;
+      --mauve:          #C4B5FD;
+      --pink:           #F9A8D4;
+      --teal:           #5EEAD4;
+      --shadow:         0 1px 3px rgba(0,0,0,0.3);
+      --code-bg:        #1F2937;
+      --code-text:      #FDBA74;
+      --row-stripe:     rgba(255, 255, 255, 0.03);
+      --highlight-bg:   rgba(253, 230, 138, 0.3);
+      --highlight-text: #F9FAFB;
+    }
+
+    /* ═══════════════════════════════════════════════════════════
+       GLOBAL STYLES (all token-based, zero hardcoded colors)
+       ═══════════════════════════════════════════════════════════ */
 
     html { font-size: 15px; }
 
     /* ── Smooth theme transitions ─────────────────────────────── */
     body, .toolbar, .panel-header, .input-panel, .output-panel,
     .btn, #markdown-input, .resize-handle,
+    .search-bar, .search-bar__input,
     #rendered-output pre, #rendered-output code,
     #rendered-output blockquote, #rendered-output table,
     #rendered-output thead, #rendered-output tbody tr {
-      transition: background-color 0.3s ease, color 0.3s ease,
-                  border-color 0.3s ease, box-shadow 0.3s ease;
+      transition: background-color var(--transition), color var(--transition),
+                  border-color var(--transition), box-shadow var(--transition);
     }
 
     body {
       font-family: var(--font-sans);
       background: var(--bg);
-      color: var(--text);
+      color: var(--text-primary);
       min-height: 100vh;
       line-height: 1.7;
     }
@@ -120,7 +360,7 @@
       border: 1px solid var(--border);
       border-radius: var(--radius);
       background: var(--surface-alt);
-      color: var(--text);
+      color: var(--text-primary);
       font-size: 0.85rem;
       font-family: var(--font-sans);
       cursor: pointer;
@@ -187,10 +427,11 @@
       align-items: center;
       gap: 8px;
       padding: 8px 16px;
+      min-height: 38px;
       background: var(--surface);
       border-bottom: 1px solid var(--border);
       font-size: 0.8rem;
-      color: var(--text-muted);
+      color: var(--text-secondary);
       font-weight: 500;
       text-transform: uppercase;
       letter-spacing: 0.5px;
@@ -205,7 +446,7 @@
       width: 100%;
       padding: 20px;
       background: var(--bg);
-      color: var(--text);
+      color: var(--text-primary);
       border: none;
       resize: none;
       font-family: var(--font-mono);
@@ -229,6 +470,12 @@
       max-width: 900px;
       margin: 0 auto;
       padding: 32px 40px 80px;
+      transition: max-width var(--transition), padding var(--transition);
+    }
+
+    .main.expanded #rendered-output {
+      max-width: 60%;
+      padding: 32px 48px 80px;
     }
 
     /* ── Drop Zone ──────────────────────────────────────────────── */
@@ -236,7 +483,7 @@
       display: none;
       position: fixed;
       inset: 0;
-      background: rgba(137, 180, 250, 0.08);
+      background: color-mix(in srgb, var(--accent) 8%, transparent);
       border: 3px dashed var(--accent);
       z-index: 999;
       align-items: center;
@@ -270,7 +517,9 @@
     }
     .file-info .close:hover { color: var(--red); }
 
-    /* ── Rendered Markdown Styles ───────────────────────────────── */
+    /* ═══════════════════════════════════════════════════════════
+       RENDERED MARKDOWN STYLES (all token-based)
+       ═══════════════════════════════════════════════════════════ */
     #rendered-output h1 {
       font-size: 2rem;
       font-weight: 700;
@@ -321,16 +570,14 @@
       letter-spacing: 0.5px;
     }
 
-    #rendered-output p {
-      margin: 0 0 14px;
-    }
+    #rendered-output p { margin: 0 0 14px; }
 
     #rendered-output a {
       color: var(--accent);
       text-decoration: underline;
       text-underline-offset: 2px;
     }
-    #rendered-output a:hover { color: var(--accent-alt); }
+    #rendered-output a:hover { color: var(--accent-hover); }
 
     #rendered-output strong { color: var(--yellow); font-weight: 600; }
     #rendered-output em     { color: var(--pink); font-style: italic; }
@@ -347,9 +594,7 @@
       padding-left: 4px;
     }
 
-    #rendered-output li::marker {
-      color: var(--accent);
-    }
+    #rendered-output li::marker { color: var(--accent); }
 
     #rendered-output ol li::marker {
       color: var(--peach);
@@ -398,7 +643,7 @@
       margin: 0 0 14px;
       padding: 12px 20px;
       border-radius: 0 var(--radius) var(--radius) 0;
-      color: var(--text);
+      color: var(--text-primary);
     }
     #rendered-output blockquote p:last-child { margin-bottom: 0; }
 
@@ -427,12 +672,11 @@
       background: none;
       border: none;
       padding: 0;
-      color: var(--text);
+      color: var(--text-primary);
       font-size: 0.85rem;
       line-height: 1.65;
     }
 
-    /* language badge on code blocks */
     #rendered-output pre[data-lang]::before {
       content: attr(data-lang);
       position: absolute;
@@ -446,14 +690,20 @@
     }
 
     /* ── Tables ─────────────────────────────────────────────────── */
+    .table-wrap {
+      overflow-x: auto;
+      margin: 0 0 18px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+    }
+
     #rendered-output table {
       width: 100%;
       border-collapse: collapse;
-      margin: 0 0 18px;
       font-size: 0.9rem;
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      overflow: hidden;
+      margin: 0;
+      border: none;
+      border-radius: 0;
     }
 
     #rendered-output thead {
@@ -484,11 +734,8 @@
       vertical-align: top;
     }
 
-    #rendered-output tbody td code {
-      font-size: 0.82em;
-    }
+    #rendered-output tbody td code { font-size: 0.82em; }
 
-    /* alternating row stripe */
     #rendered-output tbody tr:nth-child(even) { background: var(--row-stripe); }
     #rendered-output tbody tr:nth-child(even):hover { background: var(--surface); }
 
@@ -508,10 +755,8 @@
       margin: 8px 0;
     }
 
-    /* ── Definition-style (bold + colon pattern) ────────────────── */
-    #rendered-output dl {
-      margin: 0 0 14px;
-    }
+    /* ── Definition lists ──────────────────────────────────────── */
+    #rendered-output dl { margin: 0 0 14px; }
     #rendered-output dt {
       font-weight: 600;
       color: var(--teal);
@@ -547,88 +792,235 @@
     }
     .stats span { display: flex; align-items: center; gap: 4px; }
 
-    /* ── Toggle button for panels ───────────────────────────────── */
-    .toggle-label {
-      font-size: 0.8rem;
-      color: var(--text-muted);
+    /* ── Icon Button ────────────────────────────────────────────── */
+    .btn-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 36px;
+      height: 36px;
+      padding: 0;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--surface-alt);
+      color: var(--text-primary);
+      cursor: pointer;
+      transition: all 0.15s ease;
+      flex-shrink: 0;
     }
+    .btn-icon:hover { border-color: var(--accent); color: var(--accent); }
+    .btn-icon svg { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 
-    /* ── Theme Toggle Switch ──────────────────────────────────── */
-    .theme-toggle {
+    /* ═══════════════════════════════════════════════════════════
+       THEME SELECTOR — Dropdown with grouped optgroups
+       ═══════════════════════════════════════════════════════════ */
+    .theme-selector {
       display: flex;
       align-items: center;
       gap: 8px;
-      cursor: pointer;
-      padding: 4px 0;
-      user-select: none;
     }
 
-    .theme-toggle__icon {
+    .theme-selector__icon {
       font-size: 1rem;
       line-height: 1;
       width: 20px;
       text-align: center;
+      transition: transform 0.3s ease;
     }
 
-    .theme-toggle__track {
-      width: 40px;
-      height: 22px;
-      background: var(--border);
-      border-radius: 11px;
-      position: relative;
-      transition: background-color 0.3s ease;
-      flex-shrink: 0;
-    }
-
-    .theme-toggle__track::after {
-      content: '';
-      position: absolute;
-      top: 3px;
-      left: 3px;
-      width: 16px;
-      height: 16px;
-      background: #fff;
-      border-radius: 50%;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.2);
-      transition: transform 0.3s ease, background-color 0.3s ease;
-    }
-
-    [data-theme="dark"] .theme-toggle__track {
-      background: var(--accent);
-    }
-
-    [data-theme="dark"] .theme-toggle__track::after {
-      transform: translateX(18px);
-      background: var(--bg);
-    }
-
-    .theme-toggle__label {
+    .theme-selector select {
+      background: var(--surface);
+      color: var(--text-primary);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 6px 28px 6px 10px;
       font-size: 0.8rem;
-      color: var(--text-muted);
-      min-width: 36px;
+      font-family: var(--font-sans);
+      cursor: pointer;
+      outline: none;
+      appearance: none;
+      -webkit-appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%239CA3AF' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 8px center;
+      transition: border-color 0.2s, box-shadow 0.2s;
     }
 
-    /* ── Print styles ───────────────────────────────────────────── */
+    .theme-selector select:hover {
+      border-color: var(--accent);
+    }
+
+    .theme-selector select:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 25%, transparent);
+    }
+
+    .theme-selector select option {
+      background: var(--surface);
+      color: var(--text-primary);
+      padding: 4px 8px;
+    }
+
+    .theme-selector select optgroup {
+      font-weight: 600;
+      color: var(--text-secondary);
+    }
+
+    /* ── Search Bar ──────────────────────────────────────────── */
+    .search-bar {
+      display: none;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      padding: 8px 12px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      box-shadow: var(--shadow);
+    }
+    .search-bar.visible { display: flex; justify-content: flex-end; }
+
+    .search-bar__inner {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      max-width: 480px;
+    }
+
+    .search-bar__icon { color: var(--text-muted); flex-shrink: 0; }
+
+    .search-bar__input {
+      flex: 1;
+      min-width: 0;
+      padding: 5px 10px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--bg);
+      color: var(--text-primary);
+      font-family: var(--font-sans);
+      font-size: 0.85rem;
+      outline: none;
+      transition: border-color 0.15s ease;
+    }
+    .search-bar__input:focus { border-color: var(--accent); }
+    .search-bar__input.no-results {
+      border-color: var(--red);
+      background: color-mix(in srgb, var(--red) 8%, var(--bg));
+    }
+
+    .search-bar__count {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      white-space: nowrap;
+      min-width: 60px;
+      text-align: center;
+    }
+
+    .search-bar__btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 28px;
+      padding: 0;
+      border: 1px solid transparent;
+      border-radius: 4px;
+      background: transparent;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.15s ease;
+      flex-shrink: 0;
+      font-family: var(--font-sans);
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+    .search-bar__btn:hover { background: var(--surface-alt); color: var(--text-primary); }
+    .search-bar__btn[aria-pressed="true"] {
+      background: var(--accent);
+      color: var(--bg);
+      border-color: var(--accent);
+    }
+    .search-bar__btn svg {
+      width: 16px; height: 16px;
+      stroke: currentColor; fill: none;
+    }
+
+    /* ── Search Highlights (uses per-theme tokens) ──────────── */
+    .search-highlight {
+      background: var(--highlight-bg);
+      color: var(--highlight-text);
+      border-radius: 2px;
+      padding: 0 1px;
+      box-shadow: 0 0 0 1px color-mix(in srgb, var(--highlight-bg) 60%, transparent);
+    }
+    .search-highlight.active {
+      background: var(--accent);
+      color: var(--bg);
+      box-shadow: 0 0 0 2px var(--accent-alt);
+    }
+
+    /* ═══════════════════════════════════════════════════════════
+       PRINT STYLES
+       ═══════════════════════════════════════════════════════════ */
     @media print {
-      .toolbar, .input-panel, .panel-header { display: none !important; }
-      .output-panel { overflow: visible !important; }
-      #rendered-output { max-width: 100%; padding: 0; }
-      body { background: #fff; color: #1a1a1a; }
-      #rendered-output h1 { color: #1a1a1a; border-color: #ccc; }
-      #rendered-output h2 { color: #333; border-color: #ddd; }
-      #rendered-output h3 { color: #444; }
-      #rendered-output h4, #rendered-output h5, #rendered-output h6 { color: #555; }
-      #rendered-output strong { color: #1a1a1a; }
-      #rendered-output em { color: #333; }
-      #rendered-output code { background: #f0f0f0; color: #c7254e; border-color: #ddd; }
-      #rendered-output pre { background: #f6f6f6; border-color: #ddd; }
-      #rendered-output pre code { color: #333; }
-      #rendered-output blockquote { border-color: #aaa; background: #f9f9f9; }
-      #rendered-output thead th { color: #1a1a1a; border-color: #333; }
-      #rendered-output table, #rendered-output tbody tr { border-color: #ccc; }
-      #rendered-output tbody tr:nth-child(even) { background: #f6f6f6; }
-      #rendered-output a { color: #0066cc; }
-      #rendered-output hr { background: #ccc; }
+      /* Hide all UI chrome */
+      .toolbar, .input-panel, .resize-handle, .panel-header, .drop-zone, .search-bar { display: none !important; }
+
+      /* Break out of ALL layout constraints — every wrapper becomes a plain block at full width */
+      html, body, .app, .main, .output-panel, #rendered-output {
+        display: block !important;
+        position: static !important;
+        float: none !important;
+        height: auto !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: 0 !important;
+        flex: none !important;
+        overflow: visible !important;
+        margin: 0 !important;
+        padding: 0 !important;
+      }
+
+      body {
+        background: var(--bg) !important;
+        color: var(--text-primary) !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+
+      /* Content area — small padding for readability, full width */
+      #rendered-output {
+        padding: 8px 12px !important;
+      }
+
+      /* Tables fill the page — unwrap scroll container for print */
+      .table-wrap {
+        overflow: visible !important;
+        border: none !important;
+        margin: 0 0 18px !important;
+      }
+      #rendered-output table {
+        width: 100% !important;
+        max-width: 100% !important;
+        border: 1px solid var(--border) !important;
+      }
+
+      /* Avoid page-break orphans */
+      #rendered-output pre, #rendered-output table, #rendered-output blockquote {
+        page-break-inside: avoid;
+        break-inside: avoid;
+        overflow: visible !important;
+      }
+
+      #rendered-output pre {
+        white-space: pre-wrap;
+        word-wrap: break-word;
+      }
+
+      #rendered-output h1, #rendered-output h2, #rendered-output h3,
+      #rendered-output h4, #rendered-output h5, #rendered-output h6 {
+        page-break-after: avoid;
+        break-after: avoid;
+      }
     }
 
     /* ── Scrollbar ──────────────────────────────────────────────── */
@@ -657,15 +1049,31 @@
         <span class="close" id="file-clear" title="Clear file">&times;</span>
       </div>
       <div class="stats" id="stats"></div>
-      <div class="theme-toggle" id="theme-toggle" title="Toggle light/dark mode" role="switch" aria-checked="false" tabindex="0">
-        <span class="theme-toggle__icon" id="theme-icon">&#9788;</span>
-        <div class="theme-toggle__track"></div>
-        <span class="theme-toggle__label" id="theme-label">Light</span>
+      <div class="theme-selector">
+        <span class="theme-selector__icon" id="theme-icon">&#9790;</span>
+        <select id="theme-select" title="Choose theme" aria-label="Theme selector">
+          <optgroup label="Light Themes">
+            <option value="material-light">Material Light</option>
+            <option value="soft-light">Soft Neutral</option>
+          </optgroup>
+          <optgroup label="Dark Themes">
+            <option value="vscode-dark">VS Code Dark</option>
+            <option value="md-theme">MD Theme</option>
+            <option value="material-dark">Material Dark</option>
+            <option value="dracula">Dracula</option>
+            <option value="nord-dark">Nord Dark</option>
+            <option value="github-dark">GitHub Dark</option>
+            <option value="amoled-dark">AMOLED Dark</option>
+          </optgroup>
+        </select>
       </div>
       <label class="btn" for="file-upload" title="Open a .md or .txt file">Open File</label>
       <input type="file" id="file-upload" accept=".md,.txt,.markdown,.mdown,.mkd,.mkdn,.text" hidden>
-      <button class="btn" id="toggle-editor" title="Toggle the editor panel">Toggle Editor</button>
-      <button class="btn" id="btn-copy" title="Copy rendered HTML to clipboard">Copy HTML</button>
+      <button class="btn-icon" id="btn-fullscreen" title="Toggle fullscreen">
+        <svg id="fullscreen-icon" viewBox="0 0 24 24">
+          <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
+        </svg>
+      </button>
       <button class="btn primary" id="btn-print" title="Print the rendered output">Print</button>
     </div>
 
@@ -705,7 +1113,36 @@ console.log('code block');
 
       <!-- Rendered output panel -->
       <div class="output-panel" id="output-panel">
-        <div class="panel-header"><span class="dot blue"></span> Rendered Output</div>
+        <div class="panel-header">
+          <span class="dot blue"></span> Rendered Output
+          <button class="btn-icon" id="btn-search" title="Find in document (Ctrl+F)" style="margin-left:auto; width:26px; height:26px;">
+            <svg viewBox="0 0 24 24" style="width:14px; height:14px;">
+              <circle cx="11" cy="11" r="8" stroke="currentColor" fill="none" stroke-width="2"/>
+              <line x1="21" y1="21" x2="16.65" y2="16.65" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+          </button>
+        </div>
+        <!-- Search bar (hidden by default, Ctrl+F to open) -->
+        <div class="search-bar" id="search-bar">
+          <div class="search-bar__inner">
+            <svg class="search-bar__icon" viewBox="0 0 24 24" width="16" height="16">
+              <circle cx="11" cy="11" r="8" stroke="currentColor" fill="none" stroke-width="2"/>
+              <line x1="21" y1="21" x2="16.65" y2="16.65" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+            <input type="text" id="search-input" class="search-bar__input" placeholder="Find in document..." autocomplete="off" spellcheck="false">
+            <span class="search-bar__count" id="search-count"></span>
+            <button class="search-bar__btn" id="search-case" title="Match Case (Alt+C)" aria-pressed="false">Aa</button>
+            <button class="search-bar__btn" id="search-prev" title="Previous Match (Shift+Enter)">
+              <svg viewBox="0 0 24 24" width="16" height="16"><path d="M18 15l-6-6-6 6" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+            <button class="search-bar__btn" id="search-next" title="Next Match (Enter)">
+              <svg viewBox="0 0 24 24" width="16" height="16"><path d="M6 9l6 6 6-6" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+            <button class="search-bar__btn" id="search-close" title="Close (Escape)">
+              <svg viewBox="0 0 24 24" width="16" height="16"><line x1="18" y1="6" x2="6" y2="18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="6" y1="6" x2="18" y2="18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            </button>
+          </div>
+        </div>
         <div id="rendered-output">
           <div class="empty-state" id="empty-state">
             <div class="icon">&#9998;</div>
@@ -722,6 +1159,25 @@ console.log('code block');
   </div>
 
   <script>
+    /* ══════════════════════════════════════════════════════════════
+       THEME ENGINE — Scalable, zero-DOM-manipulation switching
+       ══════════════════════════════════════════════════════════════ */
+
+    /* ── Theme registry (single source of truth) ──────────────── */
+    const THEME_META = {
+      'material-light': { mode: 'light', icon: '\u2606' },
+      'soft-light':     { mode: 'light', icon: '\u2606' },
+      'material-dark':  { mode: 'dark',  icon: '\u263E' },
+      'dracula':        { mode: 'dark',  icon: '\u263E' },
+      'nord-dark':      { mode: 'dark',  icon: '\u263E' },
+      'github-dark':    { mode: 'dark',  icon: '\u263E' },
+      'amoled-dark':    { mode: 'dark',  icon: '\u263E' },
+      'vscode-dark':    { mode: 'dark',  icon: '\u263E' },
+      'md-theme':       { mode: 'dark',  icon: '\u263E' }
+    };
+    const STORAGE_KEY = 'md-viewer-theme';
+    const DEFAULT_THEME = 'vscode-dark';
+
     /* ── Elements ──────────────────────────────────────────────── */
     const input       = document.getElementById('markdown-input');
     const output      = document.getElementById('rendered-output');
@@ -731,55 +1187,46 @@ console.log('code block');
     const fileName    = document.getElementById('file-name');
     const fileClear   = document.getElementById('file-clear');
     const stats       = document.getElementById('stats');
-    const toggleBtn   = document.getElementById('toggle-editor');
-    const inputPanel  = document.getElementById('input-panel');
-    const btnCopy     = document.getElementById('btn-copy');
-    const btnPrint    = document.getElementById('btn-print');
+    const inputPanel    = document.getElementById('input-panel');
+    const btnFullscreen = document.getElementById('btn-fullscreen');
+    const fullscreenIcon = document.getElementById('fullscreen-icon');
+    const btnPrint      = document.getElementById('btn-print');
     const dropZone    = document.getElementById('drop-zone');
     const resizeHandle = document.getElementById('resize-handle');
     const mainContainer = document.querySelector('.main');
-    const themeToggle = document.getElementById('theme-toggle');
+    const themeSelect = document.getElementById('theme-select');
     const themeIcon   = document.getElementById('theme-icon');
-    const themeLabel  = document.getElementById('theme-label');
 
-    /* ── Theme: Dark / Light toggle + persistence ─────────────── */
+    /* ── Theme: Init + switching + persistence ────────────────── */
     (function initTheme() {
-      const STORAGE_KEY = 'md-viewer-theme';
+      function resolveTheme(key) {
+        return THEME_META[key] ? key : DEFAULT_THEME;
+      }
 
       function applyTheme(theme) {
+        theme = resolveTheme(theme);
+        var meta = THEME_META[theme];
         document.documentElement.setAttribute('data-theme', theme);
-        const isDark = theme === 'dark';
-        themeIcon.innerHTML  = isDark ? '&#9790;' : '&#9788;';
-        themeLabel.textContent = isDark ? 'Dark' : 'Light';
-        themeToggle.setAttribute('aria-checked', isDark);
+        document.documentElement.setAttribute('data-theme-mode', meta.mode);
+        themeIcon.textContent = meta.icon;
+        themeSelect.value = theme;
       }
 
-      function toggleTheme() {
-        const current = document.documentElement.getAttribute('data-theme');
-        const next = current === 'dark' ? 'light' : 'dark';
-        applyTheme(next);
-        localStorage.setItem(STORAGE_KEY, next);
-      }
+      /* Restore saved or default */
+      var saved = localStorage.getItem(STORAGE_KEY);
+      applyTheme(saved || DEFAULT_THEME);
 
-      /* Resolve initial theme: saved > system > light */
-      const saved = localStorage.getItem(STORAGE_KEY);
-      if (saved) {
-        applyTheme(saved);
-      } else {
-        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-        applyTheme(prefersDark ? 'dark' : 'light');
-      }
-
-      /* Listen for OS-level theme changes */
-      window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
-        if (!localStorage.getItem(STORAGE_KEY)) {
-          applyTheme(e.matches ? 'dark' : 'light');
-        }
+      /* Dropdown change */
+      themeSelect.addEventListener('change', function() {
+        applyTheme(themeSelect.value);
+        localStorage.setItem(STORAGE_KEY, themeSelect.value);
       });
 
-      themeToggle.addEventListener('click', toggleTheme);
-      themeToggle.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleTheme(); }
+      /* Detect system theme changes (map to nearest match) */
+      window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function(e) {
+        if (!localStorage.getItem(STORAGE_KEY)) {
+          applyTheme(e.matches ? 'material-dark' : 'material-light');
+        }
       });
     })();
 
@@ -817,7 +1264,6 @@ console.log('code block');
         document.body.style.userSelect = '';
       });
 
-      /* Double-click to reset to 50/50 */
       resizeHandle.addEventListener('dblclick', () => {
         inputPanel.style.width = '50%';
       });
@@ -830,10 +1276,7 @@ console.log('code block');
       pedantic: false
     });
 
-    /* Custom renderer for language badges on fenced code blocks */
     const renderer = new marked.Renderer();
-    const defaultCodeRenderer = renderer.code;
-
     renderer.code = function({ text, lang }) {
       const langAttr = lang ? ` data-lang="${lang}"` : '';
       const escaped  = text
@@ -843,12 +1286,34 @@ console.log('code block');
       return `<pre${langAttr}><code>${escaped}</code></pre>\n`;
     };
 
+    /* Generate slug IDs on headings so #anchor links (TOC) work */
+    renderer.heading = function({ text, depth, tokens }) {
+      const raw = this.parser.parseInline(tokens);
+      /* Strip HTML tags to get plain text, then slugify */
+      const plain = raw.replace(/<[^>]*>/g, '');
+      const id = plain
+        .toLowerCase()
+        .trim()
+        .replace(/[^\w\s-]/g, '')   /* remove non-word chars except spaces/hyphens */
+        .replace(/\s+/g, '-')       /* spaces → hyphens */
+        .replace(/-+/g, '-');       /* collapse multiple hyphens */
+      return `<h${depth} id="${id}">${raw}</h${depth}>\n`;
+    };
+
+    const defaultTableRenderer = marked.Renderer.prototype.table;
+    renderer.table = function(token) {
+      const html = defaultTableRenderer.call(this, token);
+      return '<div class="table-wrap">' + html + '</div>\n';
+    };
+
     marked.use({ renderer });
 
     /* ── Render logic ─────────────────────────────────────────── */
     let debounceTimer;
 
     function render(md) {
+      if (window._searchClearState) window._searchClearState();
+
       if (!md || !md.trim()) {
         output.innerHTML = '';
         output.appendChild(emptyState);
@@ -860,6 +1325,7 @@ console.log('code block');
       emptyState.style.display = 'none';
       output.innerHTML = marked.parse(md);
       updateStats(md);
+      if (window._searchReapply) window._searchReapply();
     }
 
     function updateStats(md) {
@@ -882,6 +1348,7 @@ console.log('code block');
     fileUpload.addEventListener('change', (e) => {
       const file = e.target.files[0];
       if (file) loadFile(file);
+      fileUpload.value = '';
     });
 
     function loadFile(file) {
@@ -932,23 +1399,36 @@ console.log('code block');
       }
     });
 
-    /* ── Toggle editor ────────────────────────────────────────── */
-    toggleBtn.addEventListener('click', () => {
-      inputPanel.classList.toggle('hidden');
-    });
+    /* ── Toggle editor (fullscreen preview) ─────────────────── */
+    const ICON_EXPAND   = '<path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>';
+    const ICON_COLLAPSE = '<path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3"/>';
 
-    /* ── Copy HTML ────────────────────────────────────────────── */
-    btnCopy.addEventListener('click', () => {
-      const html = output.innerHTML;
-      navigator.clipboard.writeText(html).then(() => {
-        const orig = btnCopy.textContent;
-        btnCopy.textContent = 'Copied!';
-        setTimeout(() => { btnCopy.textContent = orig; }, 1500);
-      });
+    function updateToggleIcon() {
+      const isHidden = inputPanel.classList.contains('hidden');
+      fullscreenIcon.innerHTML = isHidden ? ICON_COLLAPSE : ICON_EXPAND;
+      btnFullscreen.title = isHidden ? 'Show editor' : 'Hide editor';
+    }
+
+    btnFullscreen.addEventListener('click', () => {
+      inputPanel.classList.toggle('hidden');
+      mainContainer.classList.toggle('expanded', inputPanel.classList.contains('hidden'));
+      updateToggleIcon();
     });
 
     /* ── Print ────────────────────────────────────────────────── */
     btnPrint.addEventListener('click', () => window.print());
+
+    /* ── Smooth-scroll for anchor links (TOC) inside output ──── */
+    output.addEventListener('click', (e) => {
+      const link = e.target.closest('a[href^="#"]');
+      if (!link) return;
+      e.preventDefault();
+      const id = decodeURIComponent(link.getAttribute('href').slice(1));
+      const target = document.getElementById(id);
+      if (target) {
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    });
 
     /* ── Keyboard shortcut: Ctrl+O to open file ───────────────── */
     document.addEventListener('keydown', (e) => {
@@ -968,6 +1448,215 @@ console.log('code block');
         input.selectionStart = input.selectionEnd = start + 4;
       }
     });
+
+    /* ── Search in rendered output ──────────────────────────── */
+    (function initSearch() {
+      const searchBar   = document.getElementById('search-bar');
+      const searchInput = document.getElementById('search-input');
+      const searchCount = document.getElementById('search-count');
+      const searchPrev  = document.getElementById('search-prev');
+      const searchNext  = document.getElementById('search-next');
+      const searchClose = document.getElementById('search-close');
+      const searchCase  = document.getElementById('search-case');
+
+      let matches = [];
+      let currentIndex = -1;
+      let caseSensitive = false;
+      let lastQuery = '';
+      let searchDebounce;
+
+      function openSearch() {
+        searchBar.classList.add('visible');
+        searchInput.focus();
+        searchInput.select();
+      }
+
+      function closeSearch() {
+        searchBar.classList.remove('visible');
+        clearHighlights();
+        searchInput.value = '';
+        lastQuery = '';
+        searchCount.textContent = '';
+        searchInput.classList.remove('no-results');
+      }
+
+      function clearHighlights() {
+        var highlights = output.querySelectorAll('.search-highlight');
+        highlights.forEach(function(span) {
+          var parent = span.parentNode;
+          var textNode = document.createTextNode(span.textContent);
+          parent.replaceChild(textNode, span);
+          parent.normalize();
+        });
+        matches = [];
+        currentIndex = -1;
+      }
+
+      function performSearch(query) {
+        clearHighlights();
+
+        if (!query) {
+          searchCount.textContent = '';
+          searchInput.classList.remove('no-results');
+          lastQuery = '';
+          return;
+        }
+
+        lastQuery = query;
+
+        var escaped = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        var flags = caseSensitive ? 'g' : 'gi';
+        var regex = new RegExp(escaped, flags);
+
+        var textNodes = [];
+        var walker = document.createTreeWalker(
+          output,
+          NodeFilter.SHOW_TEXT,
+          {
+            acceptNode: function(node) {
+              if (searchBar.contains(node)) return NodeFilter.FILTER_REJECT;
+              if (!node.textContent.trim()) return NodeFilter.FILTER_SKIP;
+              return NodeFilter.FILTER_ACCEPT;
+            }
+          }
+        );
+        while (walker.nextNode()) textNodes.push(walker.currentNode);
+
+        textNodes.forEach(function(textNode) {
+          var text = textNode.textContent;
+          regex.lastIndex = 0;
+
+          var parts = [];
+          var lastIdx = 0;
+          var match;
+
+          while ((match = regex.exec(text)) !== null) {
+            if (match.index > lastIdx) {
+              parts.push(document.createTextNode(text.slice(lastIdx, match.index)));
+            }
+            var span = document.createElement('span');
+            span.className = 'search-highlight';
+            span.textContent = match[0];
+            parts.push(span);
+            matches.push(span);
+            lastIdx = regex.lastIndex;
+            if (match[0].length === 0) regex.lastIndex++;
+          }
+
+          if (parts.length === 0) return;
+
+          if (lastIdx < text.length) {
+            parts.push(document.createTextNode(text.slice(lastIdx)));
+          }
+
+          var fragment = document.createDocumentFragment();
+          parts.forEach(function(p) { fragment.appendChild(p); });
+          textNode.parentNode.replaceChild(fragment, textNode);
+        });
+
+        updateSearchCount();
+
+        if (matches.length > 0) {
+          currentIndex = 0;
+          setActiveMatch(0);
+          searchInput.classList.remove('no-results');
+        } else {
+          searchInput.classList.add('no-results');
+        }
+      }
+
+      function setActiveMatch(index) {
+        if (currentIndex >= 0 && currentIndex < matches.length) {
+          matches[currentIndex].classList.remove('active');
+        }
+        currentIndex = index;
+        if (currentIndex >= 0 && currentIndex < matches.length) {
+          matches[currentIndex].classList.add('active');
+          matches[currentIndex].scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'nearest' });
+        }
+        updateSearchCount();
+      }
+
+      function goToNext() {
+        if (matches.length === 0) return;
+        setActiveMatch((currentIndex + 1) % matches.length);
+      }
+
+      function goToPrev() {
+        if (matches.length === 0) return;
+        setActiveMatch((currentIndex - 1 + matches.length) % matches.length);
+      }
+
+      function updateSearchCount() {
+        if (matches.length === 0 && searchInput.value) {
+          searchCount.textContent = 'No results';
+        } else if (matches.length > 0) {
+          searchCount.textContent = (currentIndex + 1) + ' of ' + matches.length;
+        } else {
+          searchCount.textContent = '';
+        }
+      }
+
+      function toggleCase() {
+        caseSensitive = !caseSensitive;
+        searchCase.setAttribute('aria-pressed', caseSensitive);
+        if (searchInput.value) performSearch(searchInput.value);
+      }
+
+      searchInput.addEventListener('input', function() {
+        clearTimeout(searchDebounce);
+        searchDebounce = setTimeout(function() {
+          performSearch(searchInput.value);
+        }, 200);
+      });
+
+      searchInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          if (e.shiftKey) goToPrev(); else goToNext();
+        }
+        if (e.key === 'Escape') {
+          e.preventDefault();
+          closeSearch();
+        }
+      });
+
+      searchNext.addEventListener('click', goToNext);
+      searchPrev.addEventListener('click', goToPrev);
+      searchClose.addEventListener('click', closeSearch);
+      searchCase.addEventListener('click', toggleCase);
+
+      document.getElementById('btn-search').addEventListener('click', function() {
+        if (searchBar.classList.contains('visible')) closeSearch();
+        else openSearch();
+      });
+
+      document.addEventListener('keydown', function(e) {
+        if ((e.ctrlKey || e.metaKey) && e.key === 'f') {
+          e.preventDefault();
+          openSearch();
+        }
+        if (e.altKey && e.key === 'c' && searchBar.classList.contains('visible')) {
+          e.preventDefault();
+          toggleCase();
+        }
+      });
+
+      window._searchClearState = function() {
+        matches = [];
+        currentIndex = -1;
+        searchCount.textContent = '';
+        searchInput.classList.remove('no-results');
+      };
+
+      window._searchReapply = function() {
+        if (searchBar.classList.contains('visible') && searchInput.value) {
+          requestAnimationFrame(function() {
+            performSearch(searchInput.value);
+          });
+        }
+      };
+    })();
   </script>
 </body>
 </html>
