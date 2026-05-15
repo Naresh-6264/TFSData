@@ -25,41 +25,5 @@
     "icon": "analytics",
     "accentColor": "#f59e0b",
     "tags": ["TFS", "Analytics", "Sprint", "RBAC"]
-  },
-  {
-    "id": "punch-time-calculator",
-    "name": "Punch Time Calculator",
-    "description": "Calculate work hours from IN/OUT punch logs. Daily, weekly, and monthly summaries with timeline visualization.",
-    "path": "punch-time-calculator/index.html",
-    "icon": "clock",
-    "accentColor": "#10b981",
-    "tags": ["Time", "Attendance", "Calculator"]
-  },
-  {
-    "id": "sprint-planner",
-    "name": "Sprint Planner",
-    "description": "Plan entire sprints with capacity modeling, backlog assignment, workload balancing, and push to TFS.",
-    "path": "sprint-planner/index.html",
-    "icon": "planner",
-    "accentColor": "#8b5cf6",
-    "tags": ["TFS", "Sprint", "Planning", "Capacity"]
-  },
-  {
-    "id": "user-performance-report",
-    "name": "User Performance Report",
-    "description": "Per-member TFS performance dashboards with velocity trends, AI adoption metrics, and quality analysis.",
-    "path": "user-performance-report/index.html",
-    "icon": "report",
-    "accentColor": "#06b6d4",
-    "tags": ["TFS", "Performance", "Reports", "AI"]
-  },
-  {
-    "id": "pr-reviewer",
-    "name": "PR Review Automater",
-    "description": "Automated code review with rule-based static analysis and optional AI-powered review. Flags security, quality, and best practices.",
-    "path": "pr-reviewer/index.html",
-    "icon": "review",
-    "accentColor": "#f43f5e",
-    "tags": ["Code Review", "Security", "AI"]
   }
 ]
