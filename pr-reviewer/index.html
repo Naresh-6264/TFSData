@@ -1,0 +1,2736 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PR Review Automater</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+    <style>
+/* ─── RESET & BASE ─── */
+*, *::before, *::after {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+:root {
+    --bg-primary: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+    --bg-card: rgba(255, 255, 255, 0.05);
+    --bg-card-hover: rgba(255, 255, 255, 0.08);
+    --bg-input: rgba(0, 0, 0, 0.3);
+    --bg-input-focus: rgba(0, 0, 0, 0.5);
+    --border-color: rgba(255, 255, 255, 0.1);
+    --border-color-hover: rgba(255, 255, 255, 0.2);
+    --text-primary: #ffffff;
+    --text-secondary: #e2e8f0;
+    --text-muted: #94a3b8;
+    --accent-primary: #f43f5e;
+    --accent-secondary: #ec4899;
+    --success: #10b981;
+    --success-bg: rgba(16, 185, 129, 0.15);
+    --warning: #f59e0b;
+    --warning-bg: rgba(245, 158, 11, 0.15);
+    --danger: #ef4444;
+    --danger-bg: rgba(239, 68, 68, 0.15);
+    --info: #3b82f6;
+    --info-bg: rgba(59, 130, 246, 0.15);
+    --critical-color: #ef4444;
+    --critical-bg: rgba(239, 68, 68, 0.12);
+    --high-color: #f97316;
+    --high-bg: rgba(249, 115, 22, 0.12);
+    --medium-color: #f59e0b;
+    --medium-bg: rgba(245, 158, 11, 0.12);
+    --low-color: #3b82f6;
+    --low-bg: rgba(59, 130, 246, 0.12);
+    --glass-bg: rgba(255, 255, 255, 0.03);
+    --glass-border: rgba(255, 255, 255, 0.08);
+    --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    --radius-sm: 6px;
+    --radius-md: 10px;
+    --radius-lg: 16px;
+    --radius-xl: 20px;
+    --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    --transition-fast: 150ms ease;
+    --transition-normal: 300ms ease;
+    --transition-slow: 500ms ease;
+    --topbar-height: 64px;
+    --score-bar-height: 72px;
+}
+
+.light-theme {
+    --bg-primary: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+    --bg-card: rgba(255, 255, 255, 0.75);
+    --bg-card-hover: rgba(255, 255, 255, 0.9);
+    --bg-input: rgba(0, 0, 0, 0.04);
+    --bg-input-focus: rgba(0, 0, 0, 0.08);
+    --border-color: rgba(0, 0, 0, 0.1);
+    --border-color-hover: rgba(0, 0, 0, 0.2);
+    --text-primary: #0f172a;
+    --text-secondary: #334155;
+    --text-muted: #64748b;
+    --glass-bg: rgba(255, 255, 255, 0.6);
+    --glass-border: rgba(0, 0, 0, 0.08);
+    --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+    --critical-bg: rgba(239, 68, 68, 0.08);
+    --high-bg: rgba(249, 115, 22, 0.08);
+    --medium-bg: rgba(245, 158, 11, 0.08);
+    --low-bg: rgba(59, 130, 246, 0.08);
+    --success-bg: rgba(16, 185, 129, 0.08);
+    --warning-bg: rgba(245, 158, 11, 0.08);
+    --danger-bg: rgba(239, 68, 68, 0.08);
+    --info-bg: rgba(59, 130, 246, 0.08);
+}
+
+html, body {
+    height: 100%;
+    overflow: hidden;
+}
+
+body {
+    font-family: var(--font-family);
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* ─── SCROLLBAR ─── */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.25);
+}
+.light-theme ::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.15);
+}
+.light-theme ::-webkit-scrollbar-thumb:hover {
+    background: rgba(0, 0, 0, 0.25);
+}
+
+/* ─── TOPBAR ─── */
+.topbar {
+    height: var(--topbar-height);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 24px;
+    background: var(--glass-bg);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--glass-border);
+    position: relative;
+    z-index: 100;
+}
+
+.topbar-left {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.topbar-logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.topbar-logo svg {
+    width: 28px;
+    height: 28px;
+    color: var(--accent-primary);
+}
+
+.topbar-title {
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.topbar-subtitle {
+    font-size: 12px;
+    color: var(--text-muted);
+    font-weight: 400;
+}
+
+.topbar-center {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.topbar-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* ─── BUTTONS ─── */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    background: var(--bg-card);
+    color: var(--text-primary);
+    font-family: var(--font-family);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    white-space: nowrap;
+    user-select: none;
+}
+
+.btn:hover {
+    background: var(--bg-card-hover);
+    border-color: var(--border-color-hover);
+}
+
+.btn:active {
+    transform: scale(0.97);
+}
+
+.btn svg {
+    width: 15px;
+    height: 15px;
+    flex-shrink: 0;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+    border-color: transparent;
+    color: #fff;
+    font-weight: 600;
+}
+
+.btn-primary:hover {
+    opacity: 0.9;
+    border-color: transparent;
+    background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+}
+
+.btn-sm {
+    padding: 5px 10px;
+    font-size: 12px;
+}
+
+.btn-icon {
+    padding: 8px;
+    border-radius: var(--radius-sm);
+}
+
+.btn-icon svg {
+    width: 18px;
+    height: 18px;
+}
+
+/* ─── MODE TOGGLE ─── */
+.mode-toggle {
+    display: flex;
+    background: var(--bg-input);
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border-color);
+    overflow: hidden;
+}
+
+.mode-toggle-btn {
+    padding: 6px 14px;
+    font-size: 12px;
+    font-weight: 500;
+    font-family: var(--font-family);
+    cursor: pointer;
+    border: none;
+    background: transparent;
+    color: var(--text-muted);
+    transition: all var(--transition-fast);
+}
+
+.mode-toggle-btn.active {
+    background: var(--accent-primary);
+    color: #fff;
+}
+
+.mode-toggle-btn:hover:not(.active) {
+    color: var(--text-primary);
+    background: rgba(255, 255, 255, 0.05);
+}
+
+/* ─── TEMPLATE DROPDOWN ─── */
+.dropdown-wrapper {
+    position: relative;
+}
+
+.dropdown-menu {
+    position: absolute;
+    top: calc(100% + 6px);
+    right: 0;
+    min-width: 200px;
+    background: var(--bg-card);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    box-shadow: var(--glass-shadow);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-8px);
+    transition: all var(--transition-fast);
+    z-index: 200;
+    overflow: hidden;
+}
+
+.dropdown-menu.open {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 14px;
+    font-size: 13px;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    border: none;
+    background: none;
+    width: 100%;
+    font-family: var(--font-family);
+    text-align: left;
+}
+
+.dropdown-item:hover {
+    background: var(--bg-card-hover);
+    color: var(--text-primary);
+}
+
+.dropdown-item svg {
+    width: 14px;
+    height: 14px;
+    color: var(--text-muted);
+    flex-shrink: 0;
+}
+
+.dropdown-sep {
+    height: 1px;
+    background: var(--border-color);
+    margin: 4px 0;
+}
+
+/* ─── API KEY INPUT ─── */
+.api-key-group {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.api-key-input {
+    width: 180px;
+    padding: 6px 10px;
+    font-size: 12px;
+    font-family: var(--font-family);
+    background: var(--bg-input);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    color: var(--text-primary);
+    transition: all var(--transition-fast);
+}
+
+.api-key-input:focus {
+    outline: none;
+    border-color: var(--accent-primary);
+    background: var(--bg-input-focus);
+}
+
+.api-key-input::placeholder {
+    color: var(--text-muted);
+}
+
+.api-key-status {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--text-muted);
+    transition: background var(--transition-fast);
+    flex-shrink: 0;
+}
+
+.api-key-status.valid {
+    background: var(--success);
+    box-shadow: 0 0 6px rgba(16, 185, 129, 0.5);
+}
+
+/* ─── MAIN LAYOUT ─── */
+.main-container {
+    display: flex;
+    height: calc(100vh - var(--topbar-height) - var(--score-bar-height));
+    overflow: hidden;
+}
+
+/* ─── LEFT PANEL ─── */
+.left-panel {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    border-right: 1px solid var(--border-color);
+    min-width: 0;
+}
+
+.panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border-color);
+    background: var(--glass-bg);
+    flex-shrink: 0;
+}
+
+.panel-header-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.panel-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.language-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 8px;
+    font-size: 11px;
+    font-weight: 600;
+    border-radius: 999px;
+    background: var(--info-bg);
+    color: var(--info);
+    border: 1px solid rgba(59, 130, 246, 0.2);
+    transition: all var(--transition-fast);
+}
+
+.language-badge svg {
+    width: 10px;
+    height: 10px;
+}
+
+.panel-header-right {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.line-count-badge {
+    font-size: 11px;
+    color: var(--text-muted);
+    font-variant-numeric: tabular-nums;
+}
+
+/* ─── CODE EDITOR ─── */
+.editor-wrapper {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+}
+
+.line-numbers {
+    width: 48px;
+    flex-shrink: 0;
+    background: rgba(0, 0, 0, 0.15);
+    border-right: 1px solid var(--border-color);
+    padding: 12px 0;
+    overflow: hidden;
+    user-select: none;
+    font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--text-muted);
+    text-align: right;
+}
+
+.light-theme .line-numbers {
+    background: rgba(0, 0, 0, 0.03);
+}
+
+.line-number {
+    padding: 0 8px 0 0;
+    height: 19.5px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+}
+
+.line-number.highlighted {
+    background: var(--critical-bg);
+    color: var(--critical-color);
+    font-weight: 600;
+}
+
+.code-textarea {
+    flex: 1;
+    width: 100%;
+    height: 100%;
+    padding: 12px 16px;
+    font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--text-primary);
+    background: transparent;
+    border: none;
+    resize: none;
+    outline: none;
+    tab-size: 4;
+    white-space: pre;
+    overflow: auto;
+}
+
+.code-textarea::placeholder {
+    color: var(--text-muted);
+    font-style: italic;
+}
+
+/* ─── DROP ZONE ─── */
+.drop-zone-overlay {
+    position: absolute;
+    inset: 0;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    background: rgba(244, 63, 94, 0.08);
+    backdrop-filter: blur(4px);
+    border: 2px dashed var(--accent-primary);
+    border-radius: var(--radius-md);
+    z-index: 50;
+    pointer-events: none;
+}
+
+.drop-zone-overlay.active {
+    display: flex;
+}
+
+.drop-zone-content {
+    text-align: center;
+    color: var(--accent-primary);
+}
+
+.drop-zone-content svg {
+    width: 48px;
+    height: 48px;
+    margin-bottom: 8px;
+    opacity: 0.7;
+}
+
+.drop-zone-content p {
+    font-size: 14px;
+    font-weight: 500;
+}
+
+/* ─── RIGHT PANEL ─── */
+.right-panel {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    overflow: hidden;
+}
+
+.findings-container {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px;
+}
+
+/* ─── STATS BAR ─── */
+.stats-bar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border-color);
+    background: var(--glass-bg);
+    flex-shrink: 0;
+    flex-wrap: wrap;
+}
+
+.stat-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    transition: all var(--transition-fast);
+    cursor: default;
+}
+
+.stat-chip.critical {
+    background: var(--critical-bg);
+    color: var(--critical-color);
+    border: 1px solid rgba(239, 68, 68, 0.25);
+}
+
+.stat-chip.high {
+    background: var(--high-bg);
+    color: var(--high-color);
+    border: 1px solid rgba(249, 115, 22, 0.25);
+}
+
+.stat-chip.medium {
+    background: var(--medium-bg);
+    color: var(--medium-color);
+    border: 1px solid rgba(245, 158, 11, 0.25);
+}
+
+.stat-chip.low {
+    background: var(--low-bg);
+    color: var(--low-color);
+    border: 1px solid rgba(59, 130, 246, 0.25);
+}
+
+.stat-chip .dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.stat-chip.critical .dot { background: var(--critical-color); }
+.stat-chip.high .dot { background: var(--high-color); }
+.stat-chip.medium .dot { background: var(--medium-color); }
+.stat-chip.low .dot { background: var(--low-color); }
+
+.stats-spacer {
+    flex: 1;
+}
+
+.stats-source-badge {
+    font-size: 11px;
+    color: var(--text-muted);
+    padding: 3px 8px;
+    border-radius: 999px;
+    border: 1px solid var(--border-color);
+    background: var(--bg-card);
+}
+
+/* ─── FINDING CARDS ─── */
+.findings-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    color: var(--text-muted);
+    text-align: center;
+    padding: 40px;
+}
+
+.findings-empty svg {
+    width: 64px;
+    height: 64px;
+    opacity: 0.3;
+    margin-bottom: 16px;
+}
+
+.findings-empty h3 {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 6px;
+    color: var(--text-secondary);
+}
+
+.findings-empty p {
+    font-size: 13px;
+    max-width: 280px;
+    line-height: 1.5;
+}
+
+.severity-group {
+    margin-bottom: 20px;
+}
+
+.severity-group-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 0;
+    margin-bottom: 8px;
+    cursor: pointer;
+    user-select: none;
+}
+
+.severity-group-header .severity-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.severity-group-header .severity-label {
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+
+.severity-group-header .severity-count {
+    font-size: 11px;
+    color: var(--text-muted);
+    font-weight: 500;
+}
+
+.severity-group-header .chevron {
+    margin-left: auto;
+    width: 14px;
+    height: 14px;
+    color: var(--text-muted);
+    transition: transform var(--transition-fast);
+}
+
+.severity-group-header.collapsed .chevron {
+    transform: rotate(-90deg);
+}
+
+.severity-group.critical .severity-dot { background: var(--critical-color); }
+.severity-group.critical .severity-label { color: var(--critical-color); }
+.severity-group.high .severity-dot { background: var(--high-color); }
+.severity-group.high .severity-label { color: var(--high-color); }
+.severity-group.medium .severity-dot { background: var(--medium-color); }
+.severity-group.medium .severity-label { color: var(--medium-color); }
+.severity-group.low .severity-dot { background: var(--low-color); }
+.severity-group.low .severity-label { color: var(--low-color); }
+
+.severity-group-items {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.severity-group-items.collapsed {
+    display: none;
+}
+
+.finding-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    transition: all var(--transition-fast);
+}
+
+.finding-card:hover {
+    border-color: var(--border-color-hover);
+    background: var(--bg-card-hover);
+}
+
+.finding-card.critical { border-left: 3px solid var(--critical-color); }
+.finding-card.high { border-left: 3px solid var(--high-color); }
+.finding-card.medium { border-left: 3px solid var(--medium-color); }
+.finding-card.low { border-left: 3px solid var(--low-color); }
+
+.finding-card-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    cursor: pointer;
+    user-select: none;
+}
+
+.finding-severity-icon {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-size: 10px;
+    font-weight: 700;
+    color: #fff;
+}
+
+.finding-card.critical .finding-severity-icon { background: var(--critical-color); }
+.finding-card.high .finding-severity-icon { background: var(--high-color); }
+.finding-card.medium .finding-severity-icon { background: var(--medium-color); }
+.finding-card.low .finding-severity-icon { background: var(--low-color); }
+
+.finding-card-title {
+    flex: 1;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-primary);
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.finding-card-line {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--text-muted);
+    font-variant-numeric: tabular-nums;
+    background: var(--bg-input);
+    padding: 2px 6px;
+    border-radius: var(--radius-sm);
+    flex-shrink: 0;
+}
+
+.finding-card-expand {
+    width: 16px;
+    height: 16px;
+    color: var(--text-muted);
+    transition: transform var(--transition-fast);
+    flex-shrink: 0;
+}
+
+.finding-card.expanded .finding-card-expand {
+    transform: rotate(180deg);
+}
+
+.finding-card-body {
+    display: none;
+    padding: 0 14px 14px 44px;
+}
+
+.finding-card.expanded .finding-card-body {
+    display: block;
+}
+
+.finding-description {
+    font-size: 13px;
+    color: var(--text-secondary);
+    margin-bottom: 10px;
+    line-height: 1.5;
+}
+
+.finding-suggestion {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 10px 12px;
+    background: var(--success-bg);
+    border: 1px solid rgba(16, 185, 129, 0.2);
+    border-radius: var(--radius-sm);
+    font-size: 12px;
+    color: var(--success);
+    line-height: 1.5;
+}
+
+.finding-suggestion svg {
+    width: 14px;
+    height: 14px;
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+.finding-source-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    margin-top: 8px;
+    font-size: 10px;
+    color: var(--text-muted);
+    padding: 2px 6px;
+    border-radius: 999px;
+    background: var(--bg-input);
+}
+
+/* ─── SCORE BAR ─── */
+.score-bar {
+    height: var(--score-bar-height);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 24px;
+    background: var(--glass-bg);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-top: 1px solid var(--glass-border);
+}
+
+.score-bar-left {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.score-ring-container {
+    position: relative;
+    width: 48px;
+    height: 48px;
+}
+
+.score-ring-svg {
+    width: 48px;
+    height: 48px;
+    transform: rotate(-90deg);
+}
+
+.score-ring-bg {
+    fill: none;
+    stroke: var(--border-color);
+    stroke-width: 4;
+}
+
+.score-ring-progress {
+    fill: none;
+    stroke-width: 4;
+    stroke-linecap: round;
+    transition: stroke-dashoffset 1s cubic-bezier(0.4, 0, 0.2, 1), stroke 0.5s ease;
+}
+
+.score-ring-text {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+}
+
+.score-label {
+    display: flex;
+    flex-direction: column;
+}
+
+.score-label-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.score-label-desc {
+    font-size: 11px;
+    color: var(--text-muted);
+}
+
+.score-bar-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* ─── HISTORY PANEL ─── */
+.history-panel {
+    position: fixed;
+    top: var(--topbar-height);
+    right: -380px;
+    width: 360px;
+    height: calc(100vh - var(--topbar-height));
+    background: var(--glass-bg);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border-left: 1px solid var(--glass-border);
+    box-shadow: -8px 0 32px rgba(0, 0, 0, 0.2);
+    z-index: 150;
+    transition: right var(--transition-normal);
+    display: flex;
+    flex-direction: column;
+}
+
+.history-panel.open {
+    right: 0;
+}
+
+.history-panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.history-panel-title {
+    font-size: 15px;
+    font-weight: 700;
+}
+
+.history-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 12px;
+}
+
+.history-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-color);
+    margin-bottom: 8px;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    background: var(--bg-card);
+}
+
+.history-item:hover {
+    background: var(--bg-card-hover);
+    border-color: var(--border-color-hover);
+}
+
+.history-item-score {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: 700;
+    flex-shrink: 0;
+    border: 2px solid;
+}
+
+.history-item-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.history-item-lang {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.history-item-date {
+    font-size: 11px;
+    color: var(--text-muted);
+}
+
+.history-item-findings {
+    font-size: 11px;
+    color: var(--text-muted);
+}
+
+.history-item-delete {
+    width: 28px;
+    height: 28px;
+    border: none;
+    background: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    border-radius: var(--radius-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all var(--transition-fast);
+    flex-shrink: 0;
+}
+
+.history-item-delete:hover {
+    color: var(--danger);
+    background: var(--danger-bg);
+}
+
+.history-item-delete svg {
+    width: 14px;
+    height: 14px;
+}
+
+.history-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    color: var(--text-muted);
+    text-align: center;
+    padding: 40px 20px;
+}
+
+.history-empty svg {
+    width: 40px;
+    height: 40px;
+    opacity: 0.3;
+    margin-bottom: 12px;
+}
+
+.history-empty p {
+    font-size: 13px;
+}
+
+/* ─── OVERLAY ─── */
+.overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.4);
+    z-index: 140;
+    display: none;
+}
+
+.overlay.active {
+    display: block;
+}
+
+/* ─── LOADING SPINNER ─── */
+.loading-overlay {
+    position: absolute;
+    inset: 0;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(4px);
+    z-index: 50;
+    border-radius: var(--radius-md);
+}
+
+.loading-overlay.active {
+    display: flex;
+}
+
+.spinner {
+    width: 32px;
+    height: 32px;
+    border: 3px solid var(--border-color);
+    border-top-color: var(--accent-primary);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* ─── TOAST ─── */
+.toast-container {
+    position: fixed;
+    bottom: 90px;
+    right: 24px;
+    z-index: 300;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.toast {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 16px;
+    background: var(--bg-card);
+    backdrop-filter: blur(20px);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    box-shadow: var(--glass-shadow);
+    font-size: 13px;
+    color: var(--text-primary);
+    animation: toastIn 0.3s ease forwards;
+    max-width: 360px;
+}
+
+.toast.success { border-left: 3px solid var(--success); }
+.toast.error { border-left: 3px solid var(--danger); }
+.toast.info { border-left: 3px solid var(--info); }
+
+.toast-exit {
+    animation: toastOut 0.3s ease forwards;
+}
+
+@keyframes toastIn {
+    from { opacity: 0; transform: translateX(40px); }
+    to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes toastOut {
+    from { opacity: 1; transform: translateX(0); }
+    to { opacity: 0; transform: translateX(40px); }
+}
+
+/* ─── PRINT STYLES ─── */
+@media print {
+    .topbar, .score-bar, .left-panel, .history-panel, .overlay, .toast-container {
+        display: none !important;
+    }
+    body {
+        background: #fff !important;
+        color: #000 !important;
+    }
+    .main-container {
+        display: block !important;
+        height: auto !important;
+        overflow: visible !important;
+    }
+    .right-panel {
+        border: none !important;
+    }
+    .findings-container {
+        overflow: visible !important;
+    }
+    .finding-card {
+        break-inside: avoid;
+        border: 1px solid #ccc !important;
+        background: #fff !important;
+    }
+    .finding-card .finding-card-body {
+        display: block !important;
+    }
+    .print-header {
+        display: block !important;
+        text-align: center;
+        padding: 20px 0;
+        border-bottom: 2px solid #000;
+        margin-bottom: 20px;
+    }
+    .print-header h1 {
+        font-size: 24px;
+        margin-bottom: 4px;
+    }
+    .print-header p {
+        font-size: 14px;
+        color: #666;
+    }
+    .stat-chip {
+        color: #000 !important;
+        border-color: #ccc !important;
+    }
+}
+
+.print-header {
+    display: none;
+}
+
+/* ─── RESPONSIVE ─── */
+@media (max-width: 768px) {
+    .main-container {
+        flex-direction: column;
+    }
+    .left-panel {
+        border-right: none;
+        border-bottom: 1px solid var(--border-color);
+        max-height: 40vh;
+    }
+    .topbar-center {
+        display: none;
+    }
+    .api-key-group {
+        display: none;
+    }
+    .topbar {
+        padding: 0 12px;
+    }
+}
+    </style>
+</head>
+<body>
+    <!-- ─── TOPBAR ─── -->
+    <header class="topbar">
+        <div class="topbar-left">
+            <div class="topbar-logo">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                    <polyline points="14 2 14 8 20 8"/>
+                    <line x1="12" y1="18" x2="12" y2="12"/>
+                    <line x1="9" y1="15" x2="15" y2="15"/>
+                </svg>
+                <div>
+                    <div class="topbar-title">PR Review Automater</div>
+                    <div class="topbar-subtitle">Automated Code Review &amp; Analysis</div>
+                </div>
+            </div>
+        </div>
+        <div class="topbar-center">
+            <div class="mode-toggle">
+                <button class="mode-toggle-btn active" data-mode="rule" onclick="setMode('rule')">Rule-Based</button>
+                <button class="mode-toggle-btn" data-mode="ai" onclick="setMode('ai')">AI-Powered</button>
+                <button class="mode-toggle-btn" data-mode="both" onclick="setMode('both')">Both</button>
+            </div>
+            <div class="dropdown-wrapper">
+                <button class="btn btn-sm" onclick="toggleDropdown('templateDropdown')">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
+                    Template
+                </button>
+                <div class="dropdown-menu" id="templateDropdown">
+                    <button class="dropdown-item" onclick="selectTemplate('general')">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                        General Review
+                    </button>
+                    <button class="dropdown-item" onclick="selectTemplate('security')">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                        Security Focus
+                    </button>
+                    <button class="dropdown-item" onclick="selectTemplate('performance')">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                        Performance Focus
+                    </button>
+                    <div class="dropdown-sep"></div>
+                    <button class="dropdown-item" onclick="selectTemplate('general')" style="color: var(--text-muted); font-size: 11px;">
+                        Templates adjust AI system prompt focus
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div class="topbar-right">
+            <div class="api-key-group" id="apiKeyGroup">
+                <div class="api-key-status" id="apiKeyStatus"></div>
+                <input type="password" class="api-key-input" id="apiKeyInput" placeholder="OpenAI API Key (optional)" />
+            </div>
+            <button class="btn btn-icon" onclick="toggleHistory()" title="Review History">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            </button>
+            <button class="btn btn-icon" onclick="toggleTheme()" title="Toggle Theme">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" id="themeIcon"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+            </button>
+        </div>
+    </header>
+
+    <!-- ─── PR FETCH BAR ─── -->
+    <div class="pr-fetch-bar" style="padding:12px 20px;background:var(--bg-card);border-bottom:1px solid var(--border-color);display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;">
+        <div style="flex:1;min-width:280px;">
+            <label style="display:block;font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">PR / Diff URL</label>
+            <input type="text" id="prUrlInput" placeholder="https://github.com/owner/repo/pull/123 or TFS PR URL" style="width:100%;padding:8px 12px;font-size:13px;background:var(--bg-input);color:var(--text-primary);border:1px solid var(--border-color);border-radius:6px;font-family:inherit;outline:none;">
+        </div>
+        <div style="min-width:200px;">
+            <label style="display:block;font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">PAT / Token (for private repos)</label>
+            <input type="password" id="prPatInput" placeholder="Optional — for auth" style="width:100%;padding:8px 12px;font-size:13px;background:var(--bg-input);color:var(--text-primary);border:1px solid var(--border-color);border-radius:6px;font-family:inherit;outline:none;">
+        </div>
+        <button class="btn btn-primary btn-sm" onclick="fetchPRDiff()" style="height:36px;white-space:nowrap;">Fetch PR Diff</button>
+    </div>
+
+    <!-- ─── MAIN LAYOUT ─── -->
+    <div class="main-container">
+        <!-- ─── LEFT PANEL ─── -->
+        <div class="left-panel" id="leftPanel">
+            <div class="panel-header">
+                <div class="panel-header-left">
+                    <span class="panel-title">Code Input</span>
+                    <span class="language-badge" id="languageBadge">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg>
+                        Auto-detect
+                    </span>
+                </div>
+                <div class="panel-header-right">
+                    <span class="line-count-badge" id="lineCountBadge">0 lines</span>
+                    <button class="btn btn-sm" onclick="clearCode()" title="Clear code">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:12px;height:12px"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                        Clear
+                    </button>
+                </div>
+            </div>
+            <div class="editor-wrapper">
+                <div class="line-numbers" id="lineNumbers"></div>
+                <textarea class="code-textarea" id="codeInput" placeholder="Paste your code or diff here...&#10;&#10;Or drag and drop a file onto this area.&#10;&#10;Supports: JavaScript, TypeScript, Python, C#, SQL, CSS, and more."
+                    spellcheck="false"></textarea>
+                <div class="drop-zone-overlay" id="dropZone">
+                    <div class="drop-zone-content">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                        <p>Drop file here</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ─── RIGHT PANEL ─── -->
+        <div class="right-panel" id="rightPanel">
+            <div class="panel-header">
+                <div class="panel-header-left">
+                    <span class="panel-title">Findings</span>
+                    <span class="stats-source-badge" id="sourceLabel">Rule-Based</span>
+                </div>
+            </div>
+            <div class="stats-bar" id="statsBar">
+                <span class="stat-chip critical"><span class="dot"></span> Critical: <span id="statCritical">0</span></span>
+                <span class="stat-chip high"><span class="dot"></span> High: <span id="statHigh">0</span></span>
+                <span class="stat-chip medium"><span class="dot"></span> Medium: <span id="statMedium">0</span></span>
+                <span class="stat-chip low"><span class="dot"></span> Low: <span id="statLow">0</span></span>
+            </div>
+            <div class="findings-container" id="findingsContainer">
+                <div class="findings-empty" id="findingsEmpty">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                    <h3>No findings yet</h3>
+                    <p>Paste code in the left panel and click Analyze to run the review.</p>
+                </div>
+                <div class="print-header">
+                    <h1>PR Review Report</h1>
+                    <p id="printDate"></p>
+                </div>
+            </div>
+            <div class="loading-overlay" id="loadingOverlay">
+                <div class="spinner"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ─── SCORE BAR ─── -->
+    <footer class="score-bar">
+        <div class="score-bar-left">
+            <div class="score-ring-container">
+                <svg class="score-ring-svg" viewBox="0 0 48 48">
+                    <circle class="score-ring-bg" cx="24" cy="24" r="20"/>
+                    <circle class="score-ring-progress" id="scoreRingProgress" cx="24" cy="24" r="20"
+                        stroke-dasharray="125.66" stroke-dashoffset="125.66"/>
+                </svg>
+                <div class="score-ring-text" id="scoreText">--</div>
+            </div>
+            <div class="score-label">
+                <span class="score-label-title" id="scoreTitle">Ready to Analyze</span>
+                <span class="score-label-desc" id="scoreDesc">Paste code and click Analyze</span>
+            </div>
+        </div>
+        <div class="score-bar-right">
+            <button class="btn btn-primary" onclick="runAnalysis()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                Analyze
+            </button>
+            <button class="btn" onclick="copyAsMarkdown()" title="Copy review as Markdown">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                Copy as MD
+            </button>
+            <button class="btn" onclick="printReview()" title="Print review">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+                Print
+            </button>
+        </div>
+    </footer>
+
+    <!-- ─── HISTORY PANEL ─── -->
+    <div class="overlay" id="overlay" onclick="toggleHistory()"></div>
+    <aside class="history-panel" id="historyPanel">
+        <div class="history-panel-header">
+            <span class="history-panel-title">Review History</span>
+            <button class="btn btn-sm" onclick="clearHistory()">Clear All</button>
+        </div>
+        <div class="history-list" id="historyList"></div>
+    </aside>
+
+    <!-- ─── TOASTS ─── -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script>
+/* ─── CONFIG ─── */
+const LS_THEME = 'pr_reviewer_theme';
+const LS_API_KEY = 'pr_reviewer_api_key';
+const LS_HISTORY = 'pr_reviewer_history';
+const MAX_HISTORY = 10;
+const SEVERITY_ORDER = ['CRITICAL', 'HIGH', 'MEDIUM', 'LOW'];
+const SEVERITY_WEIGHTS = { CRITICAL: 15, HIGH: 8, MEDIUM: 3, LOW: 1 };
+const OPENAI_URL = 'https://api.openai.com/v1/chat/completions';
+const OPENAI_MODEL = 'gpt-4o-mini';
+
+/* ─── STATE ─── */
+let currentMode = 'rule';
+let currentTemplate = 'general';
+let currentFindings = [];
+let currentScore = null;
+let detectedLanguage = 'Unknown';
+let isAnalyzing = false;
+
+/* ─── DOM REFS ─── */
+const codeInput = document.getElementById('codeInput');
+const lineNumbers = document.getElementById('lineNumbers');
+const lineCountBadge = document.getElementById('lineCountBadge');
+const languageBadge = document.getElementById('languageBadge');
+const findingsContainer = document.getElementById('findingsContainer');
+const findingsEmpty = document.getElementById('findingsEmpty');
+const statsBar = document.getElementById('statsBar');
+const loadingOverlay = document.getElementById('loadingOverlay');
+const scoreRingProgress = document.getElementById('scoreRingProgress');
+const scoreText = document.getElementById('scoreText');
+const scoreTitle = document.getElementById('scoreTitle');
+const scoreDesc = document.getElementById('scoreDesc');
+const sourceLabel = document.getElementById('sourceLabel');
+const apiKeyInput = document.getElementById('apiKeyInput');
+const apiKeyStatus = document.getElementById('apiKeyStatus');
+const historyPanel = document.getElementById('historyPanel');
+const historyList = document.getElementById('historyList');
+const overlay = document.getElementById('overlay');
+const dropZone = document.getElementById('dropZone');
+const toastContainer = document.getElementById('toastContainer');
+
+/* ─── INIT ─── */
+(function init() {
+    /* Theme */
+    const savedTheme = localStorage.getItem(LS_THEME);
+    if (savedTheme === 'light') document.body.classList.add('light-theme');
+
+    /* API key */
+    const savedKey = localStorage.getItem(LS_API_KEY);
+    if (savedKey) {
+        apiKeyInput.value = savedKey;
+        apiKeyStatus.classList.add('valid');
+    }
+
+    /* Listeners */
+    codeInput.addEventListener('input', onCodeChange);
+    codeInput.addEventListener('scroll', syncScroll);
+    codeInput.addEventListener('keydown', handleTab);
+    apiKeyInput.addEventListener('input', onApiKeyChange);
+
+    /* File drop */
+    const leftPanel = document.getElementById('leftPanel');
+    leftPanel.addEventListener('dragover', function(e) { e.preventDefault(); dropZone.classList.add('active'); });
+    leftPanel.addEventListener('dragleave', function(e) { e.preventDefault(); dropZone.classList.remove('active'); });
+    leftPanel.addEventListener('drop', function(e) {
+        e.preventDefault();
+        dropZone.classList.remove('active');
+        const file = e.dataTransfer.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(ev) {
+                codeInput.value = ev.target.result;
+                onCodeChange();
+                showToast('File loaded: ' + file.name, 'success');
+            };
+            reader.readAsText(file);
+        }
+    });
+
+    /* Close dropdowns on outside click */
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('.dropdown-wrapper')) closeAllDropdowns();
+    });
+
+    updateLineNumbers();
+    renderHistory();
+})();
+
+/* ─── THEME ─── */
+function toggleTheme() {
+    document.body.classList.toggle('light-theme');
+    const isLight = document.body.classList.contains('light-theme');
+    localStorage.setItem(LS_THEME, isLight ? 'light' : 'dark');
+    const icon = document.getElementById('themeIcon');
+    icon.innerHTML = isLight
+        ? '<circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>'
+        : '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>';
+}
+
+/* ─── MODE TOGGLE ─── */
+function setMode(mode) {
+    currentMode = mode;
+    document.querySelectorAll('.mode-toggle-btn').forEach(function(btn) {
+        btn.classList.toggle('active', btn.dataset.mode === mode);
+    });
+    const showApiKey = mode === 'ai' || mode === 'both';
+    document.getElementById('apiKeyGroup').style.opacity = showApiKey ? '1' : '0.4';
+}
+
+/* ─── TEMPLATE ─── */
+function selectTemplate(template) {
+    currentTemplate = template;
+    closeAllDropdowns();
+    showToast('Template: ' + template.charAt(0).toUpperCase() + template.slice(1), 'info');
+}
+
+/* ─── DROPDOWN ─── */
+function toggleDropdown(id) {
+    const dd = document.getElementById(id);
+    dd.classList.toggle('open');
+}
+
+function closeAllDropdowns() {
+    document.querySelectorAll('.dropdown-menu').forEach(function(dd) { dd.classList.remove('open'); });
+}
+
+/* ─── API KEY ─── */
+function onApiKeyChange() {
+    const val = apiKeyInput.value.trim();
+    if (val.length > 10) {
+        localStorage.setItem(LS_API_KEY, val);
+        apiKeyStatus.classList.add('valid');
+    } else {
+        localStorage.removeItem(LS_API_KEY);
+        apiKeyStatus.classList.remove('valid');
+    }
+}
+
+/* ─── CODE INPUT ─── */
+function onCodeChange() {
+    updateLineNumbers();
+    updateLineCount();
+    detectLanguage();
+}
+
+function updateLineNumbers() {
+    const code = codeInput.value;
+    const lines = code ? code.split('\n') : [''];
+    let html = '';
+    for (let i = 1; i <= lines.length; i++) {
+        html += '<div class="line-number" data-line="' + i + '">' + i + '</div>';
+    }
+    lineNumbers.innerHTML = html;
+}
+
+function updateLineCount() {
+    const lines = codeInput.value ? codeInput.value.split('\n').length : 0;
+    lineCountBadge.textContent = lines + ' line' + (lines !== 1 ? 's' : '');
+}
+
+function syncScroll() {
+    lineNumbers.scrollTop = codeInput.scrollTop;
+}
+
+function handleTab(e) {
+    if (e.key === 'Tab') {
+        e.preventDefault();
+        const start = codeInput.selectionStart;
+        const end = codeInput.selectionEnd;
+        codeInput.value = codeInput.value.substring(0, start) + '    ' + codeInput.value.substring(end);
+        codeInput.selectionStart = codeInput.selectionEnd = start + 4;
+        onCodeChange();
+    }
+}
+
+function clearCode() {
+    codeInput.value = '';
+    onCodeChange();
+    currentFindings = [];
+    currentScore = null;
+    renderFindings([]);
+    updateScore(null);
+}
+
+/* ─── FETCH PR DIFF ─── */
+async function fetchPRDiff() {
+    const url = document.getElementById('prUrlInput').value.trim();
+    const pat = document.getElementById('prPatInput').value.trim();
+    if (!url) { showToast('Enter a PR URL'); return; }
+
+    const headers = {};
+    if (pat) headers['Authorization'] = 'Basic ' + btoa(':' + pat);
+
+    try {
+        let diffUrl = '';
+        let fetchHeaders = { ...headers };
+
+        // GitHub PR: https://github.com/owner/repo/pull/123
+        const ghMatch = url.match(/github\.com\/([^/]+)\/([^/]+)\/pull\/(\d+)/);
+        if (ghMatch) {
+            diffUrl = 'https://api.github.com/repos/' + ghMatch[1] + '/' + ghMatch[2] + '/pulls/' + ghMatch[3];
+            fetchHeaders['Accept'] = 'application/vnd.github.v3.diff';
+            if (pat) fetchHeaders['Authorization'] = 'token ' + pat;
+        }
+
+        // TFS PR: .../pullrequests/123 or .../_git/.../pullrequest/123
+        const tfsMatch = url.match(/(_apis\/git\/repositories\/[^/]+\/pullRequests\/\d+|_git\/[^/]+\/pullrequest\/(\d+))/);
+        if (tfsMatch && !ghMatch) {
+            // Extract base URL and construct API diff URL
+            const baseEnd = url.indexOf('/_');
+            const base = url.substring(0, baseEnd);
+            if (url.includes('_apis/')) {
+                diffUrl = url + '/iterations';
+            } else {
+                // UI URL — try to get diff via iterations
+                const prId = tfsMatch[2];
+                const gitPart = url.match(/(_git\/[^/]+)/);
+                if (gitPart) {
+                    diffUrl = base + '/_apis/git/repositories/' + gitPart[1].replace('_git/', '') + '/pullRequests/' + prId + '/iterations?api-version=5.0-preview';
+                }
+            }
+            fetchHeaders['Accept'] = 'application/json';
+        }
+
+        // Fallback: try as raw diff URL
+        if (!diffUrl) diffUrl = url;
+
+        showToast('Fetching PR diff...');
+        const resp = await fetch(diffUrl, { headers: fetchHeaders });
+        if (!resp.ok) throw new Error('HTTP ' + resp.status);
+
+        const contentType = resp.headers.get('content-type') || '';
+        let diffText = '';
+        if (contentType.includes('json')) {
+            const json = await resp.json();
+            // TFS returns iterations; try to get the diff description
+            diffText = JSON.stringify(json, null, 2);
+        } else {
+            diffText = await resp.text();
+        }
+
+        if (!diffText.trim()) throw new Error('Empty response');
+
+        codeInput.value = diffText;
+        onCodeChange();
+        showToast('PR diff loaded — click Analyze');
+    } catch (e) {
+        showToast('Failed to fetch: ' + e.message);
+    }
+}
+
+/* ─── LANGUAGE DETECTION ─── */
+function detectLanguage() {
+    const code = codeInput.value;
+    if (!code.trim()) {
+        detectedLanguage = 'Unknown';
+        updateLanguageBadge();
+        return;
+    }
+
+    const patterns = {
+        TypeScript: [/\binterface\s+\w+/, /:\s*(string|number|boolean)\b/, /\btype\s+\w+\s*=/, /\bas\s+(string|number|any)\b/],
+        JavaScript: [/\brequire\s*\(/, /\bconsole\.log\b/, /\bmodule\.exports\b/, /=>\s*\{/],
+        Python: [/\bdef\s+\w+\s*\(/, /\bimport\s+\w+/, /\bclass\s+\w+\s*(\(|:)/, /^\s*#.*$/m],
+        'C#': [/\bnamespace\s+\w+/, /\busing\s+System/, /\bpublic\s+(class|void|static|int|string)\b/, /\bvar\s+\w+\s*=/],
+        SQL: [/\bSELECT\s+/i, /\bFROM\s+/i, /\bWHERE\s+/i, /\bINSERT\s+INTO\b/i],
+        CSS: [/@media\s+/, /@keyframes\s+/, /\{[^{}]*:[^{}]*;\s*\}/, /\.[\w-]+\s*\{/],
+        HTML: [/<\/?[a-z]+[^>]*>/i, /<!DOCTYPE\s+html>/i],
+        Java: [/\bpublic\s+class\b/, /\bSystem\.out\.print/, /\bimport\s+java\./],
+        Go: [/\bfunc\s+\w+/, /\bpackage\s+\w+/, /\bfmt\.Print/],
+        Rust: [/\bfn\s+\w+/, /\blet\s+mut\b/, /\bimpl\s+\w+/],
+        PHP: [/<\?php/, /\$\w+\s*=/, /\bfunction\s+\w+\s*\(/]
+    };
+
+    let bestLang = 'Unknown';
+    let bestScore = 0;
+
+    for (const [lang, regexes] of Object.entries(patterns)) {
+        let langScore = 0;
+        for (const regex of regexes) {
+            if (regex.test(code)) langScore++;
+        }
+        if (langScore > bestScore) {
+            bestScore = langScore;
+            bestLang = lang;
+        }
+    }
+
+    detectedLanguage = bestScore >= 1 ? bestLang : 'Unknown';
+    updateLanguageBadge();
+}
+
+function updateLanguageBadge() {
+    const colors = {
+        TypeScript: '#3178c6',
+        JavaScript: '#f7df1e',
+        Python: '#3776ab',
+        'C#': '#239120',
+        SQL: '#e38c00',
+        CSS: '#1572b6',
+        HTML: '#e34c26',
+        Java: '#b07219',
+        Go: '#00add8',
+        Rust: '#dea584',
+        PHP: '#777bb4',
+        Unknown: '#94a3b8'
+    };
+    const color = colors[detectedLanguage] || '#94a3b8';
+    languageBadge.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg> ' + detectedLanguage;
+    languageBadge.style.color = color;
+    languageBadge.style.borderColor = color + '44';
+    languageBadge.style.background = color + '1a';
+}
+
+/* ─── ANALYSIS ORCHESTRATOR ─── */
+async function runAnalysis() {
+    const code = codeInput.value.trim();
+    if (!code) {
+        showToast('Please paste some code first.', 'error');
+        return;
+    }
+    if (isAnalyzing) return;
+
+    isAnalyzing = true;
+    loadingOverlay.classList.add('active');
+    currentFindings = [];
+
+    try {
+        if (currentMode === 'rule' || currentMode === 'both') {
+            const ruleFindings = runRuleBasedAnalysis(code);
+            currentFindings = currentFindings.concat(ruleFindings);
+        }
+
+        if (currentMode === 'ai' || currentMode === 'both') {
+            const apiKey = apiKeyInput.value.trim();
+            if (!apiKey || apiKey.length < 10) {
+                showToast('Enter a valid OpenAI API key for AI review.', 'error');
+            } else {
+                try {
+                    const aiFindings = await runAIReview(code, apiKey);
+                    currentFindings = currentFindings.concat(aiFindings);
+                } catch (err) {
+                    showToast('AI review failed: ' + err.message, 'error');
+                }
+            }
+        }
+
+        /* Deduplicate by title+line */
+        const seen = new Set();
+        currentFindings = currentFindings.filter(function(f) {
+            const key = f.title + ':' + f.line;
+            if (seen.has(key)) return false;
+            seen.add(key);
+            return true;
+        });
+
+        /* Sort by severity then line */
+        currentFindings.sort(function(a, b) {
+            const sa = SEVERITY_ORDER.indexOf(a.severity);
+            const sb = SEVERITY_ORDER.indexOf(b.severity);
+            if (sa !== sb) return sa - sb;
+            return (a.line || 0) - (b.line || 0);
+        });
+
+        const score = calculateScore(currentFindings);
+        currentScore = score;
+
+        renderFindings(currentFindings);
+        updateScore(score);
+        highlightLines(currentFindings);
+        saveToHistory(detectedLanguage, score, currentFindings.length);
+        showToast('Analysis complete: ' + currentFindings.length + ' finding(s)', 'success');
+
+    } finally {
+        isAnalyzing = false;
+        loadingOverlay.classList.remove('active');
+    }
+}
+
+/* ─── SCORE CALCULATION ─── */
+function calculateScore(findings) {
+    let penalty = 0;
+    const counts = { CRITICAL: 0, HIGH: 0, MEDIUM: 0, LOW: 0 };
+
+    for (const f of findings) {
+        counts[f.severity] = (counts[f.severity] || 0) + 1;
+        penalty += SEVERITY_WEIGHTS[f.severity] || 0;
+    }
+
+    let score = Math.max(0, 100 - penalty);
+
+    /* Cap rules */
+    if (counts.CRITICAL > 0) score = Math.min(score, 40);
+    if (counts.HIGH > 3) score = Math.min(score, 60);
+
+    return Math.round(score);
+}
+
+function getScoreColor(score) {
+    if (score >= 90) return '#10b981';
+    if (score >= 70) return '#14b8a6';
+    if (score >= 50) return '#f59e0b';
+    if (score >= 30) return '#f97316';
+    return '#ef4444';
+}
+
+function getScoreLabel(score) {
+    if (score >= 90) return 'Excellent';
+    if (score >= 70) return 'Good';
+    if (score >= 50) return 'Needs Work';
+    if (score >= 30) return 'Poor';
+    return 'Critical Issues';
+}
+
+function updateScore(score) {
+    const circumference = 2 * Math.PI * 20; /* r=20 */
+    if (score === null) {
+        scoreRingProgress.style.strokeDashoffset = circumference;
+        scoreRingProgress.style.stroke = 'var(--border-color)';
+        scoreText.textContent = '--';
+        scoreTitle.textContent = 'Ready to Analyze';
+        scoreDesc.textContent = 'Paste code and click Analyze';
+        return;
+    }
+
+    const offset = circumference - (score / 100) * circumference;
+    const color = getScoreColor(score);
+
+    scoreRingProgress.style.strokeDashoffset = offset;
+    scoreRingProgress.style.stroke = color;
+    scoreText.textContent = score;
+    scoreText.style.color = color;
+    scoreTitle.textContent = 'Score: ' + score + '/100 (' + getScoreLabel(score) + ')';
+    scoreDesc.textContent = currentFindings.length + ' finding(s) detected';
+}
+
+/* ─── RENDER FINDINGS ─── */
+function renderFindings(findings) {
+    const counts = { CRITICAL: 0, HIGH: 0, MEDIUM: 0, LOW: 0 };
+    for (const f of findings) counts[f.severity] = (counts[f.severity] || 0) + 1;
+
+    document.getElementById('statCritical').textContent = counts.CRITICAL;
+    document.getElementById('statHigh').textContent = counts.HIGH;
+    document.getElementById('statMedium').textContent = counts.MEDIUM;
+    document.getElementById('statLow').textContent = counts.LOW;
+
+    if (findings.length === 0) {
+        findingsEmpty.style.display = 'flex';
+        /* Remove any existing groups */
+        findingsContainer.querySelectorAll('.severity-group').forEach(function(el) { el.remove(); });
+        return;
+    }
+
+    findingsEmpty.style.display = 'none';
+
+    /* Remove old groups */
+    findingsContainer.querySelectorAll('.severity-group').forEach(function(el) { el.remove(); });
+
+    /* Build groups */
+    const groups = {};
+    for (const sev of SEVERITY_ORDER) groups[sev] = [];
+    for (const f of findings) groups[f.severity].push(f);
+
+    for (const sev of SEVERITY_ORDER) {
+        if (groups[sev].length === 0) continue;
+
+        const groupEl = document.createElement('div');
+        groupEl.className = 'severity-group ' + sev.toLowerCase();
+
+        const headerEl = document.createElement('div');
+        headerEl.className = 'severity-group-header';
+        headerEl.innerHTML = '<span class="severity-dot"></span>'
+            + '<span class="severity-label">' + esc(sev) + '</span>'
+            + '<span class="severity-count">(' + groups[sev].length + ')</span>'
+            + '<svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>';
+
+        headerEl.addEventListener('click', function() {
+            headerEl.classList.toggle('collapsed');
+            itemsEl.classList.toggle('collapsed');
+        });
+
+        const itemsEl = document.createElement('div');
+        itemsEl.className = 'severity-group-items';
+
+        for (const f of groups[sev]) {
+            itemsEl.appendChild(createFindingCard(f));
+        }
+
+        groupEl.appendChild(headerEl);
+        groupEl.appendChild(itemsEl);
+        findingsContainer.appendChild(groupEl);
+    }
+
+    /* Update source label */
+    if (currentMode === 'both') {
+        sourceLabel.textContent = 'Rule + AI';
+    } else if (currentMode === 'ai') {
+        sourceLabel.textContent = 'AI-Powered';
+    } else {
+        sourceLabel.textContent = 'Rule-Based';
+    }
+}
+
+function createFindingCard(finding) {
+    const card = document.createElement('div');
+    card.className = 'finding-card ' + finding.severity.toLowerCase();
+
+    const severityAbbrevs = { CRITICAL: 'C', HIGH: 'H', MEDIUM: 'M', LOW: 'L' };
+
+    const header = document.createElement('div');
+    header.className = 'finding-card-header';
+    header.innerHTML = '<div class="finding-severity-icon">' + severityAbbrevs[finding.severity] + '</div>'
+        + '<span class="finding-card-title">' + esc(finding.title) + '</span>'
+        + (finding.line ? '<span class="finding-card-line">L' + finding.line + '</span>' : '')
+        + '<svg class="finding-card-expand" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>';
+
+    header.addEventListener('click', function() {
+        card.classList.toggle('expanded');
+    });
+
+    const body = document.createElement('div');
+    body.className = 'finding-card-body';
+    body.innerHTML = '<div class="finding-description">' + esc(finding.description) + '</div>'
+        + (finding.suggestion ? '<div class="finding-suggestion"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg><span>' + esc(finding.suggestion) + '</span></div>' : '')
+        + '<div class="finding-source-tag">' + esc(finding.source || 'rule') + '</div>';
+
+    card.appendChild(header);
+    card.appendChild(body);
+    return card;
+}
+
+function highlightLines(findings) {
+    const lineEls = lineNumbers.querySelectorAll('.line-number');
+    lineEls.forEach(function(el) { el.classList.remove('highlighted'); });
+
+    const badLines = new Set();
+    for (const f of findings) {
+        if (f.line && (f.severity === 'CRITICAL' || f.severity === 'HIGH')) {
+            badLines.add(f.line);
+        }
+    }
+
+    lineEls.forEach(function(el) {
+        const num = parseInt(el.getAttribute('data-line'), 10);
+        if (badLines.has(num)) el.classList.add('highlighted');
+    });
+}
+
+/* ─── RULE-BASED ANALYSIS ─── */
+function runRuleBasedAnalysis(code) {
+    const lines = code.split('\n');
+    const findings = [];
+
+    /* Check 1: console.log / debugger statements */
+    checkConsoleDebug(lines, findings);
+
+    /* Check 2: TODO/FIXME/HACK comments */
+    checkTodoComments(lines, findings);
+
+    /* Check 3: Hardcoded secrets */
+    checkHardcodedSecrets(lines, findings);
+
+    /* Check 4: Long functions >50 lines */
+    checkLongFunctions(lines, findings);
+
+    /* Check 5: Deep nesting >4 levels */
+    checkDeepNesting(lines, findings);
+
+    /* Check 6: Empty catch blocks */
+    checkEmptyCatch(code, lines, findings);
+
+    /* Check 7: Async without try/catch */
+    checkAsyncWithoutTryCatch(code, lines, findings);
+
+    /* Check 8: Magic numbers */
+    checkMagicNumbers(lines, findings);
+
+    /* Check 9: SQL injection patterns */
+    checkSQLInjection(lines, findings);
+
+    /* Check 10: XSS patterns */
+    checkXSSPatterns(lines, findings);
+
+    /* Check 11: Large file >300 lines */
+    checkLargeFile(lines, findings);
+
+    /* Check 12: Mixed tabs/spaces */
+    checkMixedIndentation(lines, findings);
+
+    /* Check 13: Commented-out code */
+    checkCommentedCode(lines, findings);
+
+    /* Check 14: Unused variables */
+    checkUnusedVariables(code, lines, findings);
+
+    return findings;
+}
+
+/* ─── CHECK 1: CONSOLE.LOG / DEBUGGER ─── */
+function checkConsoleDebug(lines, findings) {
+    const regex = /\b(console\.(log|debug|warn|error|trace|info))\s*\(/;
+    const debugRegex = /\bdebugger\b/;
+
+    for (let i = 0; i < lines.length; i++) {
+        const line = lines[i];
+        const match = regex.exec(line);
+        if (match) {
+            findings.push({
+                severity: 'MEDIUM',
+                line: i + 1,
+                title: 'Console statement detected: ' + match[1],
+                description: 'Console statements should be removed before merging. They can leak sensitive data in production and add noise to the output.',
+                suggestion: 'Remove the console statement or replace with a proper logging library.',
+                source: 'rule'
+            });
+        }
+        if (debugRegex.test(line)) {
+            findings.push({
+                severity: 'MEDIUM',
+                line: i + 1,
+                title: 'Debugger statement found',
+                description: 'The "debugger" keyword will pause execution in browsers with DevTools open. Must be removed before production.',
+                suggestion: 'Remove the debugger statement.',
+                source: 'rule'
+            });
+        }
+    }
+}
+
+/* ─── CHECK 2: TODO / FIXME / HACK ─── */
+function checkTodoComments(lines, findings) {
+    const regex = /\/\/\s*(TODO|FIXME|HACK|XXX)\b/i;
+    const hashRegex = /#\s*(TODO|FIXME|HACK|XXX)\b/i;
+
+    for (let i = 0; i < lines.length; i++) {
+        const line = lines[i];
+        const match = regex.exec(line) || hashRegex.exec(line);
+        if (match) {
+            findings.push({
+                severity: 'LOW',
+                line: i + 1,
+                title: match[1].toUpperCase() + ' comment found',
+                description: 'A "' + match[1].toUpperCase() + '" comment indicates unfinished or questionable code. Review before merging.',
+                suggestion: 'Resolve the ' + match[1].toUpperCase() + ' or create a tracking issue for it.',
+                source: 'rule'
+            });
+        }
+    }
+}
+
+/* ─── CHECK 3: HARDCODED SECRETS ─── */
+function checkHardcodedSecrets(lines, findings) {
+    const regex = /(api[_-]?key|secret|password|token|auth[_-]?token|access[_-]?key|private[_-]?key)\s*[:=]\s*['"][^'"]{8,}['"]/i;
+
+    for (let i = 0; i < lines.length; i++) {
+        const line = lines[i];
+        /* Skip obvious comments */
+        const trimmed = line.trim();
+        if (trimmed.startsWith('//') || trimmed.startsWith('#') || trimmed.startsWith('*')) continue;
+
+        const match = regex.exec(line);
+        if (match) {
+            findings.push({
+                severity: 'CRITICAL',
+                line: i + 1,
+                title: 'Potential hardcoded secret: ' + match[1],
+                description: 'A value resembling a hardcoded secret was found. Secrets in source code can be extracted from version control history even after removal.',
+                suggestion: 'Move the secret to an environment variable or a secrets manager. Use process.env or a .env file (gitignored).',
+                source: 'rule'
+            });
+        }
+    }
+}
+
+/* ─── CHECK 4: LONG FUNCTIONS > 50 LINES ─── */
+function checkLongFunctions(lines, findings) {
+    const funcStartRegex = /(?:function\s+\w+\s*\(|(?:const|let|var)\s+\w+\s*=\s*(?:async\s+)?(?:function|\([^)]*\)\s*=>|\w+\s*=>)|\w+\s*\([^)]*\)\s*\{)/;
+
+    let braceDepth = 0;
+    let funcStartLine = -1;
+    let funcName = '';
+    let inFunction = false;
+
+    for (let i = 0; i < lines.length; i++) {
+        const line = lines[i];
+
+        if (!inFunction) {
+            const match = funcStartRegex.exec(line);
+            if (match && line.includes('{')) {
+                inFunction = true;
+                funcStartLine = i;
+                braceDepth = 0;
+                /* Try to extract name */
+                const nameMatch = /(?:function\s+(\w+)|(?:const|let|var)\s+(\w+)\s*=|(\w+)\s*\()/.exec(line);
+                funcName = nameMatch ? (nameMatch[1] || nameMatch[2] || nameMatch[3]) : 'anonymous';
+
+                /* Count braces on this line */
+                for (const ch of line) {
+                    if (ch === '{') braceDepth++;
+                    if (ch === '}') braceDepth--;
+                }
+                continue;
+            }
+        }
+
+        if (inFunction) {
+            for (const ch of line) {
+                if (ch === '{') braceDepth++;
+                if (ch === '}') braceDepth--;
+            }
+
+            if (braceDepth <= 0) {
+                const length = i - funcStartLine + 1;
+                if (length > 50) {
+                    findings.push({
+                        severity: 'MEDIUM',
+                        line: funcStartLine + 1,
+                        title: 'Long function: ' + funcName + ' (' + length + ' lines)',
+                        description: 'Functions longer than 50 lines are harder to read, test, and maintain. This function spans ' + length + ' lines.',
+                        suggestion: 'Break the function into smaller, focused helper functions.',
+                        source: 'rule'
+                    });
+                }
+                inFunction = false;
+                braceDepth = 0;
+            }
+        }
+    }
+}
+
+/* ─── CHECK 5: DEEP NESTING > 4 LEVELS ─── */
+function checkDeepNesting(lines, findings) {
+    const reported = new Set();
+    for (let i = 0; i < lines.length; i++) {
+        const line = lines[i];
+        /* Measure leading indentation */
+        const leadingSpaces = line.match(/^(\s*)/)[1];
+        let depth = 0;
+        for (const ch of leadingSpaces) {
+            if (ch === '\t') depth += 1;
+            else depth += 0.25; /* 4 spaces = 1 level */
+        }
+        depth = Math.floor(depth);
+
+        if (depth > 4 && !reported.has(depth)) {
+            /* Only report the first occurrence at each extreme depth */
+            reported.add(depth);
+            findings.push({
+                severity: 'MEDIUM',
+                line: i + 1,
+                title: 'Deep nesting detected (level ' + depth + ')',
+                description: 'Code nested more than 4 levels deep is hard to read and prone to logic errors. Found ' + depth + ' levels of indentation.',
+                suggestion: 'Use early returns, guard clauses, or extract nested logic into separate functions.',
+                source: 'rule'
+            });
+            if (reported.size >= 3) break; /* Limit reports */
+        }
+    }
+}
+
+/* ─── CHECK 6: EMPTY CATCH BLOCKS ─── */
+function checkEmptyCatch(code, lines, findings) {
+    const regex = /catch\s*\([^)]*\)\s*\{\s*\}/g;
+    let match;
+    while ((match = regex.exec(code)) !== null) {
+        const lineNum = code.substring(0, match.index).split('\n').length;
+        findings.push({
+            severity: 'HIGH',
+            line: lineNum,
+            title: 'Empty catch block',
+            description: 'Silently swallowing errors hides bugs and makes debugging nearly impossible. The catch block has no error handling logic.',
+            suggestion: 'Log the error, rethrow it, or handle it appropriately. At minimum, add a comment explaining why it is intentionally empty.',
+            source: 'rule'
+        });
+    }
+}
+
+/* ─── CHECK 7: ASYNC WITHOUT TRY/CATCH ─── */
+function checkAsyncWithoutTryCatch(code, lines, findings) {
+    /* Find async functions and check if they contain try blocks */
+    const asyncRegex = /async\s+(?:function\s+(\w+)\s*\(|(\w+)\s*\()/g;
+    let match;
+
+    while ((match = asyncRegex.exec(code)) !== null) {
+        const name = match[1] || match[2] || 'anonymous';
+        const startIdx = match.index;
+        const lineNum = code.substring(0, startIdx).split('\n').length;
+
+        /* Find the function body by tracking braces */
+        let braceStart = code.indexOf('{', startIdx);
+        if (braceStart === -1) continue;
+
+        let depth = 0;
+        let bodyEnd = braceStart;
+        for (let j = braceStart; j < code.length; j++) {
+            if (code[j] === '{') depth++;
+            if (code[j] === '}') depth--;
+            if (depth === 0) {
+                bodyEnd = j;
+                break;
+            }
+        }
+
+        const body = code.substring(braceStart, bodyEnd + 1);
+        const awaitPresent = /\bawait\b/.test(body);
+        const tryPresent = /\btry\s*\{/.test(body);
+
+        if (awaitPresent && !tryPresent) {
+            findings.push({
+                severity: 'HIGH',
+                line: lineNum,
+                title: 'Async function without try/catch: ' + name,
+                description: 'Async function "' + name + '" uses await but has no try/catch block. Unhandled promise rejections crash Node.js and cause silent failures in browsers.',
+                suggestion: 'Wrap await calls in a try/catch block, or attach a .catch() handler at the call site.',
+                source: 'rule'
+            });
+        }
+    }
+
+    /* Also check arrow async functions */
+    const arrowAsyncRegex = /(?:const|let|var)\s+(\w+)\s*=\s*async\s*(?:\([^)]*\)|\w+)\s*=>/g;
+    while ((match = arrowAsyncRegex.exec(code)) !== null) {
+        const name = match[1];
+        const startIdx = match.index;
+        const lineNum = code.substring(0, startIdx).split('\n').length;
+
+        let braceStart = code.indexOf('{', startIdx);
+        if (braceStart === -1 || braceStart > startIdx + match[0].length + 200) continue;
+
+        let depth = 0;
+        let bodyEnd = braceStart;
+        for (let j = braceStart; j < code.length; j++) {
+            if (code[j] === '{') depth++;
+            if (code[j] === '}') depth--;
+            if (depth === 0) {
+                bodyEnd = j;
+                break;
+            }
+        }
+
+        const body = code.substring(braceStart, bodyEnd + 1);
+        const awaitPresent = /\bawait\b/.test(body);
+        const tryPresent = /\btry\s*\{/.test(body);
+
+        if (awaitPresent && !tryPresent) {
+            findings.push({
+                severity: 'HIGH',
+                line: lineNum,
+                title: 'Async arrow function without try/catch: ' + name,
+                description: 'Async function "' + name + '" uses await but has no try/catch block. Unhandled rejections can crash the application.',
+                suggestion: 'Wrap await calls in a try/catch block.',
+                source: 'rule'
+            });
+        }
+    }
+}
+
+/* ─── CHECK 8: MAGIC NUMBERS ─── */
+function checkMagicNumbers(lines, findings) {
+    const allowedNumbers = new Set([0, 1, -1, 2, 10, 100, 200, 201, 204, 301, 302, 400, 401, 403, 404, 500, 1000]);
+    const magicRegex = /(?<![.\w])(-?\d+\.?\d*)(?![\w.])/g;
+    let reported = 0;
+
+    for (let i = 0; i < lines.length; i++) {
+        if (reported >= 5) break; /* Limit */
+        const line = lines[i];
+        const trimmed = line.trim();
+
+        /* Skip comments, strings, imports, array indices */
+        if (trimmed.startsWith('//') || trimmed.startsWith('#') || trimmed.startsWith('*') || trimmed.startsWith('/*')) continue;
+        if (/^\s*(import|require|from)\b/.test(line)) continue;
+        if (/^\s*(const|let|var)\s+\w+\s*=\s*-?\d+/.test(line)) continue; /* constant assignment */
+
+        let match;
+        magicRegex.lastIndex = 0;
+        while ((match = magicRegex.exec(line)) !== null) {
+            const num = parseFloat(match[1]);
+            if (isNaN(num) || allowedNumbers.has(num)) continue;
+            /* Skip if it looks like an array index or object key */
+            const before = line.substring(0, match.index);
+            if (before.endsWith('[') || before.endsWith('.') || before.endsWith(':') || before.endsWith(',')) continue;
+            /* Skip if part of a larger expression that is likely a config */
+            if (/(?:width|height|size|margin|padding|port|timeout|delay|duration|interval|limit|offset|max|min)\s*[:=]/i.test(line)) continue;
+
+            findings.push({
+                severity: 'LOW',
+                line: i + 1,
+                title: 'Magic number: ' + num,
+                description: 'Numeric literal ' + num + ' appears without an explanatory constant name. Magic numbers reduce readability and make maintenance harder.',
+                suggestion: 'Extract the number into a named constant (e.g., const MAX_RETRIES = ' + num + ').',
+                source: 'rule'
+            });
+            reported++;
+            break; /* One per line */
+        }
+    }
+}
+
+/* ─── CHECK 9: SQL INJECTION ─── */
+function checkSQLInjection(lines, findings) {
+    const regex = /['"`]\s*\+\s*\w+.*(?:SELECT|INSERT|UPDATE|DELETE|WHERE|DROP|ALTER|TRUNCATE)\b/i;
+    const regex2 = /(?:SELECT|INSERT|UPDATE|DELETE|WHERE|DROP|ALTER|TRUNCATE)\b.*['"`]\s*\+\s*\w+/i;
+    const templateRegex = /(?:SELECT|INSERT|UPDATE|DELETE|WHERE)\b[^`]*\$\{/i;
+
+    for (let i = 0; i < lines.length; i++) {
+        const line = lines[i];
+        if (regex.test(line) || regex2.test(line) || templateRegex.test(line)) {
+            findings.push({
+                severity: 'CRITICAL',
+                line: i + 1,
+                title: 'Potential SQL injection',
+                description: 'String concatenation in what appears to be a SQL query. Attackers can manipulate the query to access, modify, or delete unauthorized data.',
+                suggestion: 'Use parameterized queries or prepared statements instead of string concatenation.',
+                source: 'rule'
+            });
+        }
+    }
+}
+
+/* ─── CHECK 10: XSS PATTERNS ─── */
+function checkXSSPatterns(lines, findings) {
+    const innerHTMLRegex = /\.innerHTML\s*=\s*(?!['"`]<)[^;]*[\+\$`]/;
+    const outerHTMLRegex = /\.outerHTML\s*=\s*(?!['"`]<)[^;]*[\+\$`]/;
+    const documentWriteRegex = /document\.write\s*\(\s*(?!['"`]<)[^)]*[\+\$`]/;
+    const evalRegex = /\beval\s*\(\s*(?!['"`])[^)]+\)/;
+
+    for (let i = 0; i < lines.length; i++) {
+        const line = lines[i];
+        if (innerHTMLRegex.test(line) || outerHTMLRegex.test(line)) {
+            findings.push({
+                severity: 'CRITICAL',
+                line: i + 1,
+                title: 'Potential XSS via innerHTML',
+                description: 'Setting innerHTML with dynamic content can execute arbitrary JavaScript if the content includes script tags or event handlers.',
+                suggestion: 'Use textContent for plain text, or sanitize HTML with a library like DOMPurify before assigning to innerHTML.',
+                source: 'rule'
+            });
+        }
+        if (documentWriteRegex.test(line)) {
+            findings.push({
+                severity: 'CRITICAL',
+                line: i + 1,
+                title: 'Potential XSS via document.write',
+                description: 'document.write with dynamic content is a classic XSS vector and can overwrite the entire page.',
+                suggestion: 'Use DOM manipulation methods (createElement, appendChild) instead of document.write.',
+                source: 'rule'
+            });
+        }
+        if (evalRegex.test(line)) {
+            findings.push({
+                severity: 'CRITICAL',
+                line: i + 1,
+                title: 'Use of eval() detected',
+                description: 'eval() executes arbitrary code and is a severe security risk if any user-controlled data reaches it.',
+                suggestion: 'Replace eval() with JSON.parse(), Function constructor, or a safer alternative.',
+                source: 'rule'
+            });
+        }
+    }
+}
+
+/* ─── CHECK 11: LARGE FILE > 300 LINES ─── */
+function checkLargeFile(lines, findings) {
+    if (lines.length > 300) {
+        findings.push({
+            severity: 'LOW',
+            line: null,
+            title: 'Large file: ' + lines.length + ' lines',
+            description: 'Files exceeding 300 lines can become difficult to navigate and maintain. Consider splitting into focused modules.',
+            suggestion: 'Extract related functions into separate files organized by feature or responsibility.',
+            source: 'rule'
+        });
+    }
+}
+
+/* ─── CHECK 12: MIXED TABS / SPACES ─── */
+function checkMixedIndentation(lines, findings) {
+    const regex = /^(\t+ +| +\t+)/;
+    let firstFound = -1;
+    let count = 0;
+
+    for (let i = 0; i < lines.length; i++) {
+        if (regex.test(lines[i])) {
+            if (firstFound === -1) firstFound = i;
+            count++;
+        }
+    }
+
+    if (count > 0) {
+        findings.push({
+            severity: 'LOW',
+            line: firstFound + 1,
+            title: 'Mixed tabs and spaces (' + count + ' lines)',
+            description: 'Found ' + count + ' lines with mixed tab and space indentation. This causes inconsistent rendering across editors.',
+            suggestion: 'Configure your editor to use either tabs or spaces consistently. Run a formatter like Prettier.',
+            source: 'rule'
+        });
+    }
+}
+
+/* ─── CHECK 13: COMMENTED-OUT CODE ─── */
+function checkCommentedCode(lines, findings) {
+    const regex = /\/\/\s*(var |let |const |function |if\s*\(|return |else |for\s*\(|while\s*\(|switch\s*\(|class |import |export |async |await )/;
+    const hashRegex = /#\s*(def |class |import |return |if |for |while |print\()/;
+    let reported = 0;
+
+    for (let i = 0; i < lines.length; i++) {
+        if (reported >= 3) break;
+        const line = lines[i];
+        if (regex.test(line) || hashRegex.test(line)) {
+            findings.push({
+                severity: 'LOW',
+                line: i + 1,
+                title: 'Commented-out code detected',
+                description: 'Commented-out code adds noise and should be removed. Version control preserves history if the code is needed later.',
+                suggestion: 'Delete the commented-out code. Use git history to recover it if needed.',
+                source: 'rule'
+            });
+            reported++;
+        }
+    }
+}
+
+/* ─── CHECK 14: UNUSED VARIABLES ─── */
+function checkUnusedVariables(code, lines, findings) {
+    /* Two-pass: collect declarations, then count references */
+    const declRegex = /(?:const|let|var)\s+(\w+)\s*[=;]/g;
+    const funcDeclRegex = /function\s+(\w+)\s*\(/g;
+    const declarations = [];
+
+    let match;
+    while ((match = declRegex.exec(code)) !== null) {
+        const name = match[1];
+        const lineNum = code.substring(0, match.index).split('\n').length;
+        declarations.push({ name: name, line: lineNum });
+    }
+    while ((match = funcDeclRegex.exec(code)) !== null) {
+        const name = match[1];
+        const lineNum = code.substring(0, match.index).split('\n').length;
+        declarations.push({ name: name, line: lineNum });
+    }
+
+    /* Filter common false positives */
+    const ignore = new Set(['i', 'j', 'k', 'e', 'err', 'error', '_', '__', 'exports', 'module', 'require', 'console', 'document', 'window', 'self', 'global', 'process']);
+
+    let reported = 0;
+    for (const decl of declarations) {
+        if (reported >= 5) break;
+        if (ignore.has(decl.name)) continue;
+        if (decl.name.length < 2) continue;
+
+        /* Count occurrences (word boundary match) */
+        const searchRegex = new RegExp('\\b' + escapeRegex(decl.name) + '\\b', 'g');
+        const matches = code.match(searchRegex);
+        const occurrences = matches ? matches.length : 0;
+
+        /* If only 1 occurrence (the declaration itself), it is likely unused */
+        if (occurrences === 1) {
+            findings.push({
+                severity: 'MEDIUM',
+                line: decl.line,
+                title: 'Possibly unused: ' + decl.name,
+                description: 'Variable or function "' + decl.name + '" is declared but only appears once in the code. It may be unused.',
+                suggestion: 'Remove the declaration if it is unused, or verify it is used elsewhere (e.g., exported).',
+                source: 'rule'
+            });
+            reported++;
+        }
+    }
+}
+
+/* ─── AI-POWERED REVIEW ─── */
+async function runAIReview(code, apiKey) {
+    const templatePrompts = {
+        general: 'You are a senior code reviewer. Analyze the code for bugs, security issues, code quality, and best practices.',
+        security: 'You are a security-focused code reviewer. Prioritize finding security vulnerabilities: injection attacks, XSS, CSRF, authentication issues, secrets exposure, insecure deserialization, and access control problems.',
+        performance: 'You are a performance-focused code reviewer. Prioritize finding performance issues: N+1 queries, memory leaks, unnecessary re-renders, blocking operations, missing caching, unoptimized algorithms, and resource waste.'
+    };
+
+    const systemPrompt = (templatePrompts[currentTemplate] || templatePrompts.general)
+        + '\n\nRespond ONLY with valid JSON in this exact format:\n'
+        + '{"findings": [{"severity": "CRITICAL|HIGH|MEDIUM|LOW", "line": <number or null>, "title": "<short title>", "description": "<explanation>", "suggestion": "<fix>"}]}\n'
+        + 'If no issues found, return {"findings": []}.\n'
+        + 'Keep each finding concise. Maximum 15 findings.';
+
+    const response = await fetch(OPENAI_URL, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + apiKey
+        },
+        body: JSON.stringify({
+            model: OPENAI_MODEL,
+            messages: [
+                { role: 'system', content: systemPrompt },
+                { role: 'user', content: 'Review this code:\n\n```\n' + code.substring(0, 12000) + '\n```' }
+            ],
+            temperature: 0.3,
+            max_tokens: 2000
+        })
+    });
+
+    if (!response.ok) {
+        const errorData = await response.json().catch(function() { return {}; });
+        throw new Error((errorData.error && errorData.error.message) || 'API request failed (' + response.status + ')');
+    }
+
+    const data = await response.json();
+    const content = data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content;
+
+    if (!content) throw new Error('Empty response from AI');
+
+    /* Parse JSON from response (handle markdown code blocks) */
+    let jsonStr = content.trim();
+    if (jsonStr.startsWith('```')) {
+        jsonStr = jsonStr.replace(/^```(?:json)?\s*/, '').replace(/```\s*$/, '');
+    }
+
+    let parsed;
+    try {
+        parsed = JSON.parse(jsonStr);
+    } catch (e) {
+        throw new Error('Failed to parse AI response as JSON');
+    }
+
+    if (!parsed.findings || !Array.isArray(parsed.findings)) return [];
+
+    /* Validate and tag findings */
+    return parsed.findings
+        .filter(function(f) {
+            return f && f.severity && f.title && SEVERITY_ORDER.includes(f.severity);
+        })
+        .map(function(f) {
+            return {
+                severity: f.severity,
+                line: typeof f.line === 'number' ? f.line : null,
+                title: String(f.title),
+                description: String(f.description || ''),
+                suggestion: String(f.suggestion || ''),
+                source: 'ai'
+            };
+        });
+}
+
+/* ─── HISTORY ─── */
+function getHistory() {
+    try {
+        return JSON.parse(localStorage.getItem(LS_HISTORY)) || [];
+    } catch (e) {
+        return [];
+    }
+}
+
+function saveToHistory(language, score, findingsCount) {
+    const history = getHistory();
+    history.unshift({
+        date: new Date().toISOString(),
+        language: language,
+        score: score,
+        findings: findingsCount,
+        mode: currentMode
+    });
+
+    /* Keep only last MAX_HISTORY */
+    while (history.length > MAX_HISTORY) history.pop();
+
+    localStorage.setItem(LS_HISTORY, JSON.stringify(history));
+    renderHistory();
+}
+
+function renderHistory() {
+    const history = getHistory();
+    if (history.length === 0) {
+        historyList.innerHTML = '<div class="history-empty"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg><p>No reviews yet. Your review history will appear here.</p></div>';
+        return;
+    }
+
+    let html = '';
+    for (let idx = 0; idx < history.length; idx++) {
+        const item = history[idx];
+        const color = getScoreColor(item.score);
+        const date = new Date(item.date);
+        const dateStr = date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+        html += '<div class="history-item">'
+            + '<div class="history-item-score" style="color:' + color + ';border-color:' + color + '">' + item.score + '</div>'
+            + '<div class="history-item-info">'
+            + '<div class="history-item-lang">' + esc(item.language || 'Unknown') + ' (' + esc(item.mode) + ')</div>'
+            + '<div class="history-item-date">' + esc(dateStr) + '</div>'
+            + '<div class="history-item-findings">' + item.findings + ' finding(s)</div>'
+            + '</div>'
+            + '<button class="history-item-delete" onclick="deleteHistoryItem(' + idx + ')" title="Remove">'
+            + '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>'
+            + '</button></div>';
+    }
+    historyList.innerHTML = html;
+}
+
+function deleteHistoryItem(idx) {
+    const history = getHistory();
+    history.splice(idx, 1);
+    localStorage.setItem(LS_HISTORY, JSON.stringify(history));
+    renderHistory();
+}
+
+function clearHistory() {
+    localStorage.removeItem(LS_HISTORY);
+    renderHistory();
+    showToast('History cleared.', 'info');
+}
+
+function toggleHistory() {
+    const isOpen = historyPanel.classList.contains('open');
+    historyPanel.classList.toggle('open');
+    overlay.classList.toggle('active');
+    if (!isOpen) renderHistory();
+}
+
+/* ─── COPY AS MARKDOWN ─── */
+function copyAsMarkdown() {
+    if (currentFindings.length === 0) {
+        showToast('No findings to copy. Run an analysis first.', 'error');
+        return;
+    }
+
+    let md = '# PR Review Report\n\n';
+    md += '**Date:** ' + new Date().toLocaleString() + '\n';
+    md += '**Language:** ' + detectedLanguage + '\n';
+    md += '**Score:** ' + (currentScore !== null ? currentScore + '/100' : 'N/A') + '\n';
+    md += '**Mode:** ' + currentMode + '\n\n';
+    md += '---\n\n';
+
+    const counts = { CRITICAL: 0, HIGH: 0, MEDIUM: 0, LOW: 0 };
+    for (const f of currentFindings) counts[f.severity]++;
+
+    md += '## Summary\n\n';
+    md += '| Severity | Count |\n';
+    md += '|----------|-------|\n';
+    for (const sev of SEVERITY_ORDER) {
+        if (counts[sev] > 0) md += '| ' + sev + ' | ' + counts[sev] + ' |\n';
+    }
+    md += '\n';
+
+    for (const sev of SEVERITY_ORDER) {
+        const items = currentFindings.filter(function(f) { return f.severity === sev; });
+        if (items.length === 0) continue;
+
+        md += '## ' + sev + ' (' + items.length + ')\n\n';
+        for (const f of items) {
+            md += '### ' + (f.line ? 'Line ' + f.line + ': ' : '') + f.title + '\n\n';
+            md += f.description + '\n\n';
+            if (f.suggestion) md += '> **Suggestion:** ' + f.suggestion + '\n\n';
+        }
+    }
+
+    navigator.clipboard.writeText(md).then(function() {
+        showToast('Review copied to clipboard as Markdown.', 'success');
+    }).catch(function() {
+        showToast('Failed to copy to clipboard.', 'error');
+    });
+}
+
+/* ─── PRINT ─── */
+function printReview() {
+    if (currentFindings.length === 0) {
+        showToast('No findings to print. Run an analysis first.', 'error');
+        return;
+    }
+    /* Make all cards expanded for print */
+    document.querySelectorAll('.finding-card').forEach(function(card) {
+        card.classList.add('expanded');
+    });
+    document.getElementById('printDate').textContent = new Date().toLocaleString() + ' | Score: ' + (currentScore || '--') + '/100 | ' + detectedLanguage;
+    window.print();
+}
+
+/* ─── TOAST ─── */
+function showToast(message, type) {
+    type = type || 'info';
+    const toast = document.createElement('div');
+    toast.className = 'toast ' + type;
+    toast.textContent = message;
+    toastContainer.appendChild(toast);
+
+    setTimeout(function() {
+        toast.classList.add('toast-exit');
+        setTimeout(function() {
+            if (toast.parentNode) toast.parentNode.removeChild(toast);
+        }, 300);
+    }, 3000);
+}
+
+/* ─── UTILITIES ─── */
+function esc(str) {
+    if (!str) return '';
+    const div = document.createElement('div');
+    div.appendChild(document.createTextNode(str));
+    return div.innerHTML;
+}
+
+function escapeRegex(str) {
+    return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+    </script>
+</body>
+</html>
