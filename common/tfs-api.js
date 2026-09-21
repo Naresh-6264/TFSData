@@ -103,7 +103,6 @@ var TFS = (function () {
             // No proxy — use XMLHttpRequest with NTLM/Negotiate
             var xhr = new XMLHttpRequest();
             xhr.open(method, url, true);
-            xhr.withCredentials = true;
 
             // Set Basic auth header — on NTLM servers, the browser will
             // negotiate automatically after the initial 401 challenge
@@ -161,7 +160,6 @@ var TFS = (function () {
 
             var xhr = new XMLHttpRequest();
             xhr.open('PATCH', url, true);
-            xhr.withCredentials = true;
             if (config.pat) xhr.setRequestHeader('Authorization', 'Basic ' + btoa(':' + config.pat));
             xhr.setRequestHeader('Content-Type', 'application/json-patch+json');
             xhr.onload = function () {

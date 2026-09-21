@@ -134,6 +134,41 @@ Sprint capacity planning and backlog assignment, with write-back to TFS.
 - Workload Dashboard — per-member load against capacity
 - Push to TFS — writes assignments back to work items
 
+### Sprint Planner (`sprint-planner/index.html`)
+
+Team-scoped sprint planning with task scaffolding. Four tabs: Capacity Planning, **Task Planner**,
+Backlog & Assignment, Workload Dashboard, Push to TFS.
+
+- **Team scoping** — teams come from `/_apis/projects/{project}/teams` (43 teams exist). Selecting a
+  team loads its area paths (`teamfieldvalues`), working days (`teamsettings`) and its own iteration
+  list (`teamsettings/iterations`, which carries `timeFrame: past|current|future`).
+- **Roster = TFS capacity**, not scraped assignees. `teamsettings/iterations/{id}/capacities` returns
+  the people actually planned for (16 for team Review, vs the 317 the old assignee scan produced),
+  with `capacityPerDay` and per-member days off; `teamdaysoff` gives team-wide days off.
+- **Learned task profile** — `learnFromPastSprints()` samples the team’s last 4 sprints and derives,
+  per task type, the median estimate, usual discipline, tag, execution type and usual owners. Cached
+  per team in `localStorage` under `sprint_planner_profile_<teamId>`.
+- **Task scaffolding** — development requirements get Analysis, Plan Preparation, Development, Plan
+  Review, Code Review, Code Merge; verification requirements get Verification. Task types already
+  present under a requirement are skipped. Learned extras (L1, L2, TC Generation, TC Review, Support)
+  are offered unticked.
+- **Every write is confirmation-gated**, and each task is sent with `validateOnly=true` first; only
+  tasks TFS accepts are created.
+
+#### TFS facts this tool depends on (measured against the live server)
+
+| Fact | Detail |
+|------|--------|
+| Teams / capacity API version | `2.0-preview` (work-item APIs stay on `2.0`) |
+| The “Product tag” | `System.Tags` containing the literal tag `Product` — 77% of 533 sampled tasks. `Casepoint.TFS.CustomFields.ProductLine` exists but is **empty** on tasks |
+| Development vs verification requirement | Tags: `Affected Area` → verification; `Deliverable` / `Aha-I` / `URN-*` → development; `ALM`, `Regression`, `*Support*` → sprint containers |
+| Task title convention | `<Task type> : <Requirement title>`, with case and separator varying in history (`Plan preparation`, `Code merge`, `L2 - `) |
+| Iteration path shapes | `teamsettings/iterations[].path` already includes the project; `teamsettings.defaultIteration.path` does not — normalise with `fullIterationPath()` before using in WIQL |
+| Capacity display names | `"Name <DOMAIN\user>"` from the capacity API, plain `"Name"` elsewhere — normalise with `cleanName()` |
+| Team membership includes groups | e.g. `[CasepointARA]Review Doc Developers` — filter with `isGroupIdentity()` |
+| Task creation | `POST /{project}/_apis/wit/workitems/$Task` with `application/json-patch+json`; parent via `System.LinkTypes.Hierarchy-Reverse`; `validateOnly=true` validates and persists nothing |
+| Created task defaults | `System.State` = `Proposed`; `System.AssignedTo` defaults to the PAT owner |
+
 ### User Performance Report (`user-performance-report/index.html`)
 
 Per-member sprint scorecard built from TFS work item + update history.

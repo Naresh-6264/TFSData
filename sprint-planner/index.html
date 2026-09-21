@@ -1188,6 +1188,158 @@ a:hover { text-decoration: underline; }
     background: none;
 }
 
+/* ─── TASK PLANNER: TEAM BANNER ─── */
+.team-banner {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 22px;
+  align-items: center;
+  padding: 12px 16px;
+  margin-bottom: 18px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-left: 3px solid var(--accent-primary);
+  border-radius: var(--radius-md);
+  font-size: 13px;
+}
+.team-banner:empty { display: none; }
+.tb-item { display: inline-flex; align-items: baseline; gap: 6px; color: var(--text-primary); }
+.tb-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+.tb-dim { color: var(--text-dim); font-size: 12px; }
+
+/* ─── TASK PLANNER: TABLE HELPERS ─── */
+.data-table td.num, .data-table th.num { text-align: right; font-variant-numeric: tabular-nums; }
+.data-table td.dim { color: var(--text-dim); }
+.ok-text { color: var(--success); font-weight: 600; }
+.err-text { color: var(--danger); font-weight: 600; }
+.tag-chip {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--info-bg);
+  color: var(--info);
+  font-size: 11px;
+  font-weight: 600;
+}
+.learned-chip {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 1px 7px;
+  border-radius: 999px;
+  border: 1px dashed var(--border-color-strong);
+  color: var(--text-dim);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+.mini-select {
+  margin-left: 8px;
+  padding: 2px 6px;
+  font-size: 11px;
+  font-family: inherit;
+  color: var(--text-secondary);
+  background: var(--bg-input);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+}
+
+/* ─── TASK PLANNER: EDITABLE PLAN GRID ─── */
+.plan-table td { padding: 6px 8px; vertical-align: middle; }
+.plan-table tr.row-muted { opacity: 0.45; }
+.grid-input {
+  width: 100%;
+  min-width: 90px;
+  padding: 5px 8px;
+  font-size: 12px;
+  font-family: inherit;
+  color: var(--text-primary);
+  background: var(--bg-input);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  transition: border-color var(--transition-fast);
+}
+.grid-input:focus { outline: none; border-color: var(--accent-primary); }
+.grid-input.num { min-width: 68px; text-align: right; }
+
+/* ─── TASK PLANNER: CAPACITY IMPACT ─── */
+.plan-totals {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 20px;
+  padding: 10px 14px;
+  margin-bottom: 12px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  font-size: 13px;
+}
+.impact-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(168px, 1fr));
+  gap: 10px;
+  margin-bottom: 18px;
+}
+.impact-card {
+  padding: 10px 12px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-top: 2px solid var(--success);
+  border-radius: var(--radius-md);
+}
+.impact-card.warn { border-top-color: var(--warning); }
+.impact-card.over { border-top-color: var(--danger); }
+.impact-name {
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.impact-num { margin-top: 2px; font-size: 15px; font-variant-numeric: tabular-nums; }
+.impact-bar {
+  height: 4px;
+  margin: 6px 0 4px;
+  background: var(--bg-input);
+  border-radius: 999px;
+  overflow: hidden;
+}
+.impact-bar span { display: block; height: 100%; background: var(--success); }
+.impact-card.warn .impact-bar span { background: var(--warning); }
+.impact-card.over .impact-bar span { background: var(--danger); }
+.impact-sub { font-size: 11px; color: var(--text-dim); }
+
+/* ─── TASK PLANNER: CONFIRMATION DIALOG ─── */
+.confirm-lead { margin-bottom: 10px; line-height: 1.6; }
+.confirm-warn {
+  padding: 8px 12px;
+  margin-bottom: 10px;
+  background: var(--warning-bg);
+  border-left: 3px solid var(--warning);
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+}
+.confirm-note { margin-bottom: 12px; font-size: 12px; color: var(--text-dim); }
+.confirm-detail {
+  max-height: 260px;
+  overflow-y: auto;
+  padding: 10px 12px;
+  background: var(--bg-input);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  text-align: left;
+}
+.confirm-req + .confirm-req { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border-color); }
+.confirm-req-title { font-size: 12px; font-weight: 600; color: var(--text-secondary); }
+.confirm-task-list { margin: 6px 0 0; padding-left: 18px; font-size: 12px; color: var(--text-dim); }
+.confirm-task-list li { margin-bottom: 2px; }
+.confirm-task-list strong { color: var(--text-primary); }
+
 /* ─── FOOTER ─── */
 .app-footer {
     padding: 12px 24px;
@@ -1264,6 +1416,13 @@ a:hover { text-decoration: underline; }
 
                 <div id="sprintSelector" class="sprint-selector hidden">
                     <div class="form-group">
+                        <label class="form-label" for="teamSelect">Select Team</label>
+                        <select id="teamSelect" class="form-select" onchange="onTeamChange('teamSelect')">
+                            <option value="">-- Select a team --</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
                         <label class="form-label" for="sprintSelect">Select Sprint</label>
                         <select id="sprintSelect" class="form-select" onchange="onSprintChange()">
                             <option value="">-- Select a sprint --</option>
@@ -1294,8 +1453,11 @@ a:hover { text-decoration: underline; }
                     <span class="connection-dot"></span>
                     <span>Connected</span>
                 </div>
+                <select id="headerTeamSelect" class="form-select" style="max-width:200px; font-size:12px; padding:6px 28px 6px 10px;"
+                        title="Team" onchange="onTeamChange('headerTeamSelect')">
+                </select>
                 <select id="headerSprintSelect" class="form-select" style="max-width:220px; font-size:12px; padding:6px 28px 6px 10px;"
-                        onchange="onHeaderSprintChange()">
+                        title="Sprint" onchange="onHeaderSprintChange()">
                 </select>
                 <button class="btn btn-icon" onclick="toggleTheme()" title="Toggle theme">
                     <span id="themeIcon">&#9790;</span>
@@ -1311,6 +1473,10 @@ a:hover { text-decoration: underline; }
             <button class="tab-btn active" data-tab="capacity" onclick="switchTab('capacity')">
                 <span class="tab-icon">&#128101;</span>
                 Capacity Planning
+            </button>
+            <button class="tab-btn" data-tab="planner" onclick="switchTab('planner')">
+                <span class="tab-icon">&#128221;</span>
+                Task Planner
             </button>
             <button class="tab-btn" data-tab="backlog" onclick="switchTab('backlog')">
                 <span class="tab-icon">&#128203;</span>
@@ -1411,7 +1577,55 @@ a:hover { text-decoration: underline; }
                 </div>
             </div>
 
-            <!-- ─── TAB 2: BACKLOG & ASSIGNMENT ─── -->
+            <!-- ─── TAB 2: TASK PLANNER ─── -->
+            <div id="tab-planner" class="tab-panel">
+
+                <div id="teamBanner" class="team-banner"></div>
+
+                <!-- What this team's own sprint history says about task breakdown -->
+                <div class="section-header">
+                    <h2 class="section-title">&#129302; Learned task profile</h2>
+                    <div class="capacity-actions">
+                        <span id="profileMeta" class="dim" style="font-size:12px"></span>
+                        <button class="btn btn-sm" onclick="learnFromPastSprints()" title="Read this team's last few sprints from TFS and derive its task conventions">
+                            Learn from past sprints
+                        </button>
+                    </div>
+                </div>
+                <div id="profileBody"></div>
+
+                <!-- This sprint's requirements for the team -->
+                <div class="section-header" style="margin-top:26px">
+                    <h2 class="section-title">&#128203; Requirements in this sprint</h2>
+                    <div class="capacity-actions">
+                        <button class="btn btn-sm" onclick="loadRequirements()" title="Reload from TFS">
+                            Load requirements
+                        </button>
+                        <button class="btn btn-sm btn-primary" onclick="generatePlan()" title="Build the standard task set for every ticked requirement">
+                            Generate tasks
+                        </button>
+                    </div>
+                </div>
+                <div id="requirementsBody"></div>
+
+                <!-- The editable plan, and the only route to a TFS write -->
+                <div class="section-header" style="margin-top:26px">
+                    <h2 class="section-title">&#128640; Tasks to create</h2>
+                    <div class="capacity-actions">
+                        <button class="btn btn-sm" onclick="validatePlanOnly()" title="Ask TFS to validate every task without creating anything">
+                            Validate only
+                        </button>
+                        <button class="btn btn-sm btn-success" onclick="reviewPlan()" title="Review exactly what will be created, then confirm">
+                            Review &amp; create in TFS
+                        </button>
+                    </div>
+                </div>
+                <div id="planSummary"></div>
+                <div id="planBody"></div>
+                <div id="planLog" class="push-log hidden" style="margin-top:16px"></div>
+            </div>
+
+            <!-- ─── TAB 3: BACKLOG & ASSIGNMENT ─── -->
             <div id="tab-backlog" class="tab-panel">
                 <div class="section-header">
                     <h2 class="section-title">&#128203; Backlog &amp; Assignment</h2>
@@ -1660,11 +1874,20 @@ const LS_THEME = 'sprint_planner_theme';
 const LS_PROXY = 'sprint_planner_proxy';
 const LS_CAPACITY_PREFIX = 'sprint_planner_capacity_';
 const LS_ASSIGNMENTS_PREFIX = 'sprint_planner_assignments_';
+const LS_TEAM = 'sprint_planner_team';
+const LS_PROFILE_PREFIX = 'sprint_planner_profile_';
 const TFS_PROJECT = 'CasepointARA';
 const API_VERSION = '2.0';
+/* Teams / capacity endpoints on this server are preview-only; work-item APIs are 2.0. */
+const TEAM_API_VERSION = '2.0-preview';
 const PI_PATTERN = /PI-\d{4}/;
 const BATCH_SIZE = 200;
 const DEBOUNCE_MS = 120;
+/* How many past sprints the task-profile learner samples by default. */
+const LEARN_SPRINTS = 4;
+/* A task type is offered for a requirement class when it appeared on at least
+   this share of that class's requirements in the learned history. */
+const TEMPLATE_THRESHOLD = 0.3;
 
 /* ─── STATE ─── */
 let state = {
@@ -1679,6 +1902,19 @@ let state = {
     sprintStartDate: null,
     sprintEndDate: null,
     teamMembers: [],
+    /* ─── team scoping (from TFS, so the tool matches what TFS itself shows) ─── */
+    teams: [],              // [{id, name, description}]
+    selectedTeam: null,     // {id, name}
+    teamAreas: [],          // [{path, includeChildren}]  from teamfieldvalues
+    teamIterations: [],     // [{id, name, path, startDate, finishDate, timeFrame}]
+    workingDays: [],        // e.g. ['monday',...] from teamsettings
+    teamDaysOff: [],        // [{start, end}] from teamdaysoff
+    memberSource: '',       // 'capacity' | 'team' | 'assignees' — how teamMembers was filled
+    /* ─── task planning ─── */
+    requirements: [],       // sprint requirements/bugs for the team, with classification + existing children
+    profile: null,          // learned task-type profile from past sprints
+    plan: [],               // generated, editable task rows awaiting confirmation
+    planResults: [],
     backlogItems: [],
     sprintItems: [],        // items already in the sprint
     assignments: {},        // { itemId: memberName }
@@ -1806,12 +2042,8 @@ async function apiFetch(url, options = {}) {
         ? `${state.proxyUrl}${encodeURIComponent(versionedUrl)}`
         : versionedUrl;
 
-    const headers = {};
-    // Use explicit Basic auth if a proxy is configured (proxy handles CORS)
-    // Otherwise rely on browser NTLM/Negotiate (credentials: 'include')
-    if (state.proxyUrl) {
-        headers['Authorization'] = state.authHeader;
-    }
+    // Same as tfs-dashboard: always send the PAT, never send credentials.
+    const headers = { 'Authorization': state.authHeader };
     if (options.method && options.method !== 'GET') {
         headers['Content-Type'] = options.contentType || 'application/json';
     }
@@ -1819,7 +2051,6 @@ async function apiFetch(url, options = {}) {
 
     const response = await fetch(fetchUrl, {
         ...options,
-        credentials: 'include',
         headers: headers
     });
 
@@ -1889,6 +2120,15 @@ async function connect() {
         // Validate PAT by loading iterations directly (matches working tfs-dashboard pattern)
         await loadSprints();
 
+        /* Teams come from TFS itself, so the planner can scope to one team
+           rather than everyone who happens to be assigned work this sprint. */
+        try {
+            await loadTeams();
+            populateTeamDropdowns();
+        } catch (err) {
+            showToast(`Team list unavailable: ${err.message}`, 'warning');
+        }
+
         state.connected = true;
         localStorage.setItem(LS_PAT, pat);
         localStorage.setItem(LS_URL, baseUrl);
@@ -1901,6 +2141,12 @@ async function connect() {
         showToast('Connected to TFS successfully', 'success');
 
         document.getElementById('sprintSelector').classList.remove('hidden');
+
+        /* Restore the team last used, so the sprint list is already scoped. */
+        const savedTeam = localStorage.getItem(LS_TEAM);
+        if (savedTeam && state.teams.some(t => t.id === savedTeam)) {
+            await selectTeam(savedTeam);
+        }
 
     } catch (err) {
         const isNetworkError = err.message === 'Failed to fetch' || err.message.includes('NetworkError') || err.message.includes('CORS');
@@ -2037,15 +2283,24 @@ async function selectSprint(path) {
     loadSavedCapacity();
     loadSavedAssignments();
 
+    state.plan = [];
+    state.requirements = [];
+
     showLoading(`Loading sprint data for ${sprint.name}...`);
     try {
+        /* With a team selected the roster comes from TFS capacity for that
+           team; otherwise fall back to the old assignee scan. */
         await Promise.all([
-            loadTeamMembers(),
+            state.selectedTeam ? loadTeamRoster() : loadTeamMembers(),
             loadSprintItems()
         ]);
     } finally {
         hideLoading();
     }
+    updateTeamBanner();
+    renderProfile();
+    renderRequirements();
+    renderPlan();
 }
 
 /* ─── ENTER PLANNER ─── */
@@ -2102,7 +2357,7 @@ async function loadTeamMembers() {
     }
 
     try {
-        const iterPath = `${TFS_PROJECT}\\${state.selectedSprint.path}`;
+        const iterPath = fullIterationPath(state.selectedSprint.path, state.selectedSprint.name);
         const wiqlQuery = `SELECT [System.Id] FROM WorkItems WHERE [System.IterationPath] UNDER '${iterPath}' AND [System.WorkItemType] IN ('Task','Bug','Requirement') AND [System.State] <> 'Removed'`;
 
         const wiqlResult = await apiPost(`/${TFS_PROJECT}/_apis/wit/wiql`, { query: wiqlQuery });
@@ -2475,7 +2730,7 @@ function renderBacklog() {
 function assignItem(itemId, memberName) {
     if (memberName) {
         state.assignments[itemId] = memberName;
-        state.iterationMove[itemId] = state.selectedSprint ? `${TFS_PROJECT}\\${state.selectedSprint.path}` : '';
+        state.iterationMove[itemId] = state.selectedSprint ? fullIterationPath(state.selectedSprint.path, state.selectedSprint.name) : '';
     } else {
         delete state.assignments[itemId];
         delete state.iterationMove[itemId];
@@ -2681,9 +2936,11 @@ function autoBalance() {
             }
         }
 
-        if (bestMember && bestRemaining > 0) {
+        /* Only assign when the member can actually absorb the estimate; the
+           old check (remaining > 0) drove remaining capacity negative. */
+        if (bestMember && bestRemaining > 0 && bestRemaining >= estimate) {
             state.assignments[item.id] = bestMember;
-            state.iterationMove[item.id] = state.selectedSprint ? `${TFS_PROJECT}\\${state.selectedSprint.path}` : '';
+            state.iterationMove[item.id] = state.selectedSprint ? fullIterationPath(state.selectedSprint.path, state.selectedSprint.name) : '';
             remainingCapacity[bestMember] -= estimate;
             assignedCount++;
         } else {
@@ -2780,6 +3037,10 @@ function confirmPush() {
     }
 
     const dialog = document.getElementById('confirmDialog');
+    /* The dialog is shared with the task planner, which repoints this button. */
+    const confirmBtn = document.getElementById('dialogConfirmBtn');
+    confirmBtn.textContent = 'Confirm & Push';
+    confirmBtn.onclick = executePush;
     document.getElementById('dialogTitle').textContent = 'Confirm Push to TFS';
     document.getElementById('dialogBody').innerHTML =
         `You are about to push <strong>${changes.length}</strong> work item update(s) to TFS.<br><br>` +
@@ -3072,7 +3333,7 @@ async function loadSprintItems() {
     if (!state.selectedSprint) return;
 
     try {
-        const iterPath = `${TFS_PROJECT}\\${state.selectedSprint.path}`;
+        const iterPath = fullIterationPath(state.selectedSprint.path, state.selectedSprint.name);
         const wiqlQuery = `SELECT [System.Id] FROM WorkItems WHERE [System.IterationPath] UNDER '${iterPath}' AND [System.WorkItemType] IN ('Task','Bug','Requirement') AND [System.State] NOT IN ('Removed','Closed','Done')`;
 
         const wiqlResult = await apiPost(`/${TFS_PROJECT}/_apis/wit/wiql`, { query: wiqlQuery });
@@ -3166,6 +3427,1171 @@ function setupKeyboardShortcuts() {
             saveCapacity();
         }
     });
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   TEAM SCOPING
+   Reads TFS's own team APIs so the planner shows what TFS shows: a team's
+   members, its area paths, its iterations and its sprint capacity.
+   Nothing in this section writes to TFS.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* TFS returns identity display names as "Name <DOMAIN\user>" from the capacity
+   API but plain "Name" from team membership and System.AssignedTo. Normalise
+   so the three can be compared. */
+function cleanName(v) {
+    if (!v) return '';
+    const raw = typeof v === 'object' ? (v.displayName || v.uniqueName || '') : String(v);
+    return raw.replace(/\s*<[^>]*>\s*$/, '').trim();
+}
+
+/* A TFS group inside a team (e.g. "[CasepointARA]\Review Doc Developers") is
+   not a person and must never become a capacity row. */
+function isGroupIdentity(name) {
+    return /^\[.*\]\\/.test(String(name || ''));
+}
+
+function tagList(tags) {
+    return String(tags || '').split(';').map(s => s.trim()).filter(Boolean);
+}
+
+/* Iteration paths come back in two shapes on this server: the team-iterations
+   list already includes the project ("CasepointARA\PI-2026-5_2") while
+   teamsettings.defaultIteration does not ("\PI-2026-5_2"). Normalise to the
+   fully-qualified form WIQL expects, without doubling the project name. */
+function fullIterationPath(rawPath, name) {
+    const raw = String(rawPath || '').replace(/^\\+/, '');
+    if (!raw) return `${TFS_PROJECT}\\${name}`;
+    if (raw === TFS_PROJECT || raw.indexOf(TFS_PROJECT + '\\') === 0) return raw;
+    return `${TFS_PROJECT}\\${raw}`;
+}
+
+function teamSettingsUrl(teamId, rest) {
+    return `/${encodeURIComponent(TFS_PROJECT)}/${encodeURIComponent(teamId)}/_apis/work/teamsettings${rest}`;
+}
+
+/* ─── LOAD TEAMS ─── */
+async function loadTeams() {
+    const data = await apiFetch(`/_apis/projects/${encodeURIComponent(TFS_PROJECT)}/teams?api-version=${TEAM_API_VERSION}&$top=500`);
+    state.teams = (data.value || [])
+        .map(t => ({ id: t.id, name: t.name, description: t.description || '' }))
+        .sort((a, b) => a.name.localeCompare(b.name));
+    return state.teams;
+}
+
+/* ─── TEAM CONTEXT: area paths, working days, iterations ─── */
+async function loadTeamContext(teamId) {
+    const team = state.teams.find(t => t.id === teamId);
+    state.selectedTeam = team || { id: teamId, name: teamId };
+
+    const [fieldValues, settings, iterations] = await Promise.all([
+        apiFetch(teamSettingsUrl(teamId, `/teamfieldvalues?api-version=${TEAM_API_VERSION}`)),
+        apiFetch(teamSettingsUrl(teamId, `?api-version=${TEAM_API_VERSION}`)),
+        apiFetch(teamSettingsUrl(teamId, `/iterations?api-version=${TEAM_API_VERSION}`))
+    ]);
+
+    state.teamAreas = (fieldValues.values || [])
+        .map(v => ({ path: v.value, includeChildren: v.includeChildren !== false }))
+        .filter(a => a.path);
+    state.workingDays = settings.workingDays && settings.workingDays.length
+        ? settings.workingDays
+        : ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'];
+
+    state.teamIterations = (iterations.value || []).map(i => ({
+        id: i.id,
+        name: i.name,
+        path: fullIterationPath(i.path, i.name),
+        startDate: i.attributes && i.attributes.startDate,
+        endDate: i.attributes && i.attributes.finishDate,
+        timeFrame: (i.attributes && i.attributes.timeFrame) || ''
+    }));
+
+    localStorage.setItem(LS_TEAM, teamId);
+    return state.selectedTeam;
+}
+
+/* The team's own sprints, newest first, limited to the PI naming the project
+   actually uses. */
+function teamSprints() {
+    return state.teamIterations.filter(i => PI_PATTERN.test(i.name)).slice().reverse();
+}
+
+function populateTeamDropdowns() {
+    const saved = localStorage.getItem(LS_TEAM) || '';
+    ['teamSelect', 'headerTeamSelect'].forEach(id => {
+        const select = document.getElementById(id);
+        if (!select) return;
+        clearNode(select);
+        select.appendChild(h('option', { value: '', text: '-- Select a team --' }));
+        state.teams.forEach(t => select.appendChild(h('option', { value: t.id, text: t.name })));
+        if (saved && state.teams.some(t => t.id === saved)) select.value = saved;
+    });
+    return saved;
+}
+
+function onTeamChange(selectId) {
+    const el = document.getElementById(selectId);
+    if (!el || !el.value) return;
+    ['teamSelect', 'headerTeamSelect'].forEach(id => {
+        const other = document.getElementById(id);
+        if (other && other !== el) other.value = el.value;
+    });
+    selectTeam(el.value);
+}
+
+/* Switching team re-scopes everything: area paths, the sprint list, the
+   roster and the learned profile. */
+async function selectTeam(teamId) {
+    showLoading('Loading team from TFS...');
+    try {
+        await loadTeamContext(teamId);
+
+        /* The sprint list now comes from the team's own iterations, which is
+           what TFS shows on that team's backlog. */
+        const sprints = teamSprints();
+        if (sprints.length) {
+            state.sprints = sprints.map(i => ({
+                id: i.id, name: i.name, path: i.path, startDate: i.startDate, endDate: i.endDate
+            }));
+            populateSprintDropdowns();
+        }
+
+        state.profile = loadSavedProfile();
+        state.plan = [];
+        state.requirements = [];
+
+        if (state.connected && state.selectedSprint) {
+            const stillThere = state.sprints.some(s => s.path === state.selectedSprint.path);
+            if (stillThere) await loadTeamRoster();
+        }
+        updateTeamBanner();
+        renderProfile();
+        renderRequirements();
+        renderPlan();
+        showToast(`Team set to ${state.selectedTeam.name}`, 'success');
+    } catch (err) {
+        showToast(`Failed to load team: ${err.message}`, 'error');
+    } finally {
+        hideLoading();
+    }
+}
+
+/* ─── TEAM CAPACITY (TFS's own numbers) ─── */
+/* Counts working days in a range using the team's configured working days —
+   the same arithmetic TFS's capacity page uses. */
+function countTeamWorkingDays(start, end) {
+    const names = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+    const allowed = new Set((state.workingDays || []).map(d => String(d).toLowerCase()));
+    if (!allowed.size) ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'].forEach(d => allowed.add(d));
+    let n = 0;
+    const cur = new Date(start);
+    while (cur <= end) {
+        if (allowed.has(names[cur.getDay()])) n++;
+        cur.setDate(cur.getDate() + 1);
+    }
+    return n;
+}
+
+/* How many of the given day-off ranges land on team working days. */
+function countDaysOff(ranges) {
+    if (!ranges || !ranges.length) return 0;
+    const names = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+    const allowed = new Set((state.workingDays || []).map(d => String(d).toLowerCase()));
+    if (!allowed.size) ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'].forEach(d => allowed.add(d));
+    let n = 0;
+    ranges.forEach(r => {
+        if (!r || !r.start) return;
+        const cur = new Date(r.start);
+        const end = new Date(r.end || r.start);
+        while (cur <= end) {
+            if (allowed.has(names[cur.getDay()])) n++;
+            cur.setDate(cur.getDate() + 1);
+        }
+    });
+    return n;
+}
+
+/* Fills state.teamMembers from TFS capacity for this team and sprint, falling
+   back to team membership. Scraping assignees off work items is the last
+   resort only — that is what used to list 300+ people. */
+async function loadTeamRoster() {
+    if (!state.selectedTeam) return;
+    const teamId = state.selectedTeam.id;
+    const iteration = state.teamIterations.find(i => state.selectedSprint && i.path === state.selectedSprint.path) ||
+        state.teamIterations.find(i => state.selectedSprint && i.name === state.selectedSprint.name);
+
+    state.teamDaysOff = [];
+    let members = [];
+
+    if (iteration) {
+        try {
+            const caps = await apiFetch(teamSettingsUrl(teamId, `/iterations/${encodeURIComponent(iteration.id)}/capacities?api-version=${TEAM_API_VERSION}`));
+            try {
+                const off = await apiFetch(teamSettingsUrl(teamId, `/iterations/${encodeURIComponent(iteration.id)}/teamdaysoff?api-version=${TEAM_API_VERSION}`));
+                state.teamDaysOff = (off && off.daysOff) || [];
+            } catch (e) { state.teamDaysOff = []; }
+            members = (caps.value || []).map(c => {
+                const perDay = (c.activities || []).reduce((sum, a) => sum + (Number(a.capacityPerDay) || 0), 0);
+                return {
+                    name: cleanName(c.teamMember),
+                    uniqueName: (c.teamMember && c.teamMember.uniqueName) || '',
+                    hoursPerDay: perDay,
+                    daysOff: countDaysOff(c.daysOff),
+                    meetingHours: 0,
+                    fromTfs: true
+                };
+            }).filter(m => m.name && !isGroupIdentity(m.uniqueName) && !isGroupIdentity(m.name));
+            if (members.length) state.memberSource = 'capacity';
+        } catch (err) {
+            showToast(`Sprint capacity unavailable (${err.message}) — using team membership`, 'warning');
+        }
+    }
+
+    if (!members.length) {
+        try {
+            const data = await apiFetch(`/_apis/projects/${encodeURIComponent(TFS_PROJECT)}/teams/${encodeURIComponent(teamId)}/members?api-version=${TEAM_API_VERSION}&$top=500`);
+            members = (data.value || []).map(m => {
+                const identity = m.identity || m;
+                return {
+                    name: cleanName(identity),
+                    uniqueName: identity.uniqueName || '',
+                    hoursPerDay: 8,
+                    daysOff: 0,
+                    meetingHours: 0,
+                    fromTfs: true
+                };
+            }).filter(m => m.name && !isGroupIdentity(m.uniqueName) && !isGroupIdentity(m.name));
+            if (members.length) state.memberSource = 'team';
+        } catch (err) {
+            showToast(`Team membership unavailable: ${err.message}`, 'error');
+        }
+    }
+
+    if (members.length) {
+        /* Preserve capacity the user edited by hand for people still on the team. */
+        const saved = {};
+        state.teamMembers.forEach(m => { saved[m.name] = m; });
+        state.teamMembers = members.map(m => {
+            const prev = saved[m.name];
+            return prev && !prev.fromTfs
+                ? Object.assign({}, m, { hoursPerDay: prev.hoursPerDay, daysOff: prev.daysOff, meetingHours: prev.meetingHours })
+                : m;
+        });
+        if (state.sprintStartDate && state.sprintEndDate) {
+            state.sprintWorkingDays = Math.max(0,
+                countTeamWorkingDays(state.sprintStartDate, state.sprintEndDate) - countDaysOff(state.teamDaysOff));
+        }
+        renderCapacity();
+        showToast(`${state.teamMembers.length} members from TFS (${state.memberSource === 'capacity' ? 'sprint capacity' : 'team membership'})`, 'success');
+    } else {
+        state.memberSource = '';
+        renderCapacity();
+        showToast('TFS returned no roster for this team and sprint', 'warning');
+    }
+    updateTeamBanner();
+    updateSprintBanner();
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   TASK PROFILE LEARNED FROM PAST SPRINTS
+   Instead of hard-coding conventions, this samples the team's own recent
+   sprints and derives, per task type: the median estimate, the usual
+   discipline, tag and execution type, and the people who normally do it.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Canonical task types, matched case-insensitively against the variants that
+   really occur in TFS titles ("Plan preparation", "Plan Generation", "L1
+   testing", ...). */
+const CANON_TASK_TYPES = [
+    { name: 'Analysis', match: /^(analysis|technical\s*feasibility)$/i },
+    { name: 'Plan Preparation', match: /^plan\s*(preparation|prep|generation)$/i },
+    { name: 'Development', match: /^(development|dev|code|coding)$/i },
+    { name: 'Plan Review', match: /^plan\s*review$/i },
+    { name: 'Code Review', match: /^code\s*review$/i },
+    { name: 'Code Merge', match: /^code\s*merge$/i },
+    { name: 'Verification', match: /^verification$/i },
+    { name: 'Support', match: /^support$/i },
+    { name: 'L1', match: /^(l1|level\s*1)(\s*testing)?$/i },
+    { name: 'L2', match: /^(l2|level\s*2)(\s*testing)?$/i },
+    { name: 'TC Generation', match: /^tc\s*generation$/i },
+    { name: 'TC Review', match: /^tc\s*review$/i },
+    { name: 'Bug Retesting', match: /^bug\s*re-?testing$/i },
+    { name: 'UI/UX', match: /^ui\s*[\/\\]?\s*ux$/i },
+    { name: 'Ticket Support', match: /^ticket\s*support$/i },
+    { name: 'ALM Activities', match: /^alm\s*activities$/i },
+    { name: 'Performance Testing', match: /^performance\s*testing$/i },
+    { name: 'PT Regression', match: /^pt\s*regression$/i }
+];
+
+/* Requirement classes and the task set the team's process calls for. Anything
+   else the sprint history reveals is offered as an optional extra. */
+const REQ_CLASSES = {
+    development: { label: 'Development', defaults: ['Analysis', 'Plan Preparation', 'Development', 'Plan Review', 'Code Review', 'Code Merge'] },
+    verification: { label: 'Verification', defaults: ['Verification'] },
+    bug: { label: 'Bug', defaults: ['Development', 'Bug Retesting'] },
+    alm: { label: 'ALM', defaults: ['ALM Activities'] },
+    regression: { label: 'Regression', defaults: ['PT Regression'] },
+    support: { label: 'Support', defaults: ['Support'] },
+    other: { label: 'Other', defaults: [] }
+};
+
+/* Strips the parent requirement's title off a task title, leaving the task
+   type: "Code Review: Foo bar" -> "Code Review". */
+function taskTypePrefix(title, parentTitle) {
+    let t = String(title || '').trim();
+    if (parentTitle) {
+        const p = String(parentTitle).trim();
+        const probe = p.toLowerCase().slice(0, Math.min(25, p.length));
+        const i = probe.length >= 8 ? t.toLowerCase().indexOf(probe) : -1;
+        if (i > 0) return t.slice(0, i).replace(/[\s:\-\u2013]+$/, '').trim();
+    }
+    let m = t.match(/^([^:]{2,30})\s*:/);
+    if (m) return m[1].trim();
+    m = t.match(/^(.{2,30}?)\s+-\s+/);
+    if (m) return m[1].trim();
+    return '';
+}
+
+function canonicalTaskType(prefix) {
+    for (const c of CANON_TASK_TYPES) if (c.match.test(prefix)) return c.name;
+    return prefix || '';
+}
+
+/* Which kind of requirement this is, from the tags the team actually uses.
+   Verified against 109 requirements of sprint history: "Affected Area" marks
+   verification work, Deliverable / Aha-I / URN-* mark development work. */
+function classifyRequirement(f) {
+    const tags = tagList(f['System.Tags']).map(t => t.toLowerCase());
+    const title = String(f['System.Title'] || '');
+    if (f['System.WorkItemType'] === 'Bug') return 'bug';
+    if (tags.indexOf('affected area') !== -1 || /^affected\s*area\s*[:\-]/i.test(title)) return 'verification';
+    if (tags.indexOf('alm') !== -1) return 'alm';
+    if (tags.indexOf('regression') !== -1) return 'regression';
+    if (tags.some(t => t.indexOf('support') !== -1)) return 'support';
+    if (tags.indexOf('deliverable') !== -1 || tags.indexOf('non-deliverable') !== -1 ||
+        tags.indexOf('aha-i') !== -1 || tags.some(t => t.indexOf('urn-') === 0)) return 'development';
+    return 'other';
+}
+
+/* WIQL clause restricting a query to the selected team's area paths. */
+function areaClause() {
+    const areas = state.teamAreas.length ? state.teamAreas : [{ path: TFS_PROJECT, includeChildren: true }];
+    return '(' + areas.map(a => `[System.AreaPath] UNDER '${a.path.replace(/'/g, "''")}'`).join(' OR ') + ')';
+}
+
+const PROFILE_TASK_FIELDS = ['System.Id', 'System.Title', 'System.AssignedTo', 'System.Parent',
+    'System.Tags', 'Microsoft.VSTS.Common.Discipline',
+    'Casepoint.TFS.CustomFields.TaskExecutionType', 'Microsoft.VSTS.Scheduling.OriginalEstimate'];
+const PROFILE_REQ_FIELDS = ['System.Id', 'System.Title', 'System.WorkItemType', 'System.Tags'];
+
+async function fetchFieldsBatched(ids, fields) {
+    const out = [];
+    for (let i = 0; i < ids.length; i += BATCH_SIZE) {
+        const batch = ids.slice(i, i + BATCH_SIZE);
+        const data = await apiFetch(`/${TFS_PROJECT}/_apis/wit/workitems?ids=${batch.join(',')}&fields=${fields.join(',')}`);
+        if (data.value) out.push(...data.value);
+    }
+    return out;
+}
+
+async function idsFromWiql(query) {
+    const res = await apiPost(`/${TFS_PROJECT}/_apis/wit/wiql`, { query });
+    return (res.workItems || []).map(w => w.id);
+}
+
+function profileKey() {
+    return LS_PROFILE_PREFIX + (state.selectedTeam ? state.selectedTeam.id : 'none');
+}
+
+function loadSavedProfile() {
+    try {
+        const raw = localStorage.getItem(profileKey());
+        return raw ? JSON.parse(raw) : null;
+    } catch (e) {
+        return null;
+    }
+}
+
+const median = arr => {
+    if (!arr.length) return null;
+    const s = arr.slice().sort((a, b) => a - b);
+    return s[Math.floor(s.length / 2)];
+};
+const topKey = obj => {
+    const e = Object.entries(obj).sort((a, b) => b[1] - a[1])[0];
+    return e ? e[0] : '';
+};
+
+/* Samples this team's last LEARN_SPRINTS completed sprints and builds the
+   profile the task scaffolder fills its defaults from. Read-only. */
+async function learnFromPastSprints() {
+    if (!state.selectedTeam) { showToast('Select a team first', 'warning'); return; }
+    const sprints = teamSprints().filter(s => s.timeFrame === 'past').slice(0, LEARN_SPRINTS);
+    if (!sprints.length) { showToast('No past sprints found for this team', 'warning'); return; }
+
+    showLoading(`Learning from ${sprints.length} past sprint(s)...`);
+    try {
+        const tasks = [], reqs = [];
+        for (const s of sprints) {
+            const path = s.path.replace(/'/g, "''");
+            const tq = `SELECT [System.Id] FROM WorkItems WHERE [System.IterationPath] UNDER '${path}' AND ${areaClause()} AND [System.WorkItemType] = 'Task'`;
+            const rq = `SELECT [System.Id] FROM WorkItems WHERE [System.IterationPath] UNDER '${path}' AND ${areaClause()} AND [System.WorkItemType] IN ('Requirement','Bug')`;
+            const tids = await idsFromWiql(tq);
+            const rids = await idsFromWiql(rq);
+            if (tids.length) tasks.push(...await fetchFieldsBatched(tids, PROFILE_TASK_FIELDS));
+            if (rids.length) reqs.push(...await fetchFieldsBatched(rids, PROFILE_REQ_FIELDS));
+        }
+
+        const reqById = {};
+        reqs.forEach(w => { reqById[w.fields['System.Id']] = w.fields; });
+
+        /* per task type: estimates, discipline, tag, execution type, owners */
+        const types = {};
+        tasks.forEach(w => {
+            const f = w.fields;
+            const parent = reqById[f['System.Parent']];
+            const type = canonicalTaskType(taskTypePrefix(f['System.Title'], parent && parent['System.Title']));
+            if (!type) return;
+            const p = types[type] || (types[type] = { n: 0, est: [], disc: {}, tag: {}, exec: {}, owners: {} });
+            p.n++;
+            const est = Number(f['Microsoft.VSTS.Scheduling.OriginalEstimate']);
+            if (!isNaN(est) && f['Microsoft.VSTS.Scheduling.OriginalEstimate'] !== null &&
+                f['Microsoft.VSTS.Scheduling.OriginalEstimate'] !== undefined) p.est.push(est);
+            const bump = (o, k) => { if (k) o[k] = (o[k] || 0) + 1; };
+            bump(p.disc, f['Microsoft.VSTS.Common.Discipline']);
+            bump(p.exec, f['Casepoint.TFS.CustomFields.TaskExecutionType']);
+            tagList(f['System.Tags']).forEach(t => bump(p.tag, t));
+            bump(p.owners, cleanName(f['System.AssignedTo']));
+        });
+
+        /* per requirement class: how often each task type shows up */
+        const classes = {};
+        const kidsByParent = {};
+        tasks.forEach(w => {
+            const pid = w.fields['System.Parent'];
+            if (pid) (kidsByParent[pid] || (kidsByParent[pid] = [])).push(w.fields);
+        });
+        Object.keys(kidsByParent).forEach(pid => {
+            const r = reqById[pid];
+            if (!r) return;
+            const cls = classifyRequirement(r);
+            const c = classes[cls] || (classes[cls] = { n: 0, typeCount: {} });
+            c.n++;
+            const seen = {};
+            kidsByParent[pid].forEach(k => {
+                const type = canonicalTaskType(taskTypePrefix(k['System.Title'], r['System.Title']));
+                if (type && !seen[type]) {
+                    seen[type] = 1;
+                    c.typeCount[type] = (c.typeCount[type] || 0) + 1;
+                }
+            });
+        });
+
+        const profile = {
+            team: state.selectedTeam.name,
+            sprints: sprints.map(s => s.name),
+            taskCount: tasks.length,
+            reqCount: reqs.length,
+            types: {},
+            classes: {}
+        };
+        Object.entries(types).forEach(([name, p]) => {
+            profile.types[name] = {
+                n: p.n,
+                medianEstimate: median(p.est),
+                discipline: topKey(p.disc) || 'Development',
+                tag: topKey(p.tag) || 'Product',
+                execType: topKey(p.exec) || 'Manual',
+                owners: Object.entries(p.owners).sort((a, b) => b[1] - a[1]).slice(0, 5)
+                    .map(([name2, n]) => ({ name: name2, n }))
+            };
+        });
+        Object.entries(classes).forEach(([cls, c]) => {
+            profile.classes[cls] = {
+                n: c.n,
+                types: Object.entries(c.typeCount)
+                    .map(([name, count]) => ({ name, share: count / c.n }))
+                    .sort((a, b) => b.share - a.share)
+            };
+        });
+
+        state.profile = profile;
+        try { localStorage.setItem(profileKey(), JSON.stringify(profile)); } catch (e) { /* quota */ }
+        renderProfile();
+        renderRequirements();
+        showToast(`Learned ${Object.keys(profile.types).length} task types from ${tasks.length} tasks`, 'success');
+    } catch (err) {
+        showToast(`Learning failed: ${err.message}`, 'error');
+    } finally {
+        hideLoading();
+    }
+}
+
+/* The task types offered for a requirement: the process defaults for its
+   class, plus whatever the learned history shows for that class. */
+function templateFor(cls) {
+    const defaults = (REQ_CLASSES[cls] || REQ_CLASSES.other).defaults.slice();
+    const learned = [];
+    const fromProfile = state.profile && state.profile.classes && state.profile.classes[cls];
+    if (fromProfile) {
+        fromProfile.types.forEach(t => {
+            if (t.name && t.share >= TEMPLATE_THRESHOLD && defaults.indexOf(t.name) === -1) {
+                learned.push({ name: t.name, share: t.share });
+            }
+        });
+    }
+    return { defaults, learned };
+}
+
+function profileFor(taskType) {
+    return (state.profile && state.profile.types && state.profile.types[taskType]) || null;
+}
+
+/* Suggests the person who usually does this task type, preferring someone on
+   the current team roster. */
+function suggestOwner(taskType) {
+    const p = profileFor(taskType);
+    if (!p || !p.owners || !p.owners.length) return '';
+    const roster = state.teamMembers.map(m => m.name);
+    const onTeam = p.owners.find(o => roster.indexOf(o.name) !== -1);
+    return (onTeam || p.owners[0]).name;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   REQUIREMENTS + TASK SCAFFOLDING
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+const REQ_FIELDS = ['System.Id', 'System.Title', 'System.WorkItemType', 'System.State',
+    'System.AssignedTo', 'System.AreaPath', 'System.IterationPath', 'System.Tags',
+    'Casepoint.TFS.CustomFields.Status'];
+
+/* Loads this sprint's requirements for the team's area paths, together with
+   the child tasks each one already has so nothing is proposed twice. */
+async function loadRequirements() {
+    if (!state.selectedTeam) { showToast('Select a team first', 'warning'); return; }
+    if (!state.selectedSprint) { showToast('Select a sprint first', 'warning'); return; }
+
+    showLoading('Loading requirements for this team...');
+    try {
+        const sprintPath = fullIterationPath(state.selectedSprint.path, state.selectedSprint.name).replace(/'/g, "''");
+        const rq = `SELECT [System.Id] FROM WorkItems WHERE [System.IterationPath] UNDER '${sprintPath}' AND ${areaClause()} AND [System.WorkItemType] IN ('Requirement','Bug') AND [System.State] <> 'Removed'`;
+        const rids = await idsFromWiql(rq);
+        const items = rids.length ? await fetchFieldsBatched(rids, REQ_FIELDS) : [];
+
+        const tq = `SELECT [System.Id] FROM WorkItems WHERE [System.IterationPath] UNDER '${sprintPath}' AND ${areaClause()} AND [System.WorkItemType] = 'Task'`;
+        const tids = await idsFromWiql(tq);
+        const tasks = tids.length ? await fetchFieldsBatched(tids,
+            ['System.Id', 'System.Title', 'System.Parent', 'System.AssignedTo',
+             'Microsoft.VSTS.Scheduling.OriginalEstimate']) : [];
+
+        const kids = {};
+        tasks.forEach(w => {
+            const pid = w.fields['System.Parent'];
+            if (pid) (kids[pid] || (kids[pid] = [])).push(w.fields);
+        });
+
+        state.requirements = items.map(w => {
+            const f = w.fields;
+            const id = f['System.Id'];
+            const title = f['System.Title'] || '';
+            return {
+                id,
+                title,
+                type: f['System.WorkItemType'],
+                state: f['System.State'] || '',
+                status: f['Casepoint.TFS.CustomFields.Status'] || '',
+                area: f['System.AreaPath'] || '',
+                tags: tagList(f['System.Tags']),
+                assignee: cleanName(f['System.AssignedTo']),
+                cls: classifyRequirement(f),
+                children: (kids[id] || []).map(k => ({
+                    id: k['System.Id'],
+                    title: k['System.Title'] || '',
+                    type: canonicalTaskType(taskTypePrefix(k['System.Title'], title)),
+                    assignee: cleanName(k['System.AssignedTo']),
+                    estimate: k['Microsoft.VSTS.Scheduling.OriginalEstimate']
+                }))
+            };
+        }).sort((a, b) => a.cls.localeCompare(b.cls) || a.id - b.id);
+
+        renderRequirements();
+        showToast(`${state.requirements.length} requirement(s) for ${state.selectedTeam.name}`, 'success');
+    } catch (err) {
+        showToast(`Failed to load requirements: ${err.message}`, 'error');
+    } finally {
+        hideLoading();
+    }
+}
+
+function buildTaskRow(req, taskType, learned) {
+    const p = profileFor(taskType);
+    const hasMedian = p && p.medianEstimate !== null && p.medianEstimate !== undefined;
+    return {
+        key: `${req.id}::${taskType}`,
+        reqId: req.id,
+        reqTitle: req.title,
+        cls: req.cls,
+        taskType,
+        title: `${taskType} : ${req.title}`,
+        assignee: suggestOwner(taskType),
+        estimate: hasMedian ? p.medianEstimate : 0,
+        tag: (p && p.tag) || 'Product',
+        discipline: (p && p.discipline) || 'Development',
+        execType: (p && p.execType) || 'Manual',
+        area: req.area || (state.teamAreas[0] && state.teamAreas[0].path) || TFS_PROJECT,
+        iteration: fullIterationPath(state.selectedSprint.path, state.selectedSprint.name),
+        include: !learned,
+        learned: !!learned,
+        status: 'pending',
+        message: '',
+        createdId: null
+    };
+}
+
+/* Builds the proposed task list for the ticked requirements, skipping task
+   types that already exist under them in TFS. */
+function generatePlan() {
+    if (!state.requirements.length) { showToast('Load requirements first', 'warning'); return; }
+    const chosen = state.requirements.filter(r => {
+        const cb = document.getElementById(`req-${r.id}`);
+        return cb && cb.checked;
+    });
+    if (!chosen.length) { showToast('Tick at least one requirement', 'warning'); return; }
+
+    const existing = {};
+    state.plan.forEach(row => { existing[row.key] = row; });
+
+    const rows = [];
+    let skipped = 0;
+    chosen.forEach(req => {
+        const tpl = templateFor(req.cls);
+        const have = {};
+        req.children.forEach(c => { if (c.type) have[c.type] = 1; });
+        tpl.defaults.forEach(type => {
+            if (have[type]) { skipped++; return; }
+            rows.push(existing[`${req.id}::${type}`] || buildTaskRow(req, type, false));
+        });
+        tpl.learned.forEach(l => {
+            if (have[l.name]) { skipped++; return; }
+            rows.push(existing[`${req.id}::${l.name}`] || buildTaskRow(req, l.name, true));
+        });
+    });
+
+    state.plan = rows;
+    renderPlan();
+    showToast(`${rows.length} task(s) proposed for ${chosen.length} requirement(s)` +
+        (skipped ? ` · ${skipped} already in TFS` : ''), 'success');
+}
+
+function toggleAllRequirements(checked) {
+    state.requirements.forEach(r => {
+        const cb = document.getElementById(`req-${r.id}`);
+        if (cb) cb.checked = checked;
+    });
+}
+
+function setRequirementClass(reqId, cls) {
+    const r = state.requirements.find(x => x.id === reqId);
+    if (!r) return;
+    r.cls = cls;
+    renderRequirements();
+}
+
+function updatePlanRow(i, field, value) {
+    const row = state.plan[i];
+    if (!row) return;
+    row[field] = field === 'estimate' ? (Number(value) || 0) : value;
+    if (field === 'include') renderPlan();
+    else updatePlanSummary();
+}
+
+function toggleAllPlan(checked) {
+    state.plan.forEach(r => { r.include = checked; });
+    renderPlan();
+}
+
+function removePlanRow(i) {
+    state.plan.splice(i, 1);
+    renderPlan();
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   WRITE PATH
+   Nothing reaches TFS until the user confirms in the dialog, and every task
+   is validated server-side (validateOnly, which returns id -1 and persists
+   nothing) before it is created for real.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+function taskPatchOps(row) {
+    const ops = [
+        { op: 'add', path: '/fields/System.Title', value: row.title },
+        { op: 'add', path: '/fields/System.AreaPath', value: row.area },
+        { op: 'add', path: '/fields/System.IterationPath', value: row.iteration }
+    ];
+    if (row.assignee) {
+        const m = state.teamMembers.find(x => x.name === row.assignee);
+        ops.push({ op: 'add', path: '/fields/System.AssignedTo', value: (m && m.uniqueName) || row.assignee });
+    }
+    if (row.tag) ops.push({ op: 'add', path: '/fields/System.Tags', value: row.tag });
+    if (row.discipline) ops.push({ op: 'add', path: '/fields/Microsoft.VSTS.Common.Discipline', value: row.discipline });
+    if (row.execType) ops.push({ op: 'add', path: '/fields/Casepoint.TFS.CustomFields.TaskExecutionType', value: row.execType });
+    const est = Number(row.estimate) || 0;
+    if (est > 0) {
+        ops.push({ op: 'add', path: '/fields/Microsoft.VSTS.Scheduling.OriginalEstimate', value: est });
+        ops.push({ op: 'add', path: '/fields/Microsoft.VSTS.Scheduling.RemainingWork', value: est });
+    }
+    ops.push({
+        op: 'add',
+        path: '/relations/-',
+        value: { rel: 'System.LinkTypes.Hierarchy-Reverse', url: `${state.baseUrl}/_apis/wit/workItems/${row.reqId}` }
+    });
+    return ops;
+}
+
+function createTask(row, validateOnly) {
+    const url = `/${encodeURIComponent(TFS_PROJECT)}/_apis/wit/workitems/$Task?api-version=${API_VERSION}` +
+        (validateOnly ? '&validateOnly=true' : '');
+    return apiFetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json-patch+json' },
+        body: JSON.stringify(taskPatchOps(row))
+    });
+}
+
+/* Dry run: asks TFS to validate every ticked task and creates nothing. */
+async function validatePlanOnly() {
+    const included = state.plan.filter(r => r.include && r.status !== 'ok');
+    if (!included.length) { showToast('Nothing to validate', 'warning'); return; }
+    showLoading(`Validating ${included.length} task(s) against TFS...`);
+    let ok = 0, bad = 0;
+    try {
+        for (const row of included) {
+            try {
+                await createTask(row, true);
+                row.status = 'valid';
+                row.message = '';
+                ok++;
+            } catch (err) {
+                row.status = 'error';
+                row.message = err.message;
+                bad++;
+                addPlanLog(`[${row.reqId}] ${row.taskType} — ${err.message}`, 'error');
+            }
+        }
+    } finally {
+        hideLoading();
+        renderPlan();
+    }
+    addPlanLog(`Validation finished: ${ok} valid, ${bad} rejected. Nothing was created.`, bad ? 'warn' : 'success');
+    showToast(`Validated: ${ok} ok, ${bad} rejected. Nothing written.`, bad ? 'warning' : 'success');
+}
+
+async function executeCreatePlan() {
+    closeDialog();
+    if (state.isPushing) { showToast('A write is already in progress', 'warning'); return; }
+    const included = state.plan.filter(r => r.include && r.status !== 'ok');
+    if (!included.length) return;
+
+    state.isPushing = true;
+    addPlanLog(`Creating ${included.length} task(s) in ${TFS_PROJECT}...`, 'info');
+    addPlanLog(`Team: ${state.selectedTeam.name} · Sprint: ${state.selectedSprint.name}`, 'info');
+
+    let created = 0, failed = 0;
+    try {
+        for (let i = 0; i < included.length; i++) {
+            const row = included[i];
+            showLoading(`Creating tasks (${i + 1}/${included.length})...`);
+            try {
+                await createTask(row, true);            /* preflight, never skipped */
+                const res = await createTask(row, false);
+                row.status = 'ok';
+                row.createdId = res.id;
+                row.message = '';
+                created++;
+                addPlanLog(`[#${res.id}] ${row.taskType} : ${row.reqTitle} — created`, 'success');
+            } catch (err) {
+                row.status = 'error';
+                row.message = err.message;
+                failed++;
+                addPlanLog(`[${row.reqId}] ${row.taskType} — FAILED: ${err.message}`, 'error');
+            }
+        }
+    } finally {
+        state.isPushing = false;
+        hideLoading();
+        renderPlan();
+    }
+    addPlanLog(`Done: ${created} created, ${failed} failed.`, failed ? 'warn' : 'success');
+    showToast(`${created} task(s) created${failed ? `, ${failed} failed` : ''}`, failed ? 'warning' : 'success');
+    if (created) await loadRequirements();
+}
+
+function addPlanLog(message, type = 'info') {
+    const el = document.getElementById('planLog');
+    if (!el) return;
+    el.classList.remove('hidden');
+    const div = document.createElement('div');
+    div.className = 'push-log-entry ' + type;
+    div.textContent = message;
+    el.appendChild(div);
+    el.scrollTop = el.scrollHeight;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   RENDERING
+   These views are built as DOM nodes rather than markup strings: every value
+   that comes from TFS goes in through textContent, so no requirement title,
+   tag or person's name can ever be interpreted as markup.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Tiny element builder. attrs.text sets textContent; on* attrs take a
+   function and are wired with addEventListener. */
+function h(tag, attrs, kids) {
+    const node = document.createElement(tag);
+    if (attrs) {
+        Object.keys(attrs).forEach(k => {
+            const v = attrs[k];
+            if (v === null || v === undefined || v === false) return;
+            if (k === 'text') node.textContent = String(v);
+            else if (k === 'class') node.className = String(v);
+            else if (k === 'value') node.value = v;
+            else if (k === 'checked') node.checked = !!v;
+            else if (k.slice(0, 2) === 'on' && typeof v === 'function') node.addEventListener(k.slice(2), v);
+            else node.setAttribute(k, String(v));
+        });
+    }
+    (kids || []).forEach(kid => {
+        if (kid === null || kid === undefined || kid === false) return;
+        node.appendChild(typeof kid === 'object' ? kid : document.createTextNode(String(kid)));
+    });
+    return node;
+}
+
+function clearNode(node) {
+    while (node && node.firstChild) node.removeChild(node.firstChild);
+}
+
+function emptyState(message) {
+    return h('div', { class: 'empty-state' }, [h('p', { text: message })]);
+}
+
+function headerRow(cells) {
+    return h('thead', null, [h('tr', null, cells.map(c =>
+        typeof c === 'object' ? h('th', c.attrs || null, c.kids || [c.text]) : h('th', { text: c })))]);
+}
+
+/* ─── TEAM BANNER ─── */
+function updateTeamBanner() {
+    const box = document.getElementById('teamBanner');
+    if (!box) return;
+    clearNode(box);
+    if (!state.selectedTeam) return;
+
+    const areas = state.teamAreas.map(a => a.path + (a.includeChildren ? '\\*' : '')).join(', ') || '—';
+    const source = state.memberSource === 'capacity' ? 'TFS sprint capacity'
+        : state.memberSource === 'team' ? 'TFS team membership'
+        : 'not loaded';
+    const daysOff = countDaysOff(state.teamDaysOff);
+
+    const item = (label, value, dim) => h('span', { class: 'tb-item' }, [
+        h('span', { class: 'tb-label', text: label }),
+        document.createTextNode(String(value)),
+        dim ? h('span', { class: 'tb-dim', text: ' ' + dim }) : null
+    ]);
+
+    box.appendChild(item('Team', state.selectedTeam.name));
+    box.appendChild(item('Members', state.teamMembers.length, '(' + source + ')'));
+    box.appendChild(item('Area paths', areas));
+    box.appendChild(item('Working days', state.sprintWorkingDays || '—',
+        daysOff ? '(' + daysOff + ' team day(s) off)' : ''));
+}
+
+/* ─── LEARNED PROFILE ─── */
+function renderProfile() {
+    const body = document.getElementById('profileBody');
+    const meta = document.getElementById('profileMeta');
+    if (!body) return;
+    clearNode(body);
+    const p = state.profile;
+
+    if (!p) {
+        if (meta) meta.textContent = 'No profile learned yet';
+        body.appendChild(emptyState('No task profile yet. Use "Learn from past sprints" to read how this team actually breaks requirements down in TFS — median estimates, disciplines, tags and usual owners all come from your own sprint history.'));
+        return;
+    }
+    if (meta) meta.textContent = p.taskCount + ' tasks · ' + p.reqCount + ' requirements · ' + p.sprints.join(', ');
+
+    const rows = Object.keys(p.types)
+        .filter(name => p.types[name].n >= 2)
+        .sort((a, b) => p.types[b].n - p.types[a].n)
+        .map(name => {
+            const t = p.types[name];
+            return h('tr', null, [
+                h('td', null, [h('strong', { text: name })]),
+                h('td', { class: 'num', text: t.n }),
+                h('td', { class: 'num', text: t.medianEstimate === null ? '—' : fmtNum(t.medianEstimate) }),
+                h('td', { text: t.discipline }),
+                h('td', null, [h('span', { class: 'tag-chip', text: t.tag })]),
+                h('td', { text: t.execType }),
+                h('td', { class: 'dim', text: t.owners.map(o => o.name + ' (' + o.n + ')').join(', ') || '—' })
+            ]);
+        });
+
+    body.appendChild(h('table', { class: 'data-table' }, [
+        headerRow(['Task type',
+            { text: 'Seen', attrs: { class: 'num' } },
+            { text: 'Median est.', attrs: { class: 'num' } },
+            'Discipline', 'Tag', 'Execution type', 'Usual owners']),
+        h('tbody', null, rows.length ? rows : [h('tr', null, [h('td', { colspan: 7, class: 'dim', text: 'Nothing learned yet.' })])])
+    ]));
+}
+
+/* ─── REQUIREMENTS ─── */
+function renderRequirements() {
+    const box = document.getElementById('requirementsBody');
+    if (!box) return;
+    clearNode(box);
+
+    if (!state.requirements.length) {
+        box.appendChild(emptyState('No requirements loaded. Pick a team and sprint, then press "Load requirements".'));
+        return;
+    }
+
+    const classKeys = Object.keys(REQ_CLASSES);
+    const rows = state.requirements.map(r => {
+        const tpl = templateFor(r.cls);
+        const have = {};
+        r.children.forEach(c => { if (c.type) have[c.type] = 1; });
+        const missing = tpl.defaults.filter(t => !have[t]);
+
+        const picker = h('select', {
+            class: 'mini-select',
+            title: 'Override the detected class',
+            onchange: e => setRequirementClass(r.id, e.target.value)
+        }, classKeys.map(k => h('option', { value: k, text: REQ_CLASSES[k].label, selected: k === r.cls })));
+
+        const link = h('a', {
+            href: state.baseUrl + '/' + TFS_PROJECT + '/_workitems/edit/' + r.id,
+            target: '_blank',
+            rel: 'noopener',
+            text: r.id
+        });
+
+        return h('tr', null, [
+            h('td', null, [h('input', { type: 'checkbox', id: 'req-' + r.id, checked: missing.length > 0 })]),
+            h('td', { class: 'num' }, [link]),
+            h('td', { text: r.title }),
+            h('td', null, [h('span', { class: 'type-badge', text: (REQ_CLASSES[r.cls] || REQ_CLASSES.other).label }), picker]),
+            h('td', { class: 'dim', text: r.tags.join(', ') || '—' }),
+            h('td', { class: 'num', text: r.children.length }),
+            missing.length
+                ? h('td', { class: 'dim', text: missing.join(', ') })
+                : h('td', null, [h('span', { class: 'ok-text', text: 'complete' })])
+        ]);
+    });
+
+    const selectAll = h('input', {
+        type: 'checkbox',
+        title: 'Select all',
+        onchange: e => toggleAllRequirements(e.target.checked)
+    });
+
+    box.appendChild(h('table', { class: 'data-table' }, [
+        headerRow([
+            { kids: [selectAll], attrs: { style: 'width:34px' } },
+            { text: 'ID', attrs: { class: 'num' } },
+            'Requirement', 'Class', 'Tags',
+            { text: 'Existing tasks', attrs: { class: 'num' } },
+            'Missing from the standard set'
+        ]),
+        h('tbody', null, rows)
+    ]));
+}
+
+/* ─── PLAN GRID ─── */
+function renderPlan() {
+    const box = document.getElementById('planBody');
+    if (!box) return;
+    clearNode(box);
+
+    if (!state.plan.length) {
+        box.appendChild(emptyState('No tasks proposed yet. Tick requirements above and press "Generate tasks".'));
+        updatePlanSummary();
+        return;
+    }
+
+    const roster = state.teamMembers.map(m => m.name);
+    const rows = state.plan.map((row, i) => {
+        const names = roster.slice();
+        if (row.assignee && names.indexOf(row.assignee) === -1) names.push(row.assignee);
+        const assignee = h('select', {
+            class: 'grid-input',
+            onchange: e => updatePlanRow(i, 'assignee', e.target.value)
+        }, [h('option', { value: '', text: '— unassigned —' })].concat(
+            names.map(n => h('option', {
+                value: n,
+                text: n + (roster.indexOf(n) === -1 ? ' (not on team)' : ''),
+                selected: n === row.assignee
+            }))
+        ));
+
+        const textCell = (field, value) => h('td', null, [h('input', {
+            class: 'grid-input',
+            value: value,
+            onchange: e => updatePlanRow(i, field, e.target.value)
+        })]);
+
+        let status;
+        if (row.status === 'ok') status = h('span', { class: 'ok-text', text: 'created #' + row.createdId });
+        else if (row.status === 'valid') status = h('span', { class: 'ok-text', text: 'validated' });
+        else if (row.status === 'error') status = h('span', { class: 'err-text', title: row.message, text: 'rejected' });
+        else status = h('span', { class: 'dim', text: 'pending' });
+
+        return h('tr', { class: row.include ? '' : 'row-muted' }, [
+            h('td', null, [h('input', {
+                type: 'checkbox',
+                checked: row.include,
+                onchange: e => updatePlanRow(i, 'include', e.target.checked)
+            })]),
+            h('td', { class: 'num', text: row.reqId }),
+            h('td', null, [
+                h('span', { class: 'type-badge', text: row.taskType }),
+                row.learned ? h('span', {
+                    class: 'learned-chip',
+                    title: 'Seen in past sprints for this requirement class, but not part of the standard set',
+                    text: 'learned'
+                }) : null
+            ]),
+            textCell('title', row.title),
+            h('td', null, [assignee]),
+            h('td', null, [h('input', {
+                class: 'grid-input num',
+                type: 'number',
+                min: '0',
+                step: '0.5',
+                value: row.estimate,
+                onchange: e => updatePlanRow(i, 'estimate', e.target.value)
+            })]),
+            textCell('tag', row.tag),
+            textCell('discipline', row.discipline),
+            textCell('execType', row.execType),
+            h('td', null, [status]),
+            h('td', null, [h('button', {
+                class: 'btn btn-sm',
+                title: 'Drop this task from the plan',
+                text: '✕',
+                onclick: () => removePlanRow(i)
+            })])
+        ]);
+    });
+
+    const includeAll = h('input', {
+        type: 'checkbox',
+        checked: state.plan.every(r => r.include),
+        title: 'Include all',
+        onchange: e => toggleAllPlan(e.target.checked)
+    });
+
+    box.appendChild(h('table', { class: 'data-table plan-table' }, [
+        headerRow([
+            { kids: [includeAll], attrs: { style: 'width:34px' } },
+            { text: 'Req', attrs: { class: 'num' } },
+            'Task type', 'Title', 'Assignee',
+            { text: 'Est.', attrs: { class: 'num' } },
+            'Tag', 'Discipline', 'Execution type', 'Status', ''
+        ]),
+        h('tbody', null, rows)
+    ]));
+    updatePlanSummary();
+}
+
+/* Live capacity impact: what this plan adds on top of what each member is
+   already carrying this sprint. */
+function updatePlanSummary() {
+    const box = document.getElementById('planSummary');
+    if (!box) return;
+    clearNode(box);
+
+    const included = state.plan.filter(r => r.include);
+    const hours = included.reduce((s, r) => s + (Number(r.estimate) || 0), 0);
+    const perMember = {};
+    included.forEach(r => {
+        const who = r.assignee || '(unassigned)';
+        perMember[who] = (perMember[who] || 0) + (Number(r.estimate) || 0);
+    });
+    const reqCount = Object.keys(included.reduce((m, r) => { m[r.reqId] = 1; return m; }, {})).length;
+
+    const totals = h('div', { class: 'plan-totals' }, [
+        h('span', null, [h('strong', { text: included.length }), ' task(s) to create']),
+        h('span', null, [h('strong', { text: fmtNum(hours) }), ' hours']),
+        h('span', null, [h('strong', { text: reqCount }), ' requirement(s)']),
+        perMember['(unassigned)']
+            ? h('span', { class: 'err-text', text: fmtNum(perMember['(unassigned)']) + 'h unassigned' })
+            : null
+    ]);
+    box.appendChild(totals);
+
+    const cards = state.teamMembers.map(m => {
+        const planned = perMember[m.name] || 0;
+        const committed = getSprintCommittedHours(m.name) || 0;
+        const cap = calcCapacity(m) || 0;
+        const total = planned + committed;
+        const pct = cap > 0 ? Math.round((total / cap) * 100) : 0;
+        const level = pct > 100 ? 'over' : pct > 85 ? 'warn' : 'ok';
+        return h('div', { class: 'impact-card ' + level }, [
+            h('div', { class: 'impact-name', title: m.name, text: m.name }),
+            h('div', { class: 'impact-num', text: fmtNum(total) + ' / ' + fmtNum(cap) + 'h' }),
+            h('div', { class: 'impact-bar' }, [h('span', { style: 'width:' + Math.min(pct, 100) + '%' })]),
+            h('div', { class: 'impact-sub', text: fmtNum(planned) + 'h new · ' + pct + '%' })
+        ]);
+    });
+    box.appendChild(cards.length
+        ? h('div', { class: 'impact-grid' }, cards)
+        : h('span', { class: 'dim', text: 'No team roster loaded.' }));
+}
+
+/* ─── CONFIRMATION (the only route into a TFS write) ─── */
+function reviewPlan() {
+    const included = state.plan.filter(r => r.include && r.status !== 'ok');
+    if (!included.length) { showToast('Nothing to create — tick at least one task', 'warning'); return; }
+
+    const byReq = {};
+    included.forEach(r => { (byReq[r.reqId] || (byReq[r.reqId] = [])).push(r); });
+    const hours = included.reduce((s, r) => s + (Number(r.estimate) || 0), 0);
+    const unassigned = included.filter(r => !r.assignee).length;
+
+    const body = document.getElementById('dialogBody');
+    clearNode(body);
+
+    body.appendChild(h('p', { class: 'confirm-lead' }, [
+        'This creates ', h('strong', { text: included.length + ' new task(s)' }),
+        ' under ', h('strong', { text: Object.keys(byReq).length + ' requirement(s)' }),
+        ', totalling ', h('strong', { text: fmtNum(hours) + ' hours' }),
+        ', in sprint ', h('strong', { text: state.selectedSprint ? state.selectedSprint.name : '' }),
+        ' for team ', h('strong', { text: state.selectedTeam ? state.selectedTeam.name : '' }), '.'
+    ]));
+    if (unassigned) {
+        body.appendChild(h('p', { class: 'confirm-warn', text: unassigned + ' task(s) have no assignee and will be created unassigned.' }));
+    }
+    body.appendChild(h('p', { class: 'confirm-note', text: 'Each task is validated against TFS first; only tasks that pass are created. Nothing is written until you press Create.' }));
+
+    const detail = h('div', { class: 'confirm-detail' }, Object.keys(byReq).map(reqId => {
+        const rows = byReq[reqId];
+        return h('div', { class: 'confirm-req' }, [
+            h('div', { class: 'confirm-req-title', text: '#' + reqId + ' — ' + rows[0].reqTitle }),
+            h('ul', { class: 'confirm-task-list' }, rows.map(r => h('li', null, [
+                h('strong', { text: r.taskType }),
+                ' · ' + (r.assignee || 'unassigned') + ' · ' + fmtNum(r.estimate) + 'h · tag ' + (r.tag || '—')
+            ])))
+        ]);
+    }));
+    body.appendChild(detail);
+
+    document.getElementById('dialogTitle').textContent = 'Create tasks in TFS?';
+    const btn = document.getElementById('dialogConfirmBtn');
+    btn.textContent = 'Create ' + included.length + ' task(s)';
+    btn.onclick = executeCreatePlan;
+    document.getElementById('confirmDialog').classList.remove('hidden');
 }
 
 /* ─── INITIALIZATION ─── */

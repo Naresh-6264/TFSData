@@ -11,7 +11,7 @@
   {
     "id": "sprint-planner",
     "name": "Sprint Planner",
-    "description": "Plan team capacity, assign backlog items to members, review the workload dashboard, and push assignments back to TFS.",
+    "description": "Plan a sprint for one TFS team: capacity from TFS, requirements scoped to the team, and the standard task set scaffolded per requirement before anything is written.",
     "path": "sprint-planner/index.html",
     "icon": "planner",
     "accentColor": "#8b5cf6",
