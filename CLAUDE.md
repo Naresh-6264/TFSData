@@ -226,6 +226,29 @@ rule findings still work. `buildAiRequest()` emits either shape:
 reply; `parseAiFindings()` tolerates fenced JSON and preambles, drops invalid severities and tags
 each finding `source: "ai"` so a reviewer can tell rules from model output.
 
+#### Per-PR chat assistant
+
+The right-hand pane of the PR detail view is tabbed: **Review insights** and **Ask about this PR**.
+The chat answers questions about the open pull request and is deliberately grounded:
+
+- `buildChatContext()` assembles everything the model sees: PR metadata and reviewer votes, the full
+  changed-file list, the rule findings, and unified diffs **only for files the reviewer has opened**.
+- Files that are not included are listed explicitly (`diff NOT loaded`, `binary`, `too large to diff`,
+  plus a "Files whose diff is NOT in this context" block), and the system prompt forbids guessing at
+  them. Verified live: with a diff evicted, the model answered "the diff for X was not provided in
+  the context" instead of inventing it.
+- Budget: `CHAT_CONTEXT_CHARS` (40k) spent on the open file first, `CHAT_FILE_DIFF_LINES` (220) per
+  file, last `CHAT_HISTORY_TURNS` (12) turns sent.
+- The context is attached to the **newest** user turn, so it always reflects which files are loaded
+  right now while the stored history stays small.
+- Conversations are per pull request (`pr.chats[pullRequestId]`), persisted to `pr_reviewer_chats`
+  (last 8 PRs, 24 turns each). Only turns are stored — never diffs.
+- `buildAiRequest()` accepts a string **or** a message array, so the same provider layer serves both
+  the per-file review and the chat.
+- Replies render through `renderChatBody()`: text paragraphs plus fenced code blocks, all via
+  `textContent`, so a model echoing HTML or a diff cannot inject markup.
+- With no AI configured the tab shows a link to Connection Settings and `sendChat()` refuses to send.
+
 ### Connection Settings (`config/index.html`)
 
 One page for the credentials every tool needs, so a PAT is pasted once.

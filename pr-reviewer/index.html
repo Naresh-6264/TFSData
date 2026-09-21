@@ -1453,6 +1453,113 @@ body {
 .pr-insight-fix { margin-top: 4px; color: var(--text-secondary); }
 .pr-insight-where { margin-top: 3px; font-family: var(--font-mono, monospace); font-size: 10.5px; color: var(--text-dim, rgba(255,255,255,0.4)); }
 
+/* ─── pane tabs (insights / chat) ─── */
+.pane-tabs { display: inline-flex; gap: 2px; }
+.pane-tab {
+  padding: 5px 11px;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 650;
+  color: var(--text-muted);
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+}
+.pane-tab:hover { color: var(--text-secondary); }
+.pane-tab.active { color: var(--text-primary); border-bottom-color: var(--accent-primary); }
+
+/* ─── chat assistant ─── */
+/* The panel is a column: the log scrolls, the composer stays put at the bottom. */
+.chat-panel { display: flex; flex-direction: column; height: 52vh; min-height: 300px; }
+.chat-log { flex: 1; min-height: 0; overflow-y: auto; padding: 14px; }
+.chat-empty { padding: 18px 4px; text-align: center; color: var(--text-muted); }
+.chat-empty h3 { font-size: 14px; margin-bottom: 7px; color: var(--text-secondary); }
+.chat-empty p { font-size: 12.5px; line-height: 1.6; max-width: 48ch; margin: 0 auto 14px; }
+.chat-chips { display: flex; flex-direction: column; gap: 7px; align-items: stretch; margin-top: 4px; }
+.chat-chip {
+  padding: 8px 12px;
+  font-family: inherit;
+  font-size: 12.5px;
+  text-align: left;
+  color: var(--text-secondary);
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s;
+}
+.chat-chip:hover { color: var(--text-primary); border-color: var(--border-strong); }
+
+.chat-turn { margin-bottom: 15px; }
+.chat-role {
+  margin-bottom: 4px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+.chat-turn.user .chat-role { color: var(--accent-primary); }
+.chat-body { font-size: 13px; line-height: 1.62; }
+.chat-turn.user .chat-body {
+  padding: 9px 12px;
+  background: var(--bg-tertiary);
+  border-left: 2px solid var(--accent-primary);
+  border-radius: 0 8px 8px 0;
+  white-space: pre-wrap;
+}
+.chat-para { margin-bottom: 9px; white-space: pre-wrap; }
+.chat-para:last-child { margin-bottom: 0; }
+.chat-code {
+  margin: 8px 0;
+  padding: 10px 12px;
+  overflow-x: auto;
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  line-height: 1.5;
+  color: var(--text-secondary);
+  background: var(--bg-input);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  white-space: pre;
+}
+
+.chat-composer {
+  display: flex;
+  gap: 9px;
+  align-items: stretch;
+  padding: 11px 14px;
+  border-top: 1px solid var(--border-color);
+}
+.chat-input {
+  flex: 1;
+  min-width: 0;
+  padding: 9px 12px;
+  font-family: inherit;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text-primary);
+  background: var(--bg-input);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  resize: vertical;
+  max-height: 160px;
+}
+.chat-input:focus { outline: none; border-color: var(--accent-primary); }
+.chat-composer-side { display: flex; flex-direction: column; gap: 6px; }
+.chat-meta {
+  padding: 0 14px 11px;
+  font-size: 11px;
+  color: var(--text-dim);
+}
+
+@media (max-width: 900px) {
+  .chat-panel { height: auto; min-height: 0; }
+  .chat-log { max-height: 46vh; }
+}
+
 .pr-spinner-row { display: flex; align-items: center; gap: 10px; padding: 18px; font-size: 12.5px; color: var(--text-muted); }
 .pr-mini-spinner { width: 15px; height: 15px; border: 2px solid var(--border-color); border-top-color: var(--accent-primary, #6366f1); border-radius: 50%; animation: prspin 0.7s linear infinite; }
 @keyframes prspin { to { transform: rotate(360deg); } }
@@ -1677,10 +1784,26 @@ body {
             <div class="pr-main">
               <div class="pr-pane" style="margin-bottom:18px">
                 <div class="pr-pane-head">
-                  <span id="prInsightsTitle">Review insights</span>
+                  <span class="pane-tabs">
+                    <button class="pane-tab active" id="prTabInsights" onclick="setRightTab('insights')">Review insights</button>
+                    <button class="pane-tab" id="prTabChat" onclick="setRightTab('chat')">Ask about this PR</button>
+                  </span>
                   <span id="prInsightsMeta" style="font-weight:400; color:var(--text-muted); font-size:11px"></span>
                 </div>
                 <div class="pr-pane-body" id="prInsights"></div>
+                <div class="chat-panel" id="prChatPanel" style="display:none">
+                  <div class="chat-log" id="prChatLog"></div>
+                  <div class="chat-composer">
+                    <textarea id="prChatInput" class="chat-input" rows="2"
+                              placeholder="Ask about this pull request — what changed, what to check, what might break..."
+                              onkeydown="onChatKeydown(event)"></textarea>
+                    <div class="chat-composer-side">
+                      <button class="btn btn-primary btn-sm" onclick="sendChat()">Ask</button>
+                      <button class="btn btn-sm" onclick="clearChat()" title="Clear this conversation">Clear</button>
+                    </div>
+                  </div>
+                  <div class="chat-meta" id="prChatMeta"></div>
+                </div>
               </div>
               <div class="pr-pane">
                 <div class="pr-pane-head">
@@ -1889,8 +2012,19 @@ let pr = {
     fileCache: {},          // path -> { before, after, diff, findings, binary, error }
     prFindings: [],         // pull-request-level findings
     threads: [],
-    workItems: []
+    workItems: [],
+    /* ─── per-PR chat assistant ─── */
+    rightTab: 'insights',   // insights | chat
+    chats: {},              // pullRequestId -> [{ role: 'user'|'assistant', content }]
+    chatBusy: false
 };
+
+/* How much of the pull request is packed into the assistant's context. Diffs
+   here can be megabytes, so the budget is spent on the open file first. */
+const CHAT_CONTEXT_CHARS = 40000;
+const CHAT_FILE_DIFF_LINES = 220;
+const CHAT_HISTORY_TURNS = 12;
+const LS_CHATS = 'pr_reviewer_chats';
 
 /* ─── DOM REFS ─── */
 const codeInput = document.getElementById('codeInput');
@@ -2988,14 +3122,17 @@ function aiConfig() {
 }
 
 /* Builds a request body for either provider shape. Mirrors the same function
-   in config/index.html so the two stay consistent. */
+   in config/index.html so the two stay consistent.
+   `prompt` is either a single user message (string) or a full conversation
+   ([{role:'user'|'assistant', content}]) for the chat assistant. */
 function buildAiRequest(cfg, prompt, systemPrompt) {
     const maxTokens = cfg.maxTokens || 2000;
+    const turns = typeof prompt === 'string' ? [{ role: 'user', content: prompt }] : prompt.slice();
     if (cfg.provider === 'anthropic') {
         const body = {
             model: cfg.model,
             max_tokens: maxTokens,
-            messages: [{ role: 'user', content: prompt }]
+            messages: turns
         };
         if (systemPrompt) body.system = systemPrompt;
         return {
@@ -3009,7 +3146,7 @@ function buildAiRequest(cfg, prompt, systemPrompt) {
     }
     const messages = [];
     if (systemPrompt) messages.push({ role: 'system', content: systemPrompt });
-    messages.push({ role: 'user', content: prompt });
+    turns.forEach(function (t) { messages.push(t); });
     return {
         headers: {
             'Content-Type': 'application/json',
@@ -3796,10 +3933,12 @@ async function openPullRequest(item) {
     pr.prFindings = [];
     pr.workItems = [];
     setPrView('detail');
+    setRightTab('insights');
     renderPrDetailHead();
     renderFileList(true);
     clearNode(document.getElementById('prDiffBody'));
     clearNode(document.getElementById('prInsights'));
+    updateChatMeta();
 
     try {
         const base = '/repositories/' + encodeURIComponent(item.repoId) + '/pullRequests/' + item.id;
@@ -3825,6 +3964,7 @@ async function openPullRequest(item) {
         pr.prFindings = analyzePullRequest(pr.files);
         renderFileList();
         renderInsights();
+        updateChatMeta();
 
         /* linked work items are cheap and useful context */
         try {
@@ -4005,6 +4145,7 @@ async function openFile(path) {
         renderDiff(pr.fileCache[path]);
         renderFileList();
         renderInsights();
+        updateChatMeta();
     } catch (err) {
         pr.fileCache[path] = { error: describeTfsError(err) };
         renderDiff(pr.fileCache[path]);
@@ -4184,6 +4325,7 @@ async function runAiOnActiveFile() {
         renderDiff(cached);
         renderFileList();
         renderInsights();
+        updateChatMeta();
         showToast(found.length ? found.length + ' AI finding(s) for ' + basename(path) : 'AI found nothing to flag here', 'success');
     } catch (err) {
         showToast(err.message, 'error');
@@ -4223,8 +4365,324 @@ function copyPrInsights() {
     }
 }
 
+/* ═══════════════════════════════════════════════════════════════════════════
+   PER-PULL-REQUEST CHAT ASSISTANT
+   Answers questions about the open pull request. The model only ever sees a
+   context this code assembles: the PR metadata, the change set, the findings
+   and the diffs of files that have actually been loaded. What is missing is
+   stated explicitly, so the assistant can say "that file is not loaded" rather
+   than inventing its contents.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+const CHAT_SYSTEM =
+    'You are a code review assistant helping a reviewer work through one pull request on an ' +
+    'on-premises TFS server. You are given a CONTEXT block describing the pull request: its ' +
+    'metadata, the list of changed files, findings from a static rule pass, and unified diffs for ' +
+    'the files the reviewer has opened.\n\n' +
+    'Rules:\n' +
+    '- Answer only from the CONTEXT. If something is not in it (a file whose diff was not loaded, ' +
+    'the repository history, how code behaves at runtime), say so plainly and name what you would ' +
+    'need. Never guess at the contents of a file you were not shown.\n' +
+    '- Cite specifics: file names, and line numbers when the diff gives them.\n' +
+    '- Be concise and concrete. A reviewer wants to know what changed, what to check, and what ' +
+    'could break. Short paragraphs or tight bullet lists, no preamble.\n' +
+    '- Distinguish what the diff shows from what you are inferring.\n' +
+    '- Use fenced code blocks for code or diff excerpts.';
+
+function chatKey() {
+    return pr.current ? String(pr.current.id) : '';
+}
+
+function currentChat() {
+    const key = chatKey();
+    if (!key) return [];
+    if (!pr.chats[key]) pr.chats[key] = [];
+    return pr.chats[key];
+}
+
+function loadSavedChats() {
+    try {
+        const raw = localStorage.getItem(LS_CHATS);
+        pr.chats = raw ? JSON.parse(raw) : {};
+    } catch (e) {
+        pr.chats = {};
+    }
+}
+
+/* Keeps the last few conversations only; diffs are never stored, just turns. */
+function saveChats() {
+    try {
+        const keys = Object.keys(pr.chats).filter(function (k) { return pr.chats[k].length; });
+        const trimmed = {};
+        keys.slice(-8).forEach(function (k) { trimmed[k] = pr.chats[k].slice(-24); });
+        localStorage.setItem(LS_CHATS, JSON.stringify(trimmed));
+    } catch (e) { /* quota — the chat still works in memory */ }
+}
+
+/* Builds the grounded context. Spends its budget on the open file first, then
+   other loaded files, and reports anything it had to leave out. */
+function buildChatContext() {
+    const item = pr.current;
+    if (!item) return '';
+    const out = [];
+    const push = function (line) { out.push(line); };
+
+    push('## Pull request');
+    push('#' + item.id + ' — ' + item.title);
+    push('Repository: ' + item.repoName + '   Branch: ' + item.source + ' -> ' + item.target);
+    push('Author: ' + item.author + '   Opened: ' + prAgeDays(item.created) + ' day(s) ago' +
+        '   Status: ' + item.status + (item.isDraft ? ' (draft)' : '') +
+        (item.mergeStatus ? '   Merge: ' + item.mergeStatus : ''));
+    if (item.reviewers.length) {
+        push('Reviewers: ' + item.reviewers.map(function (r) {
+            return r.name + ' (' + (VOTE_LABELS[String(r.vote)] || 'No vote') + ')';
+        }).join(', '));
+    }
+    if (pr.workItems.length) push('Linked work items: ' + pr.workItems.length);
+    if (item.description) {
+        push('');
+        push('### Description');
+        push(item.description.slice(0, 2000));
+    }
+
+    push('');
+    push('## Changed files (' + pr.files.length + ')');
+    pr.files.forEach(function (f) {
+        const cached = pr.fileCache[f.path];
+        let note = f.changeType;
+        if (f.binary) note += ', binary';
+        if (cached && cached.diff) note += ', +' + cached.diff.added + '/-' + cached.diff.removed + ', diff included below';
+        else if (cached && cached.tooBig) note += ', too large to diff';
+        else if (!f.binary) note += ', diff NOT loaded';
+        push('- ' + f.path + '  [' + note + ']');
+    });
+
+    const findings = allPrFindings();
+    if (findings.length) {
+        push('');
+        push('## Findings from the static rule pass (' + findings.length + ')');
+        findings.slice(0, 40).forEach(function (f) {
+            push('- [' + f.severity + '] ' + f.title +
+                (f.file ? '  (' + f.file + (f.line ? ':' + f.line : '') + ')' : '') +
+                (f.source === 'ai' ? '  [from a previous AI pass]' : ''));
+            if (f.description) push('    ' + String(f.description).slice(0, 220));
+        });
+        if (findings.length > 40) push('- ... ' + (findings.length - 40) + ' more');
+    }
+
+    /* diffs: the open file first, then the rest of what is loaded */
+    const loaded = Object.keys(pr.fileCache).filter(function (p) {
+        return pr.fileCache[p] && pr.fileCache[p].diff && pr.fileCache[p].diff.hunks.length;
+    });
+    loaded.sort(function (a, b) {
+        if (a === pr.activeFile) return -1;
+        if (b === pr.activeFile) return 1;
+        return 0;
+    });
+
+    let used = out.join('\n').length;
+    const included = [], omitted = [];
+    const diffParts = [];
+    loaded.forEach(function (path) {
+        const cached = pr.fileCache[path];
+        const text = unifiedDiffText(cached.diff, path, CHAT_FILE_DIFF_LINES);
+        const block = '\n### ' + path + (path === pr.activeFile ? '   (the file the reviewer has open)' : '') +
+            '\n```diff\n' + text + '\n```';
+        if (used + block.length > CHAT_CONTEXT_CHARS && included.length) {
+            omitted.push(path);
+            return;
+        }
+        used += block.length;
+        included.push(path);
+        diffParts.push(block);
+    });
+
+    if (diffParts.length) {
+        push('');
+        push('## Diffs of the loaded files');
+        diffParts.forEach(push);
+    }
+    const notLoaded = pr.files.filter(function (f) {
+        return !f.binary && f.changeType !== 'delete' && included.indexOf(f.path) === -1;
+    }).map(function (f) { return f.path; }).concat(omitted);
+    if (notLoaded.length) {
+        push('');
+        push('## Files whose diff is NOT in this context');
+        push(notLoaded.join(', '));
+        push('(The reviewer can open a file in the tool to add its diff here. Do not guess at these.)');
+    }
+    return out.join('\n');
+}
+
+function setRightTab(tab) {
+    pr.rightTab = tab;
+    const showChat = tab === 'chat';
+    document.getElementById('prInsights').style.display = showChat ? 'none' : '';
+    document.getElementById('prChatPanel').style.display = showChat ? 'flex' : 'none';
+    document.getElementById('prTabInsights').classList.toggle('active', !showChat);
+    document.getElementById('prTabChat').classList.toggle('active', showChat);
+    document.getElementById('prInsightsMeta').style.display = showChat ? 'none' : '';
+    if (showChat) {
+        renderChat();
+        const input = document.getElementById('prChatInput');
+        if (input) input.focus();
+    }
+}
+
+const CHAT_SUGGESTIONS = [
+    'What does this pull request change, in plain terms?',
+    'What should I check most carefully as a reviewer?',
+    'Are there risks or side effects in these changes?',
+    'Does this change need tests, and are any missing?',
+    'Summarise the change in the file I have open.'
+];
+
+function renderChat() {
+    const box = document.getElementById('prChatLog');
+    if (!box) return;
+    clearNode(box);
+
+    const turns = currentChat();
+    const cfg = aiConfig();
+
+    if (!cfg) {
+        box.appendChild(h('div', { class: 'chat-empty' }, [
+            h('h3', { text: 'No AI endpoint configured' }),
+            h('p', { text: 'The assistant needs a model to talk to. Set the endpoint, key and model on the Connection Settings page, then come back.' }),
+            h('a', { class: 'btn btn-sm', href: '../config/index.html', text: 'Open Connection Settings' })
+        ]));
+        return;
+    }
+
+    if (!turns.length) {
+        const chips = h('div', { class: 'chat-chips' }, CHAT_SUGGESTIONS.map(function (q) {
+            return h('button', {
+                class: 'chat-chip',
+                text: q,
+                onclick: function () { sendChat(q); }
+            });
+        }));
+        box.appendChild(h('div', { class: 'chat-empty' }, [
+            h('h3', { text: 'Ask about this pull request' }),
+            h('p', { text: 'The assistant sees this PR\'s details, its changed files, the rule findings and the diffs of files you have opened. Open more files to widen what it can see.' }),
+            chips
+        ]));
+        return;
+    }
+
+    turns.forEach(function (turn) {
+        box.appendChild(h('div', { class: 'chat-turn ' + turn.role }, [
+            h('div', { class: 'chat-role', text: turn.role === 'user' ? 'You' : 'Assistant' }),
+            h('div', { class: 'chat-body' }, renderChatBody(turn.content))
+        ]));
+    });
+
+    if (pr.chatBusy) {
+        box.appendChild(h('div', { class: 'chat-turn assistant' }, [
+            h('div', { class: 'chat-role', text: 'Assistant' }),
+            h('div', { class: 'chat-body' }, [
+                h('span', { class: 'pr-mini-spinner' }),
+                h('span', { text: '  thinking...' })
+            ])
+        ]));
+    }
+    box.scrollTop = box.scrollHeight;
+}
+
+/* Renders a reply as text blocks and fenced code blocks. Everything goes in
+   through textContent, so a model that echoes HTML or a diff cannot inject it. */
+function renderChatBody(content) {
+    const nodes = [];
+    const parts = String(content || '').split(/```/);
+    parts.forEach(function (part, i) {
+        if (!part) return;
+        if (i % 2 === 1) {
+            const body = part.replace(/^[a-zA-Z0-9]*\n/, '');
+            nodes.push(h('pre', { class: 'chat-code', text: body.replace(/\s+$/, '') }));
+        } else {
+            part.split(/\n{2,}/).forEach(function (para) {
+                if (para.trim()) nodes.push(h('p', { class: 'chat-para', text: para.trim() }));
+            });
+        }
+    });
+    return nodes.length ? nodes : [h('p', { class: 'chat-para', text: String(content || '') })];
+}
+
+function onChatKeydown(event) {
+    /* Enter sends, Shift+Enter makes a new line */
+    if (event.key === 'Enter' && !event.shiftKey) {
+        event.preventDefault();
+        sendChat();
+    }
+}
+
+async function sendChat(presetQuestion) {
+    if (pr.chatBusy) return;
+    if (!pr.current) { showToast('Open a pull request first.', 'error'); return; }
+    const cfg = aiConfig();
+    if (!cfg) {
+        showToast('No AI endpoint configured — set one on the Connection Settings page.', 'error');
+        return;
+    }
+    const input = document.getElementById('prChatInput');
+    const question = String(presetQuestion || (input ? input.value : '')).trim();
+    if (!question) return;
+    if (input && !presetQuestion) input.value = '';
+
+    const turns = currentChat();
+    turns.push({ role: 'user', content: question });
+    pr.chatBusy = true;
+    renderChat();
+    updateChatMeta();
+
+    /* The context rides on the newest user turn so it always reflects whatever
+       files are loaded right now, without bloating the stored history. */
+    const context = buildChatContext();
+    const history = turns.slice(-CHAT_HISTORY_TURNS).map(function (t, i, arr) {
+        const isLast = i === arr.length - 1;
+        return isLast
+            ? { role: t.role, content: 'CONTEXT\n' + context + '\n\nQUESTION\n' + t.content }
+            : { role: t.role, content: t.content };
+    });
+
+    try {
+        const reply = await callAi(cfg, history, CHAT_SYSTEM);
+        turns.push({ role: 'assistant', content: reply || '(the model returned an empty reply)' });
+        saveChats();
+    } catch (err) {
+        turns.push({ role: 'assistant', content: 'That request failed: ' + err.message });
+    } finally {
+        pr.chatBusy = false;
+        renderChat();
+        updateChatMeta();
+    }
+}
+
+function clearChat() {
+    const key = chatKey();
+    if (!key) return;
+    pr.chats[key] = [];
+    saveChats();
+    renderChat();
+    updateChatMeta();
+}
+
+function updateChatMeta() {
+    const el = document.getElementById('prChatMeta');
+    if (!el) return;
+    const cfg = aiConfig();
+    const turns = currentChat();
+    const loaded = Object.keys(pr.fileCache).filter(function (p) {
+        return pr.fileCache[p] && pr.fileCache[p].diff;
+    }).length;
+    el.textContent = (cfg ? cfg.model : 'no model configured') +
+        '  ·  ' + loaded + '/' + pr.files.length + ' file diff(s) in context' +
+        (turns.length ? '  ·  ' + Math.ceil(turns.length / 2) + ' question(s)' : '');
+}
+
 /* ─── BOOT THE PR SIDE ─── */
 function initPullRequestView() {
+    loadSavedChats();
     const central = readCentralConfig().tfs || {};
     const url = central.url || localStorage.getItem(LS_TFS_URL) || TFS_DEFAULT_URL;
     const pat = central.pat || localStorage.getItem(LS_PAT) || '';
