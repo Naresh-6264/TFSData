@@ -26,13 +26,22 @@ TFSData/
 ├── tfs-dashboard/
 │   └── index.html          ← TFS Sprint Dashboard (~3300 lines)
 ├── md-viewer/
-│   ├── index.html          ← Markdown Viewer (~970 lines)
+│   ├── index.html          ← Markdown Viewer (~1660 lines)
 │   └── marked.umd.js       ← Markdown parsing library
-├── ai-adoption-tracker/
-│   ├── index.html              ← AI Adoption Tracker (~14000 lines)
-│   ├── admin.html              ← Admin page for user management
-│   ├── auth-config.example.js  ← Template for auth config (committed)
-│   └── auth-config.js          ← Real auth config (gitignored, has cipher key + users + admin creds)
+├── sprint-planner/
+│   └── index.html          ← Sprint Planner (~3200 lines)
+├── user-performance-report/
+│   └── index.html          ← User Performance Report (~2350 lines)
+├── pr-reviewer/
+│   └── index.html          ← PR Review Automater (~2700 lines)
+├── punch-time-calculator/
+│   └── index.html          ← Punch Time Calculator (~1900 lines)
+├── common/
+│   ├── tfs-api.js          ← Shared TFS API helper (NTLM/Basic, opt-in per tool)
+│   └── test.html           ← Manual test page for tfs-api.js
+├── cors-proxy/
+│   └── worker.js           ← Cloudflare Worker CORS proxy (not deployed to Pages)
+├── serve.js                ← Local dev server + NTLM TFS proxy (node serve.js)
 ├── everything-claude-code/  ← ECC plugin (gitignored)
 ├── CLAUDE.md
 └── README.md
@@ -116,16 +125,38 @@ Markdown file viewer/editor with live preview. Uses `marked.umd.js` (v15.0.7) fo
 - Copy HTML output, print support
 - Light/dark theme toggle
 
-### AI Adoption Tracker (`ai-adoption-tracker/index.html`)
+### Sprint Planner (`sprint-planner/index.html`)
 
-TFS data analysis dashboard with role-based access control. Single-file SPA (~14000 lines) with inline user registry.
+Sprint capacity planning and backlog assignment, with write-back to TFS.
 
-- **Allowed User System**: Two-stage auth — TFS PAT validates identity, then username is matched against XOR-encrypted whitelist loaded from external `auth-config.js` (gitignored)
-- **Auth config**: `auth-config.js` contains cipher key, user list, and taskCreatorUrl. Copy `auth-config.example.js` to set up.
-- **Three roles**: `super_admin` (all 7 tabs), `admin` (tabs 1-3, 5-6), `normal` (per-user tab list, max 3 areas)
-- **7 tabs**: Sprint Planning, Work Progress, AI Usage, AI Analytics, Feature Progress, Data Lookup, Encrypt Username (super_admin only)
-- Feature update capability restricted to admin/super_admin
-- CDN dependencies: html2canvas, jspdf, Google Fonts (requires internet)
+- Capacity Planning — team members, sprint working days, total capacity, sprint dates
+- Backlog & Assignment — assign backlog items to members
+- Workload Dashboard — per-member load against capacity
+- Push to TFS — writes assignments back to work items
+
+### User Performance Report (`user-performance-report/index.html`)
+
+Per-member sprint scorecard built from TFS work item + update history.
+
+- Metrics: Tasks Completed, Hours Delivered, AI Adoption, Bug Resolution Rate
+- AI vs Manual task split (from `TaskExecutionType`)
+- Sprint and team-member selectors; CORS proxy supported
+
+### PR Review Automater (`pr-reviewer/index.html`)
+
+Generates a structured code review report from a pull request URL or a raw diff.
+
+- Accepts a GitHub or TFS PR URL, or pasted/dropped code or diff text
+- Optional PAT/token field for private repos
+- Optional OpenAI API key for AI-assisted review commentary
+
+### Punch Time Calculator (`punch-time-calculator/index.html`)
+
+Offline timesheet helper — no TFS connection.
+
+- Paste alternating IN/OUT times (one per line) to get Total Work, Total Break, Sessions, Remaining
+- Weekly view with configurable working days, daily target hours, and time format
+- All data kept in localStorage; a reset control clears it
 
 ## TFS API Details
 

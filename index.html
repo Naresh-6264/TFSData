@@ -281,6 +281,9 @@ var ICONS = {
   sprint: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>',
   markdown: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 3h16a1 1 0 0 1 1 1v16a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/><path d="M7 15V9l3 3 3-3v6"/><path d="M17 9v6l-2-2"/></svg>',
   analytics: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 20V10"/><path d="M12 20V4"/><path d="M6 20v-6"/></svg>',
+  planner: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v4"/><path d="M16 2v4"/><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M3 10h18"/><path d="M9 16l2 2 4-4"/></svg>',
+  review: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M9 15l2 2 4-4"/></svg>',
+  timer: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 2h6"/><path d="M12 2v3"/><circle cx="12" cy="13" r="8"/><path d="M12 10v3.5l2.5 1.5"/></svg>',
   default: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>'
 };
 
@@ -298,6 +301,42 @@ var FALLBACK_TOOLS = [
     tags: ['TFS', 'Sprint', 'Dashboard']
   },
   {
+    id: 'sprint-planner',
+    name: 'Sprint Planner',
+    description: 'Plan team capacity, assign backlog items to members, review the workload dashboard, and push assignments back to TFS.',
+    path: 'sprint-planner/index.html',
+    icon: 'planner',
+    accentColor: '#8b5cf6',
+    tags: ['TFS', 'Sprint', 'Planning']
+  },
+  {
+    id: 'user-performance-report',
+    name: 'User Performance Report',
+    description: 'Per-member sprint scorecard — tasks completed, hours delivered, AI adoption split, and bug resolution rate.',
+    path: 'user-performance-report/index.html',
+    icon: 'analytics',
+    accentColor: '#f59e0b',
+    tags: ['TFS', 'Reports', 'Performance']
+  },
+  {
+    id: 'pr-reviewer',
+    name: 'PR Review Automater',
+    description: 'Point it at a GitHub or TFS pull request URL, or paste a raw diff, and get a structured code review report.',
+    path: 'pr-reviewer/index.html',
+    icon: 'review',
+    accentColor: '#10b981',
+    tags: ['Code Review', 'PR', 'AI']
+  },
+  {
+    id: 'punch-time-calculator',
+    name: 'Punch Time Calculator',
+    description: 'Paste punch IN/OUT times to compute work hours, break time, and how much is left against your daily or weekly target.',
+    path: 'punch-time-calculator/index.html',
+    icon: 'timer',
+    accentColor: '#14b8a6',
+    tags: ['Timesheet', 'Utility']
+  },
+  {
     id: 'md-viewer',
     name: 'Markdown Viewer',
     description: 'Paste or upload Markdown files and preview rendered output with live editing, syntax highlighting, and export.',
@@ -305,15 +344,6 @@ var FALLBACK_TOOLS = [
     icon: 'markdown',
     accentColor: '#0ea5e9',
     tags: ['Markdown', 'Viewer', 'Documentation']
-  },
-  {
-    id: 'ai-adoption-tracker',
-    name: 'AI Adoption Tracker',
-    description: 'TFS data analysis dashboard with sprint planning, AI usage analytics, feature progress tracking, and role-based access control.',
-    path: 'ai-adoption-tracker/index.html',
-    icon: 'analytics',
-    accentColor: '#f59e0b',
-    tags: ['TFS', 'Analytics', 'Sprint', 'RBAC']
   }
 ];
 

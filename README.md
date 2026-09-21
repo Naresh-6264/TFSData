@@ -21,11 +21,20 @@ TFSData/
 ├── md-viewer/
 │   ├── index.html              Markdown Viewer / Editor
 │   └── marked.umd.js           Markdown parsing library (marked v15.0.7)
-├── ai-adoption-tracker/
-│   ├── index.html              AI Adoption Tracker
-│   ├── admin.html              Admin — user management page
-│   ├── auth-config.example.js  Auth config template (committed)
-│   └── auth-config.js          Real auth config (gitignored)
+├── sprint-planner/
+│   └── index.html              Sprint Planner
+├── user-performance-report/
+│   └── index.html              User Performance Report
+├── pr-reviewer/
+│   └── index.html              PR Review Automater
+├── punch-time-calculator/
+│   └── index.html              Punch Time Calculator
+├── common/
+│   ├── tfs-api.js              Shared TFS API helper (opt-in per tool)
+│   └── test.html               Manual test page for tfs-api.js
+├── cors-proxy/
+│   └── worker.js               Cloudflare Worker CORS proxy (not published)
+├── serve.js                    Local dev server + NTLM TFS proxy
 ├── CLAUDE.md                   Claude Code project instructions
 └── README.md                   This file
 ```
@@ -110,64 +119,62 @@ A client-side Markdown viewer and editor with live preview. Runs entirely in the
 
 ---
 
-### AI Adoption Tracker
+### Sprint Planner
 
-**Path:** `ai-adoption-tracker/index.html`
+**Path:** `sprint-planner/index.html`
 
-A TFS data analysis dashboard with sprint planning, work progress tracking, AI usage analytics, feature progress monitoring, and an encrypted user management system. Role-based access control restricts features per user.
+Sprint capacity planning and backlog assignment for CasepointARA, with write-back to TFS.
 
 **Features:**
-- 7 tab views: Sprint Planning, Work Progress, AI Usage, AI Analytics, Feature Progress, Data Lookup, Encrypt Username
-- Role-based access control with three roles: `super_admin`, `admin`, `normal`
-- Per-user tab visibility — each user sees only their permitted tabs
-- Area path filtering with role-based limits (normal users: max 3 areas)
-- Feature progress tracking with hour breakdowns (estimate, discovery, dev, planned, completed)
-- Admin-only feature data update — bulk update feature state/status/hours in TFS
-- AI usage and adoption analytics across areas and sprints
-- Data Lookup tab links to external Task Creator tool
-- Encrypt Username tab (super_admin only) — encrypt/decrypt usernames, view full user table
-- PDF export via html2canvas + jspdf
-- Dark/light theme toggle
+- Capacity Planning — team member list, sprint working days, total capacity, sprint dates
+- Backlog & Assignment — pull the sprint backlog and assign items to members
+- Workload Dashboard — per-member assigned load against available capacity
+- Push to TFS — writes the planned assignments back to the work items
+- TFS connection panel: server URL, PAT, optional CORS proxy URL
 
-**Allowed User System:**
+---
 
-The tool uses a two-stage authentication model:
+### User Performance Report
 
-1. **TFS PAT validation** — User enters TFS server URL and PAT. The app calls `_apis/connectionData` to get the authenticated username.
-2. **Whitelist check** — The username is compared (case-insensitive) against an XOR-encrypted user list loaded from `auth-config.js`. If no match, access is denied entirely.
+**Path:** `user-performance-report/index.html`
 
-| Role | Tabs | Feature Update | Area Limit |
-|------|------|----------------|------------|
-| `super_admin` | All 7 tabs | Yes | Unlimited |
-| `admin` | 1-3, 5-6 | Yes | Unlimited |
-| `normal` | Per-user config | No | Max 3 |
+Per-member sprint scorecard built from TFS work items and their update history.
 
-**Setup (required before first use):**
-1. Copy `auth-config.example.js` to `auth-config.js` in the same folder
-2. Fill in the cipher key and encrypted user entries
-3. `auth-config.js` is gitignored — it never gets committed
+**Features:**
+- Headline metrics: Tasks Completed, Hours Delivered, AI Adoption, Bug Resolution Rate
+- AI vs Manual task split, derived from the `TaskExecutionType` custom field
+- Sprint / iteration and team member selectors
+- Optional CORS proxy support for off-network access
 
-**Managing users (via admin page):**
-1. Open `admin.html` (next to `index.html` in the `ai-adoption-tracker/` folder)
-2. Log in with the admin credentials (stored in `auth-config.js` as a SHA-256 hash)
-3. Enter the user's TFS display name, select role and tabs
-4. Click **Encrypt** — a ready-to-paste JSON entry is generated
-5. Copy the entry and add it to the `users` array in `auth-config.js`
-6. The admin page also shows the full current user list (decrypted) and a decrypt/verify tool
+---
 
-**Dependencies (CDN, requires internet):**
-- `html2canvas` v1.4.1
-- `jspdf` v2.5.1
-- Google Fonts (Inter)
+### PR Review Automater
 
-**Files:**
+**Path:** `pr-reviewer/index.html`
 
-| File | Purpose |
-|------|---------|
-| `index.html` | Main application (~14,000 lines) |
-| `admin.html` | Admin page — login-protected user management, encrypt/decrypt tool |
-| `auth-config.example.js` | Template config — committed to git, no real data |
-| `auth-config.js` | Real config with cipher key, users, and admin credentials — **gitignored** |
+Produces a structured code review report from a pull request URL or a raw diff.
+
+**Features:**
+- Accepts a GitHub PR URL, a TFS PR URL, or pasted / drag-dropped code or diff text
+- Optional PAT / token field for private repositories
+- Optional OpenAI API key for AI-assisted review commentary (left blank = rule-based only)
+- Renders a PR Review Report you can read in the browser
+
+**Note:** Any key or token you enter stays in the browser — it is sent only to the service it belongs to.
+
+---
+
+### Punch Time Calculator
+
+**Path:** `punch-time-calculator/index.html`
+
+Offline timesheet helper — no TFS connection, no network calls.
+
+**Features:**
+- Paste alternating IN / OUT punch times (one per line) to get Total Work, Total Break, Sessions, and Remaining
+- Weekly view with a configurable week start and selectable working days
+- Configurable daily target hours and 12h / 24h time format
+- Data persists in `localStorage`; a reset control clears all saved punches and settings
 
 ---
 
@@ -227,7 +234,7 @@ The portal is a single-page HTML file that reads `tools.json` and renders a card
 | `name` | string | yes | Display name on the card |
 | `description` | string | yes | One or two sentence summary |
 | `path` | string | yes | Relative path to the tool's entry file |
-| `icon` | string | yes | Key into the `ICONS` map (`sprint`, `markdown`, or `default`) |
+| `icon` | string | yes | Key into the `ICONS` map (`sprint`, `markdown`, `analytics`, `planner`, `review`, `timer`, or `default`) |
 | `accentColor` | string | yes | 6-digit hex color (e.g., `#6366f1`) for card accent |
 | `tags` | string[] | yes | Short labels shown as pills on the card |
 
@@ -243,36 +250,26 @@ The portal is a single-page HTML file that reads `tools.json` and renders a card
 
 ## Deployment (GitHub Pages)
 
-The project deploys to GitHub Pages via a GitHub Actions workflow. The AI Adoption Tracker requires an auth config that is **not stored in the repo** — it's injected at deploy time from a GitHub secret.
+The portal deploys to GitHub Pages via `.github/workflows/deploy.yml`. It is a plain static deploy — **no secrets, variables, or environment configuration are required.**
 
 ### One-time setup
 
-1. **Go to** your repo Settings > Secrets and variables > Actions
-2. **Create a new repository secret** named `AUTH_CONFIG_DATA`
-3. **Paste the full contents** of your local `auth-config.js` as the secret value:
-   ```javascript
-   var AUTH_CONFIG = {
-       cipherKey: "your-cipher-key-here",
-       taskCreatorUrl: "https://example.com/task-creator/",
-       users: [
-           { "name": "ENCRYPTED_NAME", "role": "super_admin", "tabs": [1,2,3,4,5,6,7] },
-           { "name": "ENCRYPTED_NAME", "role": "admin", "tabs": [1,2,3,5,6] }
-       ]
-   };
-   ```
-4. **Go to** Settings > Pages > Source > select **GitHub Actions**
-5. **Push to `DevEnviournment`** — the workflow triggers automatically and deploys
+1. **Go to** Settings > Pages > Source > select **GitHub Actions**
+2. **Push to `main` or `DevEnviournment`** — the workflow triggers automatically and deploys
+
+You can also run it manually from the Actions tab (`workflow_dispatch`).
 
 ### How it works
 
-- `.github/workflows/deploy.yml` runs on every push to `DevEnviournment`
-- It writes the `AUTH_CONFIG_DATA` secret into `ai-adoption-tracker/auth-config.js` at build time
-- The file is included in the deployed Pages artifact but **never appears in the repo source**
-- To update users: edit the secret in GitHub Settings, then re-run the workflow
+- Runs on every push to `main` or `DevEnviournment`
+- Copies the repo into a `_site/` staging folder, excluding things that should not be published: `.github/`, `.claude/`, `everything-claude-code/`, `CLAUDE.md`, `README.md`, `.gitignore`, `serve.js`, and `cors-proxy/`
+- Uploads `_site/` as the Pages artifact and deploys it
+
+Adding a tool needs no workflow change — create the folder, add it to `tools.json` and the portal fallback array, and push.
 
 ### Local development
 
-For local use (opening files directly in a browser), copy `auth-config.example.js` to `auth-config.js` in the `ai-adoption-tracker/` folder and fill in your real data. This file is gitignored.
+Open `index.html` directly in a browser, or run `node serve.js` and visit `http://localhost:3000` for a local server that also proxies TFS calls using NTLM auth.
 
 ## Browser Support
 
@@ -283,7 +280,7 @@ Tested on modern Chromium-based browsers (Chrome, Edge). Firefox and Safari shou
 - TFS PAT is stored in `localStorage` and transmitted only to the configured TFS server over HTTPS
 - The portal validates all data from `tools.json` before rendering (path scheme checks, hex color format, object shape validation)
 - A Content Security Policy meta tag restricts script and resource loading on the portal page
-- AI Adoption Tracker auth config (cipher key + encrypted user list) is stored as a GitHub secret, injected only at deploy time — never in the repo source
+- No secrets, API keys, or credentials are stored in the repo or injected at deploy time — every tool asks for its own token at runtime and keeps it in `localStorage`
 - No data is sent to any third-party service — all tools run entirely client-side
 
 ## License

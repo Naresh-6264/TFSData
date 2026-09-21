@@ -9,6 +9,42 @@
     "tags": ["TFS", "Sprint", "Dashboard"]
   },
   {
+    "id": "sprint-planner",
+    "name": "Sprint Planner",
+    "description": "Plan team capacity, assign backlog items to members, review the workload dashboard, and push assignments back to TFS.",
+    "path": "sprint-planner/index.html",
+    "icon": "planner",
+    "accentColor": "#8b5cf6",
+    "tags": ["TFS", "Sprint", "Planning"]
+  },
+  {
+    "id": "user-performance-report",
+    "name": "User Performance Report",
+    "description": "Per-member sprint scorecard — tasks completed, hours delivered, AI adoption split, and bug resolution rate.",
+    "path": "user-performance-report/index.html",
+    "icon": "analytics",
+    "accentColor": "#f59e0b",
+    "tags": ["TFS", "Reports", "Performance"]
+  },
+  {
+    "id": "pr-reviewer",
+    "name": "PR Review Automater",
+    "description": "Point it at a GitHub or TFS pull request URL, or paste a raw diff, and get a structured code review report.",
+    "path": "pr-reviewer/index.html",
+    "icon": "review",
+    "accentColor": "#10b981",
+    "tags": ["Code Review", "PR", "AI"]
+  },
+  {
+    "id": "punch-time-calculator",
+    "name": "Punch Time Calculator",
+    "description": "Paste punch IN/OUT times to compute work hours, break time, and how much is left against your daily or weekly target.",
+    "path": "punch-time-calculator/index.html",
+    "icon": "timer",
+    "accentColor": "#14b8a6",
+    "tags": ["Timesheet", "Utility"]
+  },
+  {
     "id": "md-viewer",
     "name": "Markdown Viewer",
     "description": "Paste or upload Markdown files and preview rendered output with live editing, syntax highlighting, and export.",
@@ -16,14 +52,5 @@
     "icon": "markdown",
     "accentColor": "#0ea5e9",
     "tags": ["Markdown", "Viewer", "Documentation"]
-  },
-  {
-    "id": "ai-adoption-tracker",
-    "name": "AI Adoption Tracker",
-    "description": "TFS data analysis dashboard with sprint planning, AI usage analytics, feature progress tracking, and role-based access control.",
-    "path": "ai-adoption-tracker/index.html",
-    "icon": "analytics",
-    "accentColor": "#f59e0b",
-    "tags": ["TFS", "Analytics", "Sprint", "RBAC"]
   }
 ]
