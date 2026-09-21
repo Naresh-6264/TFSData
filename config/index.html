@@ -1,0 +1,853 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Connection Settings</title>
+<style>
+/* ─── THEME VARIABLES ─── */
+:root {
+  --bg-primary: #0b0f1a;
+  --bg-card: rgba(255, 255, 255, 0.04);
+  --bg-input: rgba(255, 255, 255, 0.06);
+  --border-color: rgba(255, 255, 255, 0.1);
+  --border-strong: rgba(255, 255, 255, 0.2);
+  --text-primary: #e8ecf8;
+  --text-secondary: rgba(232, 236, 248, 0.75);
+  --text-muted: rgba(232, 236, 248, 0.55);
+  --text-dim: rgba(232, 236, 248, 0.38);
+  --accent: #6366f1;
+  --success: #34d399;
+  --success-bg: rgba(52, 211, 153, 0.12);
+  --warning: #fbbf24;
+  --warning-bg: rgba(251, 191, 36, 0.12);
+  --danger: #f87171;
+  --danger-bg: rgba(248, 113, 113, 0.12);
+  --info: #60a5fa;
+  --radius: 10px;
+  --font: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  --mono: 'Cascadia Code', 'Consolas', monospace;
+}
+:root.light-theme {
+  --bg-primary: #f4f6fb;
+  --bg-card: rgba(255, 255, 255, 0.85);
+  --bg-input: #ffffff;
+  --border-color: rgba(15, 23, 42, 0.12);
+  --border-strong: rgba(15, 23, 42, 0.25);
+  --text-primary: #0f172a;
+  --text-secondary: rgba(15, 23, 42, 0.78);
+  --text-muted: rgba(15, 23, 42, 0.6);
+  --text-dim: rgba(15, 23, 42, 0.42);
+  --accent: #4f46e5;
+  --success: #059669;
+  --success-bg: rgba(5, 150, 105, 0.1);
+  --warning: #b45309;
+  --warning-bg: rgba(180, 83, 9, 0.1);
+  --danger: #dc2626;
+  --danger-bg: rgba(220, 38, 38, 0.1);
+  --info: #2563eb;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  min-height: 100vh;
+  padding: 0 0 60px;
+  font-family: var(--font);
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--text-primary);
+  background:
+    radial-gradient(1000px 600px at 12% -10%, rgba(99, 102, 241, 0.16), transparent 60%),
+    radial-gradient(900px 500px at 105% 0%, rgba(52, 211, 153, 0.1), transparent 55%),
+    var(--bg-primary);
+}
+
+/* ─── HEADER ─── */
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px 28px;
+  margin-bottom: 30px;
+  border-bottom: 1px solid var(--border-color);
+  background: rgba(10, 14, 26, 0.55);
+  backdrop-filter: blur(14px);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+.light-theme .topbar { background: rgba(255, 255, 255, 0.7); }
+.brand { display: flex; align-items: center; gap: 12px; }
+.brand-mark {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, var(--accent), #8b5cf6);
+  font-weight: 700;
+  font-size: 15px;
+  color: #fff;
+}
+.brand-title { font-size: 16px; font-weight: 650; letter-spacing: -0.2px; }
+.brand-sub { font-size: 12px; color: var(--text-muted); }
+.topbar-actions { display: flex; align-items: center; gap: 8px; }
+
+/* ─── LAYOUT ─── */
+.wrap { max-width: 960px; margin: 0 auto; padding: 0 24px; }
+
+.notice {
+  display: flex;
+  gap: 12px;
+  padding: 14px 16px;
+  margin-bottom: 26px;
+  border: 1px solid var(--border-color);
+  border-left: 3px solid var(--warning);
+  border-radius: var(--radius);
+  background: var(--warning-bg);
+  font-size: 13px;
+  line-height: 1.6;
+}
+.notice strong { color: var(--warning); }
+
+.card {
+  padding: 22px 24px;
+  margin-bottom: 22px;
+  border: 1px solid var(--border-color);
+  border-radius: 14px;
+  background: var(--bg-card);
+  backdrop-filter: blur(10px);
+}
+.card-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+.card-title { font-size: 15px; font-weight: 650; }
+.card-hint { margin-top: 3px; font-size: 12px; color: var(--text-muted); max-width: 62ch; }
+
+.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
+.field { display: flex; flex-direction: column; gap: 6px; }
+.field.wide { grid-column: 1 / -1; }
+label {
+  font-size: 11px;
+  font-weight: 650;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+label .opt { font-weight: 400; text-transform: none; letter-spacing: 0; color: var(--text-dim); }
+input, select {
+  width: 100%;
+  padding: 9px 12px;
+  font-family: inherit;
+  font-size: 13px;
+  color: var(--text-primary);
+  background: var(--bg-input);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  transition: border-color 0.15s;
+}
+input:focus, select:focus { outline: none; border-color: var(--accent); }
+input.mono { font-family: var(--mono); font-size: 12px; }
+.field-note { font-size: 11px; color: var(--text-dim); }
+.field-note code, .card-hint code, .notice code {
+  font-family: var(--mono);
+  font-size: 0.92em;
+  padding: 1px 4px;
+  border-radius: 3px;
+  background: var(--bg-input);
+}
+
+.secret-wrap { position: relative; display: flex; }
+.secret-wrap input { padding-right: 46px; }
+.secret-toggle {
+  position: absolute;
+  top: 0;
+  right: 0;
+  height: 100%;
+  padding: 0 12px;
+  font-size: 13px;
+  color: var(--text-muted);
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+.secret-toggle:hover { color: var(--text-primary); }
+
+/* ─── BUTTONS ─── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 9px 16px;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+  background: var(--bg-input);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+  text-decoration: none;
+}
+.btn:hover:not(:disabled) { border-color: var(--border-strong); transform: translateY(-1px); }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.btn-primary { color: #fff; background: linear-gradient(135deg, var(--accent), #8b5cf6); border-color: transparent; }
+.btn-sm { padding: 6px 12px; font-size: 12px; }
+.btn-danger { color: var(--danger); border-color: rgba(248, 113, 113, 0.3); }
+.card-actions { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-top: 18px; }
+
+/* ─── TEST RESULT ─── */
+.result {
+  display: none;
+  padding: 11px 14px;
+  margin-top: 14px;
+  border-radius: 8px;
+  border-left: 3px solid var(--border-strong);
+  background: var(--bg-input);
+  font-size: 12.5px;
+  line-height: 1.6;
+  word-break: break-word;
+}
+.result.show { display: block; }
+.result.ok { border-left-color: var(--success); background: var(--success-bg); }
+.result.err { border-left-color: var(--danger); background: var(--danger-bg); }
+.result.busy { border-left-color: var(--info); }
+.result-detail { margin-top: 6px; color: var(--text-muted); font-size: 11.5px; }
+
+/* ─── STATUS PILLS ─── */
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  background: var(--bg-input);
+  border: 1px solid var(--border-color);
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+.pill.set { color: var(--success); border-color: rgba(52, 211, 153, 0.35); background: var(--success-bg); }
+.pill.missing { color: var(--text-dim); }
+.dot { width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+
+/* ─── SAVED-KEYS TABLE ─── */
+table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+th, td { padding: 8px 10px; text-align: left; border-bottom: 1px solid var(--border-color); }
+th { font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); font-weight: 650; }
+td.key { font-family: var(--mono); font-size: 11.5px; color: var(--text-secondary); }
+tbody tr:last-child td { border-bottom: none; }
+
+/* ─── TOAST ─── */
+.toasts { position: fixed; right: 20px; bottom: 20px; display: flex; flex-direction: column; gap: 8px; z-index: 50; }
+.toast {
+  padding: 11px 16px;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  border-left: 3px solid var(--accent);
+  background: var(--bg-primary);
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.35);
+  font-size: 13px;
+  animation: slide 0.18s ease-out;
+}
+.toast.success { border-left-color: var(--success); }
+.toast.error { border-left-color: var(--danger); }
+@keyframes slide { from { opacity: 0; transform: translateX(14px); } to { opacity: 1; transform: none; } }
+
+footer { margin-top: 34px; text-align: center; font-size: 12px; color: var(--text-dim); }
+
+@media (max-width: 640px) {
+  .topbar { padding: 14px 16px; }
+  .wrap { padding: 0 14px; }
+  .grid { grid-template-columns: 1fr; }
+  .card-head { flex-direction: column; }
+}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">
+    <div class="brand-mark">CS</div>
+    <div>
+      <div class="brand-title">Connection Settings</div>
+      <div class="brand-sub">One place to set up TFS and AI access for every tool</div>
+    </div>
+  </div>
+  <div class="topbar-actions">
+    <a class="btn btn-sm" href="../index.html">&#8592; Tools</a>
+    <button class="btn btn-sm" id="themeBtn" onclick="toggleTheme()" title="Toggle theme">&#9790;</button>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <div class="notice">
+    <span>&#128274;</span>
+    <div>
+      <strong>Everything here stays in this browser.</strong>
+      Values are saved to <code>localStorage</code> on this machine only &mdash; they are never sent
+      anywhere except to the server each one belongs to, and nothing is written into the repository.
+      Clearing your browser data removes them.
+    </div>
+  </div>
+
+  <!-- ─── TFS ─── -->
+  <section class="card">
+    <div class="card-head">
+      <div>
+        <div class="card-title">&#128188; TFS connection</div>
+        <div class="card-hint">
+          Used by the Sprint Dashboard, Sprint Planner, User Performance Report and PR Reviewer.
+          Saving here fills in all of them, so the PAT is pasted once.
+        </div>
+      </div>
+      <span class="pill" id="tfsPill"><span class="dot"></span><span>not set</span></span>
+    </div>
+
+    <div class="grid">
+      <div class="field wide">
+        <label for="tfsUrl">Collection URL</label>
+        <input id="tfsUrl" class="mono" type="url" placeholder="https://tfs.casepoint.in/tfs/Casepoint">
+      </div>
+      <div class="field wide">
+        <label for="tfsPat">Personal Access Token</label>
+        <div class="secret-wrap">
+          <input id="tfsPat" class="mono" type="password" placeholder="Paste your TFS PAT" autocomplete="off">
+          <button class="secret-toggle" type="button" onclick="toggleSecret('tfsPat', this)" title="Show / hide">&#128065;</button>
+        </div>
+        <span class="field-note">Re-issue it in TFS &rsaquo; Security &rsaquo; Personal Access Tokens if it has expired.</span>
+      </div>
+      <div class="field wide">
+        <label for="tfsProxy">CORS proxy URL <span class="opt">(optional)</span></label>
+        <input id="tfsProxy" class="mono" type="text" placeholder="Leave empty for a direct connection">
+        <span class="field-note">Only needed if the browser cannot reach TFS directly. Must end with <code>?url=</code>.</span>
+      </div>
+    </div>
+
+    <div class="card-actions">
+      <button class="btn" id="tfsTestBtn" onclick="testTfs()">Test connection</button>
+      <button class="btn btn-primary" onclick="saveAll()">Save settings</button>
+    </div>
+    <div class="result" id="tfsResult"></div>
+  </section>
+
+  <!-- ─── AI ─── -->
+  <section class="card">
+    <div class="card-head">
+      <div>
+        <div class="card-title">&#129302; AI provider</div>
+        <div class="card-hint">
+          Powers the AI insights in the PR Reviewer. These fields mirror the
+          <code>AI_PROVIDER</code> / <code>LLM_URL</code> / <code>APIKey</code> / <code>ClaudeModel</code>
+          keys from a project's <code>web.config</code>, so the same setup can be copied across.
+        </div>
+      </div>
+      <span class="pill" id="aiPill"><span class="dot"></span><span>not set</span></span>
+    </div>
+
+    <div class="grid">
+      <div class="field">
+        <label for="aiProvider">Request format</label>
+        <select id="aiProvider">
+          <option value="openai">OpenAI-compatible (vLLM gateway)</option>
+          <option value="anthropic">Anthropic / Claude native</option>
+        </select>
+        <span class="field-note">A URL ending in <code>/v1/chat/completions</code> is OpenAI-compatible.</span>
+      </div>
+      <div class="field">
+        <label for="aiModel">Model</label>
+        <input id="aiModel" class="mono" type="text" placeholder="gemma-4-26B-A4B-it">
+        <span class="field-note">
+          Must be a model the endpoint actually serves &mdash; press <strong>Load models</strong> to see them.
+          A name the gateway does not host returns a 404 that looks like a broken endpoint.
+        </span>
+      </div>
+      <div class="field wide">
+        <label for="aiUrl">Endpoint URL</label>
+        <input id="aiUrl" class="mono" type="url" placeholder="https://testaipt.casepoint.com/vllm1/v1/chat/completions">
+        <span class="field-note">From <code>LLM_URL</code> &mdash; the full chat-completions path, not just the host.</span>
+      </div>
+      <div class="field wide">
+        <label for="aiKey">API key</label>
+        <div class="secret-wrap">
+          <input id="aiKey" class="mono" type="password" placeholder="Paste the usable (decrypted) key" autocomplete="off">
+          <button class="secret-toggle" type="button" onclick="toggleSecret('aiKey', this)" title="Show / hide">&#128065;</button>
+        </div>
+        <span class="field-note">
+          If <code>web.config</code> stores <code>APIKey</code> encrypted, the value from the file will not
+          authenticate here &mdash; paste the decrypted key your application actually sends.
+        </span>
+      </div>
+      <div class="field">
+        <label for="aiVersion">API version <span class="opt">(Anthropic only)</span></label>
+        <input id="aiVersion" class="mono" type="text" placeholder="2023-06-01">
+        <span class="field-note">From <code>ClaudeAPIVersion</code>; sent as <code>anthropic-version</code>.</span>
+      </div>
+      <div class="field">
+        <label for="aiTimeout">HTTP timeout <span class="opt">(seconds)</span></label>
+        <input id="aiTimeout" type="number" min="1" max="600" placeholder="15">
+        <span class="field-note">From <code>HTTPTimeoutThreshold</code>.</span>
+      </div>
+      <div class="field">
+        <label for="aiThreshold">Request threshold</label>
+        <input id="aiThreshold" type="number" min="1" max="500" placeholder="20">
+        <span class="field-note">From <code>RequestThreshold</code>; caps requests per analysis.</span>
+      </div>
+      <div class="field">
+        <label for="aiMaxTokens">Max output tokens</label>
+        <input id="aiMaxTokens" type="number" min="256" max="32000" placeholder="2000">
+        <span class="field-note">Per request, for the review reply.</span>
+      </div>
+    </div>
+
+    <div class="card-actions">
+      <button class="btn" id="aiTestBtn" onclick="testAi()">Test connection</button>
+      <button class="btn btn-sm" id="aiModelsBtn" onclick="loadAiModels()" title="Ask the endpoint which models it serves">
+        Load models
+      </button>
+      <button class="btn btn-primary" onclick="saveAll()">Save settings</button>
+    </div>
+    <div class="result" id="aiResult"></div>
+  </section>
+
+  <!-- ─── WHAT GETS SAVED ─── -->
+  <section class="card">
+    <div class="card-head">
+      <div>
+        <div class="card-title">&#128190; What gets saved</div>
+        <div class="card-hint">
+          Saving writes the shared settings and mirrors them into the keys each existing tool already
+          reads, so nothing has to be re-entered per tool.
+        </div>
+      </div>
+    </div>
+    <table>
+      <thead><tr><th>localStorage key</th><th>Holds</th><th>Status</th></tr></thead>
+      <tbody id="keyTable"></tbody>
+    </table>
+    <div class="card-actions">
+      <button class="btn btn-danger btn-sm" onclick="clearAll()">Clear all saved settings</button>
+    </div>
+  </section>
+
+  <footer>Casepoint internal tools &middot; settings are per-browser</footer>
+</div>
+
+<div class="toasts" id="toasts"></div>
+
+<script>
+/* ─── CONFIG ─── */
+var LS_CONFIG = 'casepoint_config';
+var LS_THEME = 'casepoint_config_theme';
+var MOON = '☾';
+var SUN = '☀';
+
+/* Keys the existing tools already read, mirrored on save so one entry serves all. */
+var MIRROR = [
+    { key: 'tfs_dashboard_pat', from: 'tfs.pat', label: 'TFS PAT — Sprint Dashboard' },
+    { key: 'sprint_planner_pat', from: 'tfs.pat', label: 'TFS PAT — Sprint Planner' },
+    { key: 'pr_reviewer_pat', from: 'tfs.pat', label: 'TFS PAT — PR Reviewer' },
+    { key: 'perf_report_pat', from: 'tfs.pat', label: 'TFS PAT — Performance Report' },
+    { key: 'sprint_planner_url', from: 'tfs.url', label: 'TFS URL — Sprint Planner' },
+    { key: 'pr_reviewer_tfs_url', from: 'tfs.url', label: 'TFS URL — PR Reviewer' },
+    { key: 'perf_report_url', from: 'tfs.url', label: 'TFS URL — Performance Report' },
+    { key: 'tfs_dashboard_proxy', from: 'tfs.proxy', label: 'CORS proxy — Sprint Dashboard' },
+    { key: 'sprint_planner_proxy', from: 'tfs.proxy', label: 'CORS proxy — Sprint Planner' },
+    { key: 'pr_reviewer_proxy', from: 'tfs.proxy', label: 'CORS proxy — PR Reviewer' },
+    { key: 'perf_report_proxy', from: 'tfs.proxy', label: 'CORS proxy — Performance Report' }
+];
+
+/* ─── THEME ─── */
+function toggleTheme() {
+    var light = document.documentElement.classList.toggle('light-theme');
+    localStorage.setItem(LS_THEME, light ? 'light' : 'dark');
+    document.getElementById('themeBtn').textContent = light ? SUN : MOON;
+}
+
+/* ─── TOAST ─── */
+function showToast(message, type) {
+    var el = document.createElement('div');
+    el.className = 'toast ' + (type || '');
+    el.textContent = message;
+    document.getElementById('toasts').appendChild(el);
+    setTimeout(function () {
+        if (el.parentNode) el.parentNode.removeChild(el);
+    }, 3200);
+}
+
+function toggleSecret(id, btn) {
+    var input = document.getElementById(id);
+    input.type = input.type === 'password' ? 'text' : 'password';
+    btn.style.color = input.type === 'text' ? 'var(--accent)' : '';
+}
+
+/* ─── LOAD / SAVE ─── */
+function readConfig() {
+    try {
+        var raw = localStorage.getItem(LS_CONFIG);
+        var parsed = raw ? JSON.parse(raw) : {};
+        return { tfs: parsed.tfs || {}, ai: parsed.ai || {} };
+    } catch (e) {
+        return { tfs: {}, ai: {} };
+    }
+}
+
+function formValues() {
+    var val = function (id) { return (document.getElementById(id).value || '').trim(); };
+    var num = function (id) {
+        var n = Number(val(id));
+        return isNaN(n) || n <= 0 ? null : n;
+    };
+    return {
+        tfs: {
+            url: val('tfsUrl').replace(/\/+$/, ''),
+            pat: val('tfsPat'),
+            proxy: val('tfsProxy').replace(/\/+$/, '')
+        },
+        ai: {
+            provider: val('aiProvider') || 'openai',
+            url: val('aiUrl'),
+            apiKey: val('aiKey'),
+            model: val('aiModel'),
+            apiVersion: val('aiVersion'),
+            requestThreshold: num('aiThreshold'),
+            timeoutSeconds: num('aiTimeout'),
+            maxTokens: num('aiMaxTokens')
+        }
+    };
+}
+
+function fillForm(cfg) {
+    var set = function (id, v) {
+        document.getElementById(id).value = (v === null || v === undefined) ? '' : v;
+    };
+    set('tfsUrl', cfg.tfs.url || 'https://tfs.casepoint.in/tfs/Casepoint');
+    set('tfsPat', cfg.tfs.pat);
+    set('tfsProxy', cfg.tfs.proxy);
+    set('aiProvider', cfg.ai.provider || 'openai');
+    set('aiUrl', cfg.ai.url);
+    set('aiKey', cfg.ai.apiKey);
+    set('aiModel', cfg.ai.model);
+    set('aiVersion', cfg.ai.apiVersion);
+    set('aiThreshold', cfg.ai.requestThreshold);
+    set('aiTimeout', cfg.ai.timeoutSeconds);
+    set('aiMaxTokens', cfg.ai.maxTokens);
+}
+
+function pick(cfg, path) {
+    var parts = path.split('.');
+    var node = cfg;
+    for (var i = 0; i < parts.length; i++) {
+        if (!node) return '';
+        node = node[parts[i]];
+    }
+    return node || '';
+}
+
+function saveAll() {
+    var cfg = formValues();
+    localStorage.setItem(LS_CONFIG, JSON.stringify(cfg));
+    /* Mirror into the per-tool keys so the existing tools pick these up unchanged. */
+    MIRROR.forEach(function (m) {
+        var value = pick(cfg, m.from);
+        if (value) localStorage.setItem(m.key, value);
+        else localStorage.removeItem(m.key);
+    });
+    renderStatus();
+    showToast('Settings saved for this browser', 'success');
+}
+
+function clearAll() {
+    localStorage.removeItem(LS_CONFIG);
+    MIRROR.forEach(function (m) { localStorage.removeItem(m.key); });
+    fillForm({ tfs: {}, ai: {} });
+    renderStatus();
+    showToast('Cleared every saved setting', 'success');
+}
+
+/* ─── STATUS ─── */
+function setPill(id, ok, label) {
+    var pill = document.getElementById(id);
+    pill.className = 'pill ' + (ok ? 'set' : 'missing');
+    while (pill.firstChild) pill.removeChild(pill.firstChild);
+    var dot = document.createElement('span');
+    dot.className = 'dot';
+    pill.appendChild(dot);
+    var span = document.createElement('span');
+    span.textContent = label;
+    pill.appendChild(span);
+}
+
+function renderStatus() {
+    var cfg = readConfig();
+    var tfsReady = !!(cfg.tfs.url && cfg.tfs.pat);
+    var aiReady = !!(cfg.ai.url && cfg.ai.apiKey && cfg.ai.model);
+    setPill('tfsPill', tfsReady, tfsReady ? 'configured' : 'not set');
+    setPill('aiPill', aiReady, aiReady ? 'configured' : 'not set');
+
+    var rows = [{ key: LS_CONFIG, label: 'Shared TFS + AI settings (this page)', value: localStorage.getItem(LS_CONFIG) }];
+    MIRROR.forEach(function (m) {
+        rows.push({ key: m.key, label: m.label, value: localStorage.getItem(m.key) });
+    });
+
+    var body = document.getElementById('keyTable');
+    while (body.firstChild) body.removeChild(body.firstChild);
+    rows.forEach(function (row) {
+        var tr = document.createElement('tr');
+        var tdKey = document.createElement('td');
+        tdKey.className = 'key';
+        tdKey.textContent = row.key;
+        var tdLabel = document.createElement('td');
+        tdLabel.textContent = row.label;
+        var tdStatus = document.createElement('td');
+        var pill = document.createElement('span');
+        pill.className = 'pill ' + (row.value ? 'set' : 'missing');
+        var dot = document.createElement('span');
+        dot.className = 'dot';
+        pill.appendChild(dot);
+        var text = document.createElement('span');
+        text.textContent = row.value ? 'saved' : 'empty';
+        pill.appendChild(text);
+        tdStatus.appendChild(pill);
+        tr.appendChild(tdKey);
+        tr.appendChild(tdLabel);
+        tr.appendChild(tdStatus);
+        body.appendChild(tr);
+    });
+}
+
+function setResult(id, state, title, detail) {
+    var el = document.getElementById(id);
+    while (el.firstChild) el.removeChild(el.firstChild);
+    el.className = 'result show ' + state;
+    var strong = document.createElement('strong');
+    strong.textContent = title;
+    el.appendChild(strong);
+    if (detail) {
+        var div = document.createElement('div');
+        div.className = 'result-detail';
+        div.textContent = detail;
+        el.appendChild(div);
+    }
+}
+
+/* ─── TESTS ─── */
+function fetchWithTimeout(url, options, seconds) {
+    var ms = (seconds || 20) * 1000;
+    options = options || {};
+    if (typeof AbortController === 'undefined') return fetch(url, options);
+    var controller = new AbortController();
+    var timer = setTimeout(function () { controller.abort(); }, ms);
+    options.signal = controller.signal;
+    return fetch(url, options).then(function (res) {
+        clearTimeout(timer);
+        return res;
+    }, function (err) {
+        clearTimeout(timer);
+        throw err;
+    });
+}
+
+async function testTfs() {
+    var cfg = formValues();
+    if (!cfg.tfs.url || !cfg.tfs.pat) {
+        setResult('tfsResult', 'err', 'Enter the collection URL and a PAT first.');
+        return;
+    }
+    var btn = document.getElementById('tfsTestBtn');
+    btn.disabled = true;
+    setResult('tfsResult', 'busy', 'Contacting TFS…');
+    var target = cfg.tfs.url + '/_apis/connectionData?api-version=2.0-preview';
+    var url = cfg.tfs.proxy ? cfg.tfs.proxy + encodeURIComponent(target) : target;
+    try {
+        /* Same rule as every tool here: always send the PAT, never cookie credentials. */
+        var res = await fetchWithTimeout(url, {
+            headers: { Authorization: 'Basic ' + btoa(':' + cfg.tfs.pat) }
+        }, 25);
+        if (!res.ok) {
+            setResult('tfsResult', 'err', 'TFS refused the request (HTTP ' + res.status + ')',
+                (res.status === 401 || res.status === 403)
+                    ? 'The PAT is expired, revoked or mistyped. Re-issue it in TFS and paste it again.'
+                    : 'Unexpected status from ' + target);
+            return;
+        }
+        var data = await res.json();
+        var user = data.authenticatedUser || {};
+        setResult('tfsResult', 'ok',
+            'Connected as ' + (user.providerDisplayName || user.displayName || 'unknown user'),
+            'Deployment: ' + (data.deploymentType || '?') + '  ·  identity id ' + (user.id || '?'));
+    } catch (err) {
+        var msg = (err && err.name === 'AbortError') ? 'The request timed out.' : ((err && err.message) || String(err));
+        setResult('tfsResult', 'err', 'Could not read a response from TFS',
+            msg + ' — most often the PAT is expired: TFS answers an unauthorized call with a 401 that ' +
+            'carries no CORS header, so the browser reports it as a network failure. Otherwise check VPN access.');
+    } finally {
+        btn.disabled = false;
+    }
+}
+
+/* Asks the endpoint which models it serves. A mismatched model name is a 404
+   that reads like a broken endpoint, so this makes the real list visible. */
+async function loadAiModels() {
+    var cfg = formValues().ai;
+    if (!cfg.url || !cfg.apiKey) {
+        setResult('aiResult', 'err', 'Enter the endpoint URL and an API key first.');
+        return;
+    }
+    var btn = document.getElementById('aiModelsBtn');
+    btn.disabled = true;
+    setResult('aiResult', 'busy', 'Asking the endpoint for its model list…');
+    var modelsUrl = cfg.url.replace(/\/chat\/completions\/?$/, '/models');
+    try {
+        var headers = cfg.provider === 'anthropic'
+            ? { 'x-api-key': cfg.apiKey, 'anthropic-version': cfg.apiVersion || '2023-06-01' }
+            : { 'Authorization': 'Bearer ' + cfg.apiKey };
+        var res = await fetchWithTimeout(modelsUrl, { headers: headers }, cfg.timeoutSeconds || 20);
+        var text = await res.text();
+        if (!res.ok) {
+            setResult('aiResult', 'err', 'Model list returned HTTP ' + res.status, (text || '').slice(0, 200));
+            return;
+        }
+        var data = JSON.parse(text);
+        var names = (data.data || data.models || []).map(function (m) {
+            return typeof m === 'string' ? m : (m.id || m.name);
+        }).filter(Boolean);
+        if (!names.length) {
+            setResult('aiResult', 'err', 'The endpoint returned no models', (text || '').slice(0, 200));
+            return;
+        }
+        /* fill the field when it is empty or names something unavailable */
+        var field = document.getElementById('aiModel');
+        var current = (field.value || '').trim();
+        if (!current || names.indexOf(current) === -1) field.value = names[0];
+        setResult('aiResult', 'ok', names.length + ' model(s) available',
+            names.join(', ') + (current && names.indexOf(current) === -1
+                ? '  —  "' + current + '" is not served here, so the field was set to ' + names[0]
+                : ''));
+    } catch (err) {
+        var m = (err && err.name === 'AbortError') ? 'Timed out.' : ((err && err.message) || String(err));
+        setResult('aiResult', 'err', 'Could not read the model list', m + '  (' + modelsUrl + ')');
+    } finally {
+        btn.disabled = false;
+    }
+}
+
+async function testAi() {
+    var cfg = formValues().ai;
+    if (!cfg.url || !cfg.apiKey) {
+        setResult('aiResult', 'err', 'Enter the endpoint URL and an API key first.');
+        return;
+    }
+    var btn = document.getElementById('aiTestBtn');
+    btn.disabled = true;
+    setResult('aiResult', 'busy', 'Sending a one-line test prompt…');
+    try {
+        var req = buildAiRequest(cfg, 'Reply with the single word: ready');
+        var res = await fetchWithTimeout(cfg.url, {
+            method: 'POST',
+            headers: req.headers,
+            body: JSON.stringify(req.body)
+        }, cfg.timeoutSeconds || 20);
+
+        var text = await res.text();
+        if (!res.ok) {
+            var hint = '';
+            if (res.status === 401 || res.status === 403) {
+                hint = 'The key was rejected. If web.config stores APIKey encrypted, that stored value will ' +
+                    'not work here — paste the decrypted key your application sends.';
+            } else if (res.status === 404) {
+                hint = 'Check the path: an OpenAI-compatible gateway expects the full /v1/chat/completions URL.';
+            }
+            setResult('aiResult', 'err', 'Endpoint returned HTTP ' + res.status,
+                (text || '').slice(0, 200) + (hint ? '  —  ' + hint : ''));
+            return;
+        }
+        var reply = '';
+        try {
+            reply = extractAiText(JSON.parse(text));
+        } catch (e) {
+            reply = text.slice(0, 160);
+        }
+        setResult('aiResult', 'ok', 'AI endpoint answered',
+            'Model replied: "' + String(reply).trim().slice(0, 120) + '"  ·  format: ' + cfg.provider);
+    } catch (err) {
+        var m = (err && err.name === 'AbortError')
+            ? ('Timed out after ' + (cfg.timeoutSeconds || 20) + 's.')
+            : ((err && err.message) || String(err));
+        setResult('aiResult', 'err', 'Could not reach the AI endpoint',
+            m + ' — check the URL, and that this machine is allowed to reach that host.');
+    } finally {
+        btn.disabled = false;
+    }
+}
+
+/* Shared with the PR Reviewer: builds a request for either provider shape. */
+function buildAiRequest(cfg, prompt, systemPrompt) {
+    var maxTokens = cfg.maxTokens || 2000;
+    if (cfg.provider === 'anthropic') {
+        var body = {
+            model: cfg.model,
+            max_tokens: maxTokens,
+            messages: [{ role: 'user', content: prompt }]
+        };
+        if (systemPrompt) body.system = systemPrompt;
+        return {
+            headers: {
+                'Content-Type': 'application/json',
+                'x-api-key': cfg.apiKey,
+                'anthropic-version': cfg.apiVersion || '2023-06-01'
+            },
+            body: body
+        };
+    }
+    var messages = [];
+    if (systemPrompt) messages.push({ role: 'system', content: systemPrompt });
+    messages.push({ role: 'user', content: prompt });
+    return {
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + cfg.apiKey
+        },
+        body: { model: cfg.model, messages: messages, max_tokens: maxTokens, temperature: 0.2 }
+    };
+}
+
+/* Reads either response shape, so both providers are handled the same way. */
+function extractAiText(data) {
+    if (!data) return '';
+    if (data.choices && data.choices[0]) {
+        var choice = data.choices[0];
+        if (choice.message && choice.message.content) return choice.message.content;
+        if (choice.text) return choice.text;
+    }
+    if (Array.isArray(data.content)) {
+        return data.content.map(function (part) {
+            return (part && part.text) ? part.text : '';
+        }).join('');
+    }
+    if (typeof data.content === 'string') return data.content;
+    return '';
+}
+
+/* ─── BOOT ─── */
+(function boot() {
+    if (localStorage.getItem(LS_THEME) === 'light') {
+        document.documentElement.classList.add('light-theme');
+        document.getElementById('themeBtn').textContent = SUN;
+    }
+    fillForm(readConfig());
+    renderStatus();
+})();
+</script>
+</body>
+</html>

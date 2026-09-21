@@ -32,6 +32,8 @@ TFSData/
 │   └── index.html          ← Sprint Planner (~3200 lines)
 ├── user-performance-report/
 │   └── index.html          ← User Performance Report (~2350 lines)
+├── config/
+│   └── index.html          ← Connection Settings (shared TFS + AI config)
 ├── pr-reviewer/
 │   └── index.html          ← PR Review Automater (~2700 lines)
 ├── punch-time-calculator/
@@ -179,11 +181,73 @@ Per-member sprint scorecard built from TFS work item + update history.
 
 ### PR Review Automater (`pr-reviewer/index.html`)
 
-Generates a structured code review report from a pull request URL or a raw diff.
+Two views, switched in the topbar:
 
-- Accepts a GitHub or TFS PR URL, or pasted/dropped code or diff text
-- Optional PAT/token field for private repos
-- Optional OpenAI API key for AI-assisted review commentary
+- **My pull requests** — connect with a PAT, list the PRs assigned to you, open one, read its code
+  changes and get review insights on what changed.
+- **Paste code** — the original paste-a-diff analyser, unchanged.
+
+#### How the PR side works
+
+1. `prConnect()` validates the PAT via `connectionData` and keeps `authenticatedUser.id`, which is
+   what "assigned to me" filters on.
+2. `loadPullRequests(filter)` queries `/{project}/_apis/git/pullrequests` with
+   `searchCriteria.reviewerId` (assigned), `searchCriteria.creatorId` (created) or neither (all active).
+   One project-wide call covers all 66 repositories — there is no need to loop them.
+3. `openPullRequest()` reads the latest iteration, then that iteration's changes. Each change entry
+   carries `item.objectId` (after) and `item.originalObjectId` (before).
+4. `openFile()` fetches both blobs as raw text, diffs them in the browser, runs the existing
+   16 rule checks over the **after** content, then keeps only findings that land on lines this PR
+   touched. Files are fetched one at a time, on click.
+5. `analyzePullRequest()` adds change-set-level findings the per-file rules cannot see: no test file
+   touched, tests deleted, dependency manifest changed, migrations, pipeline or config changes,
+   binaries, very large change sets, mass deletions.
+
+#### The diff engine
+
+Files here reach 1 MB and 15,000+ lines, so a whole-file LCS is not affordable. `diffSegment()`
+gives up its matching head and tail, and when the remaining middle is still too big it splits on
+**patience anchors** — lines occurring exactly once on both sides — and recurses. Only a segment with
+no anchors degrades to "replace this block", which sets `diff.truncated` so the UI can say so.
+Measured on a real 15,759-line file: 60 ms, +121/−17 across 5 hunks. Prefix/suffix trimming alone
+was not enough (it left a 9,800 × 9,700 middle and produced a useless whole-file replace).
+
+#### AI insights
+
+Optional and provider-agnostic. Settings come from the Connection Settings page; with none set the
+rule findings still work. `buildAiRequest()` emits either shape:
+
+| Format | Auth header | Body |
+|--------|-------------|------|
+| OpenAI-compatible (e.g. an internal vLLM gateway) | `Authorization: Bearer <key>` | `{model, messages, max_tokens, temperature}` |
+| Anthropic native | `x-api-key` + `anthropic-version` | `{model, max_tokens, system, messages}` |
+
+`aiReviewFile()` sends one file's unified diff (capped at 400 lines) and asks for a strict JSON
+reply; `parseAiFindings()` tolerates fenced JSON and preambles, drops invalid severities and tags
+each finding `source: "ai"` so a reviewer can tell rules from model output.
+
+### Connection Settings (`config/index.html`)
+
+One page for the credentials every tool needs, so a PAT is pasted once.
+
+- Writes the shared blob `casepoint_config` = `{ tfs: {url, pat, proxy}, ai: {provider, url, apiKey,
+  model, apiVersion, requestThreshold, timeoutSeconds, maxTokens} }`.
+- **Also mirrors** the values into the per-tool keys the existing tools already read
+  (`tfs_dashboard_pat`, `sprint_planner_pat`, `pr_reviewer_pat`, `perf_report_pat`, the matching
+  `*_url` and `*_proxy` keys), so nothing else had to change.
+- "Test connection" buttons actually call `connectionData` and the LLM endpoint and report what came
+  back, including the likely cause on a 401.
+- Everything stays in `localStorage` on that machine. No secret is ever written into the repo, and
+  the deploy workflow publishes no credential.
+
+#### Measured facts about the AI gateway
+
+| Fact | Detail |
+|------|--------|
+| `LLM_URL` from foia.core | `https://testaipt.casepoint.com/vllm1/v1/chat/completions` — OpenAI-compatible, publicly resolvable, valid TLS |
+| CORS | The preflight returns `Access-Control-Allow-Origin: *` and allows `authorization`, so a browser page can call it directly |
+| `APIKey` in `web.config` | **Encrypted.** The stored value fails with 401 on `Bearer`, `x-api-key`, `api-key` and raw `Authorization`. The config page needs the decrypted key the application actually sends |
+| `ClaudeModel` | `claude-sonnet-4-6`, served behind the OpenAI-shaped path |
 
 ### Punch Time Calculator (`punch-time-calculator/index.html`)
 
@@ -194,6 +258,22 @@ Offline timesheet helper — no TFS connection.
 - All data kept in localStorage; a reset control clears it
 
 ## TFS API Details
+
+### Git pull-request API (measured)
+
+| Call | Working api-version |
+|------|--------------------|
+| `/{project}/_apis/git/pullrequests` (project-wide list) | 2.0, 3.0, 4.1 |
+| `/_apis/git/pullRequests` (collection-wide) | **3.0+** — 2.0 returns 404 |
+| `pullRequests/{id}/iterations` | **3.0+** — 2.0 returns 404 |
+| `iterations/{id}/changes` | **3.0+** — 2.0 returns 404 |
+| `pullRequests/{id}/threads`, `/workitems` | **3.0+** |
+| `repositories/{repo}/blobs/{objectId}?$format=text` | 3.0 — returns raw text |
+| `repositories/{repo}/items?path=…&$format=text` | 3.0 — also raw text; `includeContent=true` returns **no** content field on this server |
+
+So the PR tool pins `GIT_API_VERSION = 3.0` while the work-item tools stay on 2.0.
+Reviewer votes: `10` approved, `5` approved with suggestions, `0` no vote, `-5` waiting for author,
+`-10` rejected.
 
 - **Base URL:** `https://tfs.casepoint.in/tfs/Casepoint`
 - **Project:** `CasepointARA`

@@ -52,5 +52,14 @@
     "icon": "markdown",
     "accentColor": "#0ea5e9",
     "tags": ["Markdown", "Viewer", "Documentation"]
+  },
+  {
+    "id": "config",
+    "name": "Connection Settings",
+    "description": "Set up TFS and AI access once: collection URL, PAT and LLM endpoint, shared by every tool in this portal.",
+    "path": "config/index.html",
+    "icon": "settings",
+    "accentColor": "#64748b",
+    "tags": ["Setup", "TFS", "AI"]
   }
 ]

@@ -51,6 +51,18 @@
     --radius-md: 10px;
     --radius-lg: 16px;
     --radius-xl: 20px;
+    /* Added for the pull-request views. --bg-primary is a gradient, so sticky
+       headers and gutters need a SOLID surface or each one paints its own
+       gradient; --bg-solid is that surface. */
+    --bg-solid: #16203a;
+    --bg-secondary: rgba(255, 255, 255, 0.05);
+    --bg-tertiary: rgba(255, 255, 255, 0.08);
+    --border-strong: rgba(255, 255, 255, 0.2);
+    --text-dim: #64748b;
+    --success-color: #10b981;
+    --info-color: #3b82f6;
+    --font-mono: 'Cascadia Code', 'JetBrains Mono', 'Consolas', 'Courier New', monospace;
+    --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     --transition-fast: 150ms ease;
     --transition-normal: 300ms ease;
@@ -81,6 +93,12 @@
     --warning-bg: rgba(245, 158, 11, 0.08);
     --danger-bg: rgba(239, 68, 68, 0.08);
     --info-bg: rgba(59, 130, 246, 0.08);
+    /* light-mode counterparts for the pull-request views */
+    --bg-solid: #eef2f8;
+    --bg-secondary: rgba(255, 255, 255, 0.7);
+    --bg-tertiary: rgba(15, 23, 42, 0.05);
+    --border-strong: rgba(0, 0, 0, 0.2);
+    --text-dim: #94a3b8;
 }
 
 html, body {
@@ -1169,6 +1187,286 @@ body {
     to { opacity: 0; transform: translateX(40px); }
 }
 
+/* ═══════════════════════════════════════════════════════════════════════════
+   PULL REQUEST VIEWS
+   ═══════════════════════════════════════════════════════════════════════════ */
+/* The original tool is a fixed-viewport shell (html/body are overflow:hidden so
+   the two paste panels can own the screen). The pull-request side is document
+   shaped instead, so it gets its own scroll container rather than fighting that. */
+.app-view { display: none; }
+.app-view.active { display: block; }
+#viewPr.active {
+  height: calc(100vh - var(--topbar-height));
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.view-switch { display: inline-flex; padding: 3px; border-radius: 9px; background: var(--bg-tertiary, rgba(255,255,255,0.06)); border: 1px solid var(--border-color); }
+.view-switch-btn {
+  padding: 6px 14px;
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  background: none;
+  border: none;
+  border-radius: 7px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.view-switch-btn:hover { color: var(--text-primary); }
+.view-switch-btn.active { color: #fff; background: linear-gradient(135deg, var(--accent-primary, #6366f1), #8b5cf6); }
+
+.pr-wrap { max-width: 1240px; margin: 0 auto; padding: 18px 22px 80px; }
+
+/* ─── connect ─── */
+.pr-connect { max-width: 520px; margin: 40px auto; padding: 28px; border: 1px solid var(--border-color); border-radius: 14px; background: var(--bg-secondary, rgba(255,255,255,0.04)); }
+.pr-connect h2 { font-size: 17px; margin-bottom: 6px; }
+.pr-connect p.lead { font-size: 13px; color: var(--text-muted); margin-bottom: 20px; line-height: 1.6; }
+.pr-field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 15px; }
+.pr-field label { font-size: 11px; font-weight: 650; letter-spacing: 0.5px; text-transform: uppercase; color: var(--text-muted); }
+.pr-field input {
+  width: 100%;
+  padding: 9px 12px;
+  font-family: inherit;
+  font-size: 13px;
+  color: var(--text-primary);
+  background: var(--bg-tertiary, rgba(255,255,255,0.06));
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+}
+.pr-field input:focus { outline: none; border-color: var(--accent-primary, #6366f1); }
+.pr-field .hint { font-size: 11px; color: var(--text-dim, rgba(255,255,255,0.4)); }
+.pr-error { min-height: 18px; margin: 4px 0 12px; font-size: 12.5px; color: var(--critical-color, #f87171); line-height: 1.5; }
+
+/* ─── list ─── */
+/* The filters stay reachable while scrolling a couple of hundred rows. */
+.pr-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  position: sticky;
+  top: 0;
+  z-index: 6;
+  margin: -18px -22px 14px;
+  padding: 16px 22px 12px;
+  background: var(--bg-solid);
+  border-bottom: 1px solid var(--border-color);
+}
+.pr-tabs { display: inline-flex; gap: 4px; }
+.pr-tab {
+  padding: 7px 14px;
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  background: var(--bg-tertiary, rgba(255,255,255,0.06));
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  cursor: pointer;
+}
+.pr-tab.active { color: var(--text-primary); border-color: var(--accent-primary, #6366f1); }
+.pr-search {
+  flex: 1;
+  min-width: 180px;
+  padding: 8px 12px;
+  font-family: inherit;
+  font-size: 13px;
+  color: var(--text-primary);
+  background: var(--bg-tertiary, rgba(255,255,255,0.06));
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+}
+.pr-meta-line { margin-bottom: 14px; font-size: 12px; color: var(--text-muted); }
+
+.pr-row {
+  display: grid;
+  grid-template-columns: 4px 1fr auto;
+  gap: 0 14px;
+  align-items: center;
+  padding: 13px 16px 13px 12px;
+  margin-bottom: 9px;
+  border: 1px solid var(--border-color);
+  border-radius: 11px;
+  background: var(--bg-secondary, rgba(255,255,255,0.04));
+  cursor: pointer;
+  transition: border-color 0.15s, transform 0.15s;
+}
+.pr-row:hover { border-color: var(--border-strong, rgba(255,255,255,0.2)); transform: translateY(-1px); }
+.pr-row-flag { align-self: stretch; border-radius: 3px; background: transparent; }
+.pr-row.attention .pr-row-flag { background: var(--medium-color, #fbbf24); }
+.pr-row-title { font-size: 13.5px; font-weight: 600; margin-bottom: 4px; }
+.pr-row-sub { display: flex; flex-wrap: wrap; gap: 4px 12px; font-size: 11.5px; color: var(--text-muted); }
+.pr-row-right { display: flex; flex-direction: column; align-items: flex-end; gap: 5px; }
+.pr-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 9px;
+  border-radius: 999px;
+  font-size: 10.5px;
+  font-weight: 650;
+  letter-spacing: 0.2px;
+  background: var(--bg-tertiary, rgba(255,255,255,0.06));
+  border: 1px solid var(--border-color);
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+.pr-chip.approved { color: var(--success-color, #34d399); border-color: rgba(52,211,153,0.35); }
+.pr-chip.rejected { color: var(--critical-color, #f87171); border-color: rgba(248,113,113,0.35); }
+.pr-chip.waiting { color: var(--medium-color, #fbbf24); border-color: rgba(251,191,36,0.35); }
+.pr-chip.novote { color: var(--text-dim, rgba(255,255,255,0.4)); }
+.pr-chip.repo { font-family: var(--font-mono, monospace); font-weight: 500; }
+.pr-branch { font-family: var(--font-mono, monospace); font-size: 11px; }
+.pr-empty { padding: 50px 20px; text-align: center; color: var(--text-muted); }
+.pr-empty h3 { font-size: 15px; margin-bottom: 8px; color: var(--text-secondary); }
+.pr-empty p { font-size: 13px; line-height: 1.6; max-width: 46ch; margin: 0 auto; }
+
+/* ─── detail ─── */
+.pr-detail-head { padding: 18px 20px; margin-bottom: 18px; border: 1px solid var(--border-color); border-left: 3px solid var(--accent-primary, #6366f1); border-radius: 12px; background: var(--bg-secondary, rgba(255,255,255,0.04)); }
+.pr-detail-title { font-size: 16px; font-weight: 650; margin-bottom: 8px; line-height: 1.4; }
+.pr-detail-meta { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 12px; color: var(--text-muted); }
+.pr-detail-actions { display: flex; flex-wrap: wrap; gap: 9px; margin-top: 14px; }
+
+.pr-split { display: grid; grid-template-columns: minmax(230px, 310px) 1fr; gap: 18px; align-items: start; }
+.pr-pane { border: 1px solid var(--border-color); border-radius: 12px; background: var(--bg-secondary, rgba(255,255,255,0.04)); }
+.pr-pane-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 11px 14px;
+  border-bottom: 1px solid var(--border-color);
+  font-size: 12px;
+  font-weight: 650;
+  /* stays put while its pane's content scrolls past */
+  position: sticky;
+  top: 0;
+  z-index: 3;
+  background: var(--bg-solid);
+  border-top-left-radius: 12px;
+  border-top-right-radius: 12px;
+}
+
+/* The file list is a sticky sidebar with its own scrollbar, so it stays
+   visible however far down the diff you read. */
+.pr-side {
+  position: sticky;
+  top: 0;
+  display: flex;
+  flex-direction: column;
+  max-height: calc(100vh - var(--topbar-height) - 28px);
+  overflow: hidden;
+}
+.pr-side .pr-pane-body { flex: 1; min-height: 120px; overflow-y: auto; overflow-x: hidden; }
+
+/* Insights get a cap so they never push the diff off the screen; the diff
+   itself grows and scrolls with the view, and scrolls sideways for long lines. */
+#prInsights { max-height: 44vh; overflow-y: auto; }
+#prDiffBody { overflow-x: auto; }
+.pr-main { min-width: 0; }
+
+.file-row { display: flex; align-items: center; gap: 9px; padding: 9px 13px; border-bottom: 1px solid var(--border-color); cursor: pointer; font-size: 12px; }
+.file-row:last-child { border-bottom: none; }
+.file-row:hover { background: var(--bg-tertiary, rgba(255,255,255,0.06)); }
+.file-row.active { background: rgba(99,102,241,0.14); box-shadow: inset 3px 0 0 var(--accent-primary, #6366f1); }
+.file-row-name { flex: 1; min-width: 0; font-family: var(--font-mono, monospace); font-size: 11.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; direction: rtl; text-align: left; }
+.file-badge { flex-shrink: 0; width: 17px; height: 17px; display: grid; place-items: center; border-radius: 4px; font-size: 10px; font-weight: 700; }
+.file-badge.edit { background: rgba(96,165,250,0.18); color: var(--info-color, #60a5fa); }
+.file-badge.add { background: rgba(52,211,153,0.18); color: var(--success-color, #34d399); }
+.file-badge.delete { background: rgba(248,113,113,0.18); color: var(--critical-color, #f87171); }
+.file-badge.rename { background: rgba(251,191,36,0.18); color: var(--medium-color, #fbbf24); }
+.file-counts { flex-shrink: 0; font-family: var(--font-mono, monospace); font-size: 10.5px; }
+.file-counts .plus { color: var(--success-color, #34d399); }
+.file-counts .minus { color: var(--critical-color, #f87171); }
+.file-flag { flex-shrink: 0; width: 6px; height: 6px; border-radius: 50%; }
+.file-flag.critical { background: var(--critical-color, #f87171); }
+.file-flag.high { background: var(--high-color, #fb923c); }
+.file-flag.medium { background: var(--medium-color, #fbbf24); }
+
+/* ─── diff ─── */
+.diff-note { padding: 9px 14px; font-size: 11.5px; color: var(--text-muted); border-bottom: 1px solid var(--border-color); background: rgba(251,191,36,0.07); }
+.diff-table { width: 100%; border-collapse: collapse; font-family: var(--font-mono, monospace); font-size: 12px; line-height: 1.55; }
+/* Code lines are not wrapped: alignment matters when reviewing, so long lines
+   scroll sideways instead of reflowing. */
+.diff-table td { padding: 0 8px; vertical-align: top; white-space: pre; }
+.diff-table td:last-child { padding-right: 20px; }
+/* Line numbers and the +/- marker stay pinned while the code scrolls sideways. */
+.diff-gutter {
+  position: sticky;
+  z-index: 1;
+  width: 46px;
+  min-width: 46px;
+  padding: 0 9px !important;
+  text-align: right;
+  color: var(--text-dim, rgba(255,255,255,0.35));
+  background: var(--bg-solid);
+  user-select: none;
+  font-size: 11px;
+}
+.diff-gutter.old { left: 0; }
+.diff-gutter.new { left: 46px; box-shadow: 1px 0 0 var(--border-color); }
+.diff-sign {
+  position: sticky;
+  left: 92px;
+  z-index: 1;
+  width: 18px;
+  min-width: 18px;
+  padding: 0 4px !important;
+  text-align: center;
+  user-select: none;
+  background: var(--bg-solid);
+}
+/* A finding is prose, so it wraps inside a bounded column instead of widening
+   the whole diff table. */
+.diff-inline-finding .finding-body { max-width: 720px; white-space: normal; }
+.diff-line.add { background: rgba(52,211,153,0.11); }
+.diff-line.add .diff-sign { color: var(--success-color, #34d399); }
+.diff-line.del { background: rgba(248,113,113,0.11); }
+.diff-line.del .diff-sign { color: var(--critical-color, #f87171); }
+.diff-hunk-head td { padding: 5px 9px; font-size: 11px; color: var(--text-muted); background: rgba(99,102,241,0.1); border-top: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color); }
+.diff-inline-finding td { padding: 7px 12px; background: rgba(251,191,36,0.08); border-left: 3px solid var(--medium-color, #fbbf24); font-family: var(--font-sans, inherit); font-size: 11.5px; white-space: normal; }
+.diff-inline-finding.critical td { background: rgba(248,113,113,0.1); border-left-color: var(--critical-color, #f87171); }
+.diff-inline-finding.high td { background: rgba(251,146,60,0.1); border-left-color: var(--high-color, #fb923c); }
+.diff-inline-finding strong { font-weight: 650; }
+.diff-inline-finding .src { margin-left: 6px; font-size: 10px; text-transform: uppercase; letter-spacing: 0.4px; color: var(--text-dim, rgba(255,255,255,0.4)); }
+
+.pr-insight-list { padding: 4px 0; }
+.pr-insight {
+  display: flex;
+  gap: 10px;
+  padding: 11px 14px;
+  border-bottom: 1px solid var(--border-color);
+  font-size: 12.5px;
+  line-height: 1.55;
+}
+.pr-insight:last-child { border-bottom: none; }
+.pr-insight-sev { flex-shrink: 0; width: 8px; height: 8px; margin-top: 6px; border-radius: 50%; }
+.pr-insight-sev.CRITICAL { background: var(--critical-color, #f87171); }
+.pr-insight-sev.HIGH { background: var(--high-color, #fb923c); }
+.pr-insight-sev.MEDIUM { background: var(--medium-color, #fbbf24); }
+.pr-insight-sev.LOW { background: var(--low-color, #60a5fa); }
+.pr-insight-title { font-weight: 650; }
+.pr-insight-desc { margin-top: 3px; color: var(--text-muted); }
+.pr-insight-fix { margin-top: 4px; color: var(--text-secondary); }
+.pr-insight-where { margin-top: 3px; font-family: var(--font-mono, monospace); font-size: 10.5px; color: var(--text-dim, rgba(255,255,255,0.4)); }
+
+.pr-spinner-row { display: flex; align-items: center; gap: 10px; padding: 18px; font-size: 12.5px; color: var(--text-muted); }
+.pr-mini-spinner { width: 15px; height: 15px; border: 2px solid var(--border-color); border-top-color: var(--accent-primary, #6366f1); border-radius: 50%; animation: prspin 0.7s linear infinite; }
+@keyframes prspin { to { transform: rotate(360deg); } }
+
+@media (max-width: 900px) {
+  .pr-split { grid-template-columns: 1fr; }
+  /* one column: the file list becomes a normal, self-scrolling block */
+  .pr-side { position: static; max-height: 34vh; }
+  #prInsights { max-height: none; }
+  .pr-row { grid-template-columns: 4px 1fr; }
+  .pr-row-right { align-items: flex-start; margin-top: 8px; grid-column: 2; flex-direction: row; flex-wrap: wrap; }
+  .pr-toolbar { margin: -18px -14px 14px; padding: 14px; }
+}
+
 /* ─── PRINT STYLES ─── */
 @media print {
     .topbar, .score-bar, .left-panel, .history-panel, .overlay, .toast-container {
@@ -1262,6 +1560,10 @@ body {
             </div>
         </div>
         <div class="topbar-center">
+            <div class="view-switch" style="margin-right:14px">
+                <button class="view-switch-btn active" id="vsPr" onclick="setAppView('pr')">My pull requests</button>
+                <button class="view-switch-btn" id="vsPaste" onclick="setAppView('paste')">Paste code</button>
+            </div>
             <div class="mode-toggle">
                 <button class="mode-toggle-btn active" data-mode="rule" onclick="setMode('rule')">Rule-Based</button>
                 <button class="mode-toggle-btn" data-mode="ai" onclick="setMode('ai')">AI-Powered</button>
@@ -1306,20 +1608,107 @@ body {
         </div>
     </header>
 
-    <!-- ─── PR FETCH BAR ─── -->
+
+    <!-- ─── MAIN LAYOUT ─── -->
+    <!-- ═══ PULL REQUEST VIEW ═══ -->
+    <div class="app-view active" id="viewPr">
+      <div class="pr-wrap">
+
+        <!-- connect -->
+        <section class="pr-view" id="prViewConnect">
+          <div class="pr-connect">
+            <h2>Review your pull requests</h2>
+            <p class="lead">
+              Connect with a TFS Personal Access Token to see the pull requests waiting on you,
+              read the code changes, and get review insights on what changed.
+            </p>
+            <div class="pr-field">
+              <label for="prTfsUrl">TFS collection URL</label>
+              <input id="prTfsUrl" type="url" placeholder="https://tfs.casepoint.in/tfs/Casepoint">
+            </div>
+            <div class="pr-field">
+              <label for="prPatInput">Personal Access Token</label>
+              <input id="prPatInput" type="password" placeholder="Paste your TFS PAT" autocomplete="off">
+              <span class="hint">Stored in this browser only. Re-issue it in TFS if it has expired.</span>
+            </div>
+            <div class="pr-field">
+              <label for="prProxyInput">CORS proxy URL (optional)</label>
+              <input id="prProxyInput" type="text" placeholder="Leave empty for a direct connection">
+            </div>
+            <div class="pr-error" id="prConnectError"></div>
+            <button class="btn btn-primary" id="prConnectBtn" onclick="prConnect()" style="width:100%; justify-content:center;">
+              Connect to TFS
+            </button>
+            <p class="lead" style="margin:16px 0 0; font-size:12px;">
+              Set the URL, PAT and AI endpoint once on the
+              <a href="../config/index.html" style="color:var(--accent-primary,#6366f1)">Connection Settings</a>
+              page and every tool picks them up.
+            </p>
+          </div>
+        </section>
+
+        <!-- list -->
+        <section class="pr-view" id="prViewList" style="display:none">
+          <div class="pr-toolbar">
+            <div class="pr-tabs">
+              <button class="pr-tab active" id="prTabAssigned" onclick="loadPullRequests('assigned')">Assigned to me</button>
+              <button class="pr-tab" id="prTabCreated" onclick="loadPullRequests('created')">Created by me</button>
+              <button class="pr-tab" id="prTabAll" onclick="loadPullRequests('all')">All active</button>
+            </div>
+            <input class="pr-search" id="prSearch" type="search" placeholder="Filter by title, repo, branch or author..." oninput="onPrSearch(this.value)">
+            <button class="btn btn-sm" onclick="loadPullRequests()">Refresh</button>
+            <button class="btn btn-sm" onclick="prDisconnect()">Disconnect</button>
+          </div>
+          <div class="pr-meta-line" id="prListMeta"></div>
+          <div id="prListBody"></div>
+        </section>
+
+        <!-- detail -->
+        <section class="pr-view" id="prViewDetail" style="display:none">
+          <div class="pr-detail-head" id="prDetailHead"></div>
+          <div class="pr-split">
+            <div class="pr-pane pr-side">
+              <div class="pr-pane-head">
+                <span id="prFilesTitle">Changed files</span>
+                <button class="btn btn-sm" onclick="setPrView('list')" title="Back to the pull request list">&#8592; List</button>
+              </div>
+              <div class="pr-pane-body" id="prFileList"></div>
+            </div>
+            <div class="pr-main">
+              <div class="pr-pane" style="margin-bottom:18px">
+                <div class="pr-pane-head">
+                  <span id="prInsightsTitle">Review insights</span>
+                  <span id="prInsightsMeta" style="font-weight:400; color:var(--text-muted); font-size:11px"></span>
+                </div>
+                <div class="pr-pane-body" id="prInsights"></div>
+              </div>
+              <div class="pr-pane">
+                <div class="pr-pane-head">
+                  <span id="prDiffTitle">Code changes</span>
+                  <span id="prDiffMeta" style="font-weight:400; color:var(--text-muted); font-size:11px"></span>
+                </div>
+                <div class="pr-pane-body" id="prDiffBody"></div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+      </div>
+    </div>
+
+    <!-- ═══ PASTE-A-DIFF VIEW (the original tool) ═══ -->
+    <div class="app-view" id="viewPaste">
     <div class="pr-fetch-bar" style="padding:12px 20px;background:var(--bg-card);border-bottom:1px solid var(--border-color);display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;">
         <div style="flex:1;min-width:280px;">
             <label style="display:block;font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">PR / Diff URL</label>
-            <input type="text" id="prUrlInput" placeholder="https://github.com/owner/repo/pull/123 or TFS PR URL" style="width:100%;padding:8px 12px;font-size:13px;background:var(--bg-input);color:var(--text-primary);border:1px solid var(--border-color);border-radius:6px;font-family:inherit;outline:none;">
+            <input type="text" id="pasteUrlInput" placeholder="https://github.com/owner/repo/pull/123 or TFS PR URL" style="width:100%;padding:8px 12px;font-size:13px;background:var(--bg-input);color:var(--text-primary);border:1px solid var(--border-color);border-radius:6px;font-family:inherit;outline:none;">
         </div>
         <div style="min-width:200px;">
             <label style="display:block;font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">PAT / Token (for private repos)</label>
-            <input type="password" id="prPatInput" placeholder="Optional — for auth" style="width:100%;padding:8px 12px;font-size:13px;background:var(--bg-input);color:var(--text-primary);border:1px solid var(--border-color);border-radius:6px;font-family:inherit;outline:none;">
+            <input type="password" id="pasteTokenInput" placeholder="Optional — for auth" style="width:100%;padding:8px 12px;font-size:13px;background:var(--bg-input);color:var(--text-primary);border:1px solid var(--border-color);border-radius:6px;font-family:inherit;outline:none;">
         </div>
         <button class="btn btn-primary btn-sm" onclick="fetchPRDiff()" style="height:36px;white-space:nowrap;">Fetch PR Diff</button>
     </div>
-
-    <!-- ─── MAIN LAYOUT ─── -->
     <div class="main-container">
         <!-- ─── LEFT PANEL ─── -->
         <div class="left-panel" id="leftPanel">
@@ -1414,6 +1803,7 @@ body {
             </button>
         </div>
     </footer>
+    </div><!-- /viewPaste -->
 
     <!-- ─── HISTORY PANEL ─── -->
     <div class="overlay" id="overlay" onclick="toggleHistory()"></div>
@@ -1439,6 +1829,39 @@ const SEVERITY_WEIGHTS = { CRITICAL: 15, HIGH: 8, MEDIUM: 3, LOW: 1 };
 const OPENAI_URL = 'https://api.openai.com/v1/chat/completions';
 const OPENAI_MODEL = 'gpt-4o-mini';
 
+/* ─── TFS PULL REQUEST CONFIG ─── */
+const LS_PAT = 'pr_reviewer_pat';
+const LS_TFS_URL = 'pr_reviewer_tfs_url';
+const LS_PROXY = 'pr_reviewer_proxy';
+const LS_AI_URL = 'pr_reviewer_ai_url';
+const LS_AI_MODEL = 'pr_reviewer_ai_model';
+const LS_PR_VIEW = 'pr_reviewer_view';
+const TFS_DEFAULT_URL = 'https://tfs.casepoint.in/tfs/Casepoint';
+const TFS_PROJECT = 'CasepointARA';
+/* The Git PR endpoints (iterations, iteration changes, threads) 404 below 3.0
+   on this server, unlike the work-item APIs which are fine on 2.0. */
+const GIT_API_VERSION = '3.0';
+const IDENTITY_API_VERSION = '2.0-preview';
+/* TFS reviewer vote scale. */
+const VOTE_LABELS = {
+    '10': 'Approved',
+    '5': 'Approved with suggestions',
+    '0': 'No vote',
+    '-5': 'Waiting for author',
+    '-10': 'Rejected'
+};
+/* Files in these repos reach 1 MB / 15k lines, so content is fetched per file
+   on demand and diffing trims before it computes. */
+const MAX_DIFF_BYTES = 2 * 1024 * 1024;
+const DIFF_CELL_BUDGET = 4000000;
+const DIFF_CONTEXT = 3;
+const BINARY_EXT = /\.(png|jpe?g|gif|bmp|ico|svgz|pdf|zip|gz|7z|rar|dll|exe|pdb|so|dylib|ttf|woff2?|eot|mp4|mp3|xlsx?|docx?|pptx?|bin|cache|snk|pfx)$/i;
+const TEST_PATH = /(^|\/)(tests?|spec|specs|__tests__|e2e)(\/|$)|\.(test|spec|tests)\.[a-z]+$|test[a-z0-9_]*\.(cs|js|ts|py|java)$|([a-z0-9_]+)(tests?|spec)\.(cs|js|ts|py|java)$/i;
+const DEP_PATH = /(packages\.config|[^\/]+\.csproj|[^\/]+\.fsproj|[^\/]+\.vbproj|package\.json|package-lock\.json|yarn\.lock|pnpm-lock\.yaml|requirements\.txt|Gemfile(\.lock)?|pom\.xml|build\.gradle)$/i;
+const MIGRATION_PATH = /(^|\/)(migrations?|_migrations)(\/|$)|\.(sql)$/i;
+const PIPELINE_PATH = /(azure-pipelines[^\/]*\.ya?ml|\.github\/workflows\/|Dockerfile|docker-compose[^\/]*\.ya?ml|Jenkinsfile)$/i;
+const CONFIG_PATH = /(web\.config|app\.config|appsettings[^\/]*\.json|\.env($|\.)|nginx[^\/]*\.conf)$/i;
+
 /* ─── STATE ─── */
 let currentMode = 'rule';
 let currentTemplate = 'general';
@@ -1446,6 +1869,28 @@ let currentFindings = [];
 let currentScore = null;
 let detectedLanguage = 'Unknown';
 let isAnalyzing = false;
+
+/* ─── PULL REQUEST STATE ─── */
+let pr = {
+    view: 'connect',        // connect | list | detail
+    tfsUrl: '',
+    pat: '',
+    proxyUrl: '',
+    authHeader: '',
+    me: null,               // { id, displayName } from connectionData
+    filter: 'assigned',     // assigned | created | all
+    search: '',
+    list: [],               // pull requests for the active filter
+    loading: false,
+    current: null,          // the open pull request
+    iteration: null,        // its latest iteration
+    files: [],              // [{ path, changeType, objectId, originalObjectId, ... }]
+    activeFile: null,       // path of the file being shown
+    fileCache: {},          // path -> { before, after, diff, findings, binary, error }
+    prFindings: [],         // pull-request-level findings
+    threads: [],
+    workItems: []
+};
 
 /* ─── DOM REFS ─── */
 const codeInput = document.getElementById('codeInput');
@@ -1514,6 +1959,7 @@ const toastContainer = document.getElementById('toastContainer');
 
     updateLineNumbers();
     renderHistory();
+    initPullRequestView();
 })();
 
 /* ─── THEME ─── */
@@ -1614,8 +2060,8 @@ function clearCode() {
 
 /* ─── FETCH PR DIFF ─── */
 async function fetchPRDiff() {
-    const url = document.getElementById('prUrlInput').value.trim();
-    const pat = document.getElementById('prPatInput').value.trim();
+    const url = document.getElementById('pasteUrlInput').value.trim();
+    const pat = document.getElementById('pasteTokenInput').value.trim();
     if (!url) { showToast('Enter a PR URL'); return; }
 
     const headers = {};
@@ -2500,6 +2946,204 @@ function checkUnusedVariables(code, lines, findings) {
 }
 
 /* ─── AI-POWERED REVIEW ─── */
+/* ═══════════════════════════════════════════════════════════════════════════
+   AI PROVIDER
+   Settings come from the shared Connection Settings page (config/index.html),
+   which stores them per-browser under `casepoint_config`. That lets an
+   internal OpenAI-compatible gateway be used instead of api.openai.com, and
+   keeps every key out of the repository. The topbar key field still works as
+   a fallback for a one-off OpenAI review.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+const LS_CENTRAL_CONFIG = 'casepoint_config';
+
+function readCentralConfig() {
+    try {
+        const raw = localStorage.getItem(LS_CENTRAL_CONFIG);
+        const parsed = raw ? JSON.parse(raw) : {};
+        return { tfs: parsed.tfs || {}, ai: parsed.ai || {} };
+    } catch (e) {
+        return { tfs: {}, ai: {} };
+    }
+}
+
+/* The AI settings to use, or null when nothing is configured. */
+function aiConfig() {
+    const central = readCentralConfig().ai;
+    if (central && central.url && central.apiKey && central.model) return central;
+    const field = document.getElementById('apiKeyInput');
+    const typed = field ? (field.value || '').trim() : '';
+    if (typed.length >= 10) {
+        return {
+            provider: 'openai',
+            url: OPENAI_URL,
+            apiKey: typed,
+            model: OPENAI_MODEL,
+            maxTokens: 2000,
+            timeoutSeconds: 60,
+            requestThreshold: 20
+        };
+    }
+    return null;
+}
+
+/* Builds a request body for either provider shape. Mirrors the same function
+   in config/index.html so the two stay consistent. */
+function buildAiRequest(cfg, prompt, systemPrompt) {
+    const maxTokens = cfg.maxTokens || 2000;
+    if (cfg.provider === 'anthropic') {
+        const body = {
+            model: cfg.model,
+            max_tokens: maxTokens,
+            messages: [{ role: 'user', content: prompt }]
+        };
+        if (systemPrompt) body.system = systemPrompt;
+        return {
+            headers: {
+                'Content-Type': 'application/json',
+                'x-api-key': cfg.apiKey,
+                'anthropic-version': cfg.apiVersion || '2023-06-01'
+            },
+            body: body
+        };
+    }
+    const messages = [];
+    if (systemPrompt) messages.push({ role: 'system', content: systemPrompt });
+    messages.push({ role: 'user', content: prompt });
+    return {
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + cfg.apiKey
+        },
+        body: { model: cfg.model, messages: messages, max_tokens: maxTokens, temperature: 0.2 }
+    };
+}
+
+function extractAiText(data) {
+    if (!data) return '';
+    if (data.choices && data.choices[0]) {
+        const choice = data.choices[0];
+        if (choice.message && choice.message.content) return choice.message.content;
+        if (choice.text) return choice.text;
+    }
+    if (Array.isArray(data.content)) {
+        return data.content.map(function (part) { return (part && part.text) ? part.text : ''; }).join('');
+    }
+    if (typeof data.content === 'string') return data.content;
+    return '';
+}
+
+async function callAi(cfg, prompt, systemPrompt) {
+    const req = buildAiRequest(cfg, prompt, systemPrompt);
+    const seconds = cfg.timeoutSeconds || 30;
+    let controller = null, timer = null;
+    const options = { method: 'POST', headers: req.headers, body: JSON.stringify(req.body) };
+    if (typeof AbortController !== 'undefined') {
+        controller = new AbortController();
+        options.signal = controller.signal;
+        timer = setTimeout(function () { controller.abort(); }, seconds * 1000);
+    }
+    let res;
+    try {
+        res = await fetch(cfg.url, options);
+    } catch (err) {
+        if (timer) clearTimeout(timer);
+        if (err && err.name === 'AbortError') throw new Error('AI request timed out after ' + seconds + 's');
+        throw new Error('Could not reach the AI endpoint (' + ((err && err.message) || err) + ')');
+    }
+    if (timer) clearTimeout(timer);
+
+    const text = await res.text();
+    if (!res.ok) {
+        let detail = text.slice(0, 160);
+        if (res.status === 401 || res.status === 403) {
+            detail = 'the key was rejected — if it came from web.config it may be stored encrypted, ' +
+                'so paste the decrypted key in Connection Settings';
+        }
+        throw new Error('AI endpoint returned ' + res.status + ': ' + detail);
+    }
+    let data;
+    try {
+        data = JSON.parse(text);
+    } catch (e) {
+        throw new Error('AI endpoint did not return JSON');
+    }
+    return extractAiText(data);
+}
+
+/* Parses the strict JSON contract both AI paths ask the model for. */
+function parseAiFindings(content, fileLabel) {
+    if (!content) return [];
+    let body = String(content).trim();
+    if (body.slice(0, 3) === '```') {
+        body = body.replace(/^```(?:json)?\s*/, '').replace(/```\s*$/, '');
+    }
+    const first = body.indexOf('{');
+    const last = body.lastIndexOf('}');
+    if (first > 0 || last < body.length - 1) {
+        if (first !== -1 && last > first) body = body.slice(first, last + 1);
+    }
+    let parsed;
+    try {
+        parsed = JSON.parse(body);
+    } catch (e) {
+        return [];
+    }
+    if (!parsed || !Array.isArray(parsed.findings)) return [];
+    return parsed.findings
+        .filter(function (f) { return f && f.title && SEVERITY_ORDER.indexOf(f.severity) !== -1; })
+        .map(function (f) {
+            return {
+                severity: f.severity,
+                line: typeof f.line === 'number' ? f.line : null,
+                title: String(f.title),
+                description: String(f.description || ''),
+                suggestion: String(f.suggestion || ''),
+                source: 'ai',
+                file: fileLabel || null
+            };
+        });
+}
+
+const AI_DIFF_SYSTEM =
+    'You are a senior code reviewer looking at one file from a pull request. You are shown a unified ' +
+    'diff: lines starting with + are added, - are removed, and the rest is context. Review ONLY the ' +
+    'added and removed lines; ignore pre-existing issues in the context. Prefer a small number of ' +
+    'findings that would genuinely change a reviewer\'s decision over a long list of nitpicks.\n\n' +
+    'Respond ONLY with valid JSON in this exact shape:\n' +
+    '{"findings": [{"severity": "CRITICAL|HIGH|MEDIUM|LOW", "line": <new-file line number or null>, ' +
+    '"title": "<short title>", "description": "<what is wrong and why it matters>", ' +
+    '"suggestion": "<the concrete fix>"}]}\n' +
+    'Return {"findings": []} when the change looks fine. Maximum 8 findings.';
+
+/* Reviews one file's diff with the model. Returns [] when AI is not set up. */
+async function aiReviewFile(cfg, path, diff) {
+    const text = unifiedDiffText(diff, path, 400);
+    if (!text) return [];
+    const content = await callAi(cfg, 'File: ' + path + '\n\n' + text, AI_DIFF_SYSTEM);
+    return parseAiFindings(content, path);
+}
+
+/* A unified-diff rendering of the hunks, capped so one huge file cannot blow
+   the request size. */
+function unifiedDiffText(diff, path, maxLines) {
+    if (!diff || !diff.hunks.length) return '';
+    const out = [];
+    const cap = maxLines || 400;
+    for (let hi = 0; hi < diff.hunks.length && out.length < cap; hi++) {
+        const hunk = diff.hunks[hi];
+        out.push('@@ -' + hunk.aStart + ' +' + hunk.bStart + ' @@');
+        for (let oi = 0; oi < hunk.ops.length && out.length < cap; oi++) {
+            const op = hunk.ops[oi];
+            if (op.type === 'add') out.push('+' + diff.b[op.b]);
+            else if (op.type === 'del') out.push('-' + diff.a[op.a]);
+            else out.push(' ' + diff.b[op.b]);
+        }
+    }
+    if (out.length >= cap) out.push('... diff truncated for the request ...');
+    return out.join('\n');
+}
+
 async function runAIReview(code, apiKey) {
     const templatePrompts = {
         general: 'You are a senior code reviewer. Analyze the code for bugs, security issues, code quality, and best practices.',
@@ -2513,63 +3157,1089 @@ async function runAIReview(code, apiKey) {
         + 'If no issues found, return {"findings": []}.\n'
         + 'Keep each finding concise. Maximum 15 findings.';
 
-    const response = await fetch(OPENAI_URL, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': 'Bearer ' + apiKey
-        },
-        body: JSON.stringify({
-            model: OPENAI_MODEL,
-            messages: [
-                { role: 'system', content: systemPrompt },
-                { role: 'user', content: 'Review this code:\n\n```\n' + code.substring(0, 12000) + '\n```' }
-            ],
-            temperature: 0.3,
-            max_tokens: 2000
-        })
+    /* Prefer whatever Connection Settings configured (an internal gateway, or
+       Anthropic); fall back to the topbar key against api.openai.com. */
+    const cfg = aiConfig() || {
+        provider: 'openai', url: OPENAI_URL, apiKey: apiKey,
+        model: OPENAI_MODEL, maxTokens: 2000, timeoutSeconds: 60
+    };
+    const content = await callAi(cfg, 'Review this code:\n\n```\n' + code.substring(0, 12000) + '\n```', systemPrompt);
+    if (!content) throw new Error('Empty response from AI');
+    return parseAiFindings(content, null);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   TFS CLIENT
+   Same request pattern as tfs-dashboard and sprint-planner: the PAT goes on
+   every request as Basic auth, and cookie credentials are never sent (TFS
+   answers with a wildcard CORS origin, which browsers reject for credentialed
+   cross-origin requests).
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+function tfsUrl(path) {
+    const full = pr.tfsUrl + path;
+    return pr.proxyUrl ? pr.proxyUrl + encodeURIComponent(full) : full;
+}
+
+async function tfsFetch(path, wantText) {
+    const res = await fetch(tfsUrl(path), { headers: { Authorization: pr.authHeader } });
+    if (!res.ok) {
+        const body = await res.text().catch(function () { return ''; });
+        let message = 'HTTP ' + res.status;
+        try {
+            const parsed = JSON.parse(body);
+            if (parsed && parsed.message) message += ': ' + parsed.message;
+        } catch (e) {
+            if (body) message += ': ' + body.slice(0, 180);
+        }
+        const err = new Error(message);
+        err.status = res.status;
+        throw err;
+    }
+    return wantText ? res.text() : res.json();
+}
+
+const gitPath = (rest, version) =>
+    '/' + encodeURIComponent(TFS_PROJECT) + '/_apis/git' + rest +
+    (rest.indexOf('?') === -1 ? '?' : '&') + 'api-version=' + (version || GIT_API_VERSION);
+
+/* ─── CONNECT ─── */
+async function prConnect() {
+    const urlInput = document.getElementById('prTfsUrl');
+    const patInput = document.getElementById('prPatInput');
+    const proxyInput = document.getElementById('prProxyInput');
+    const errorEl = document.getElementById('prConnectError');
+
+    const url = (urlInput.value || '').trim().replace(/\/+$/, '');
+    const pat = (patInput.value || '').trim();
+    const proxy = proxyInput ? (proxyInput.value || '').trim().replace(/\/+$/, '') : '';
+
+    errorEl.textContent = '';
+    if (!url) { errorEl.textContent = 'Enter the TFS collection URL.'; return; }
+    if (!pat) { errorEl.textContent = 'Enter your Personal Access Token.'; return; }
+
+    const btn = document.getElementById('prConnectBtn');
+    btn.disabled = true;
+    const label = btn.textContent;
+    btn.textContent = 'Connecting...';
+
+    pr.tfsUrl = url;
+    pr.pat = pat;
+    pr.proxyUrl = proxy;
+    pr.authHeader = 'Basic ' + btoa(':' + pat);
+
+    try {
+        const data = await tfsFetch('/_apis/connectionData?api-version=' + IDENTITY_API_VERSION);
+        const user = data.authenticatedUser || {};
+        if (!user.id) throw new Error('TFS did not return an authenticated identity.');
+        pr.me = { id: user.id, displayName: user.providerDisplayName || user.displayName || 'you' };
+
+        localStorage.setItem(LS_PAT, pat);
+        localStorage.setItem(LS_TFS_URL, url);
+        if (proxy) localStorage.setItem(LS_PROXY, proxy); else localStorage.removeItem(LS_PROXY);
+
+        showToast('Connected as ' + pr.me.displayName, 'success');
+        await loadPullRequests('assigned');
+    } catch (err) {
+        pr.me = null;
+        errorEl.textContent = describeTfsError(err);
+    } finally {
+        btn.disabled = false;
+        btn.textContent = label;
+    }
+}
+
+/* Turns an opaque browser failure into the cause that is actually likely. */
+function describeTfsError(err) {
+    const msg = err && err.message ? err.message : String(err);
+    if (err && (err.status === 401 || err.status === 403)) {
+        return 'TFS rejected the token (' + err.status + '). Re-issue your PAT and paste it again.';
+    }
+    if (msg === 'Failed to fetch' || msg.indexOf('NetworkError') !== -1) {
+        return 'The browser could not read a response from TFS. Most often the PAT is expired — ' +
+            'TFS answers an unauthorized call with a 401 that carries no CORS header, so it looks ' +
+            'like a network failure. Otherwise check you are on the network (VPN).';
+    }
+    return msg;
+}
+
+function prDisconnect() {
+    pr.pat = '';
+    pr.authHeader = '';
+    pr.me = null;
+    pr.list = [];
+    pr.current = null;
+    pr.files = [];
+    pr.fileCache = {};
+    localStorage.removeItem(LS_PAT);
+    setPrView('connect');
+    showToast('Disconnected', 'info');
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   PULL REQUEST QUERIES
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+function prSearchCriteria(filter) {
+    if (filter === 'assigned' && pr.me) return '&searchCriteria.reviewerId=' + encodeURIComponent(pr.me.id);
+    if (filter === 'created' && pr.me) return '&searchCriteria.creatorId=' + encodeURIComponent(pr.me.id);
+    return '';
+}
+
+async function loadPullRequests(filter) {
+    if (filter) pr.filter = filter;
+    pr.loading = true;
+    setPrView('list');
+    renderPrList();
+    try {
+        const path = gitPath('/pullrequests?searchCriteria.status=active&$top=200' + prSearchCriteria(pr.filter));
+        const data = await tfsFetch(path);
+        pr.list = (data.value || []).map(mapPullRequest);
+        pr.loading = false;
+        renderPrList();
+    } catch (err) {
+        pr.loading = false;
+        pr.list = [];
+        renderPrList(describeTfsError(err));
+    }
+}
+
+function mapPullRequest(raw) {
+    const reviewers = (raw.reviewers || []).map(function (r) {
+        return {
+            id: r.id,
+            name: r.displayName || r.uniqueName || '?',
+            vote: Number(r.vote) || 0,
+            required: !!r.isRequired
+        };
+    });
+    const mine = pr.me ? reviewers.find(function (r) { return r.id === pr.me.id; }) : null;
+    return {
+        id: raw.pullRequestId,
+        title: raw.title || '(no title)',
+        description: raw.description || '',
+        repoId: raw.repository && raw.repository.id,
+        repoName: (raw.repository && raw.repository.name) || '?',
+        author: (raw.createdBy && raw.createdBy.displayName) || '?',
+        created: raw.creationDate,
+        source: String(raw.sourceRefName || '').replace('refs/heads/', ''),
+        target: String(raw.targetRefName || '').replace('refs/heads/', ''),
+        status: raw.status,
+        mergeStatus: raw.mergeStatus || '',
+        isDraft: !!raw.isDraft,
+        reviewers: reviewers,
+        myVote: mine ? mine.vote : null,
+        supportsIterations: raw.supportsIterations !== false
+    };
+}
+
+/* A PR needs attention when the user is a reviewer who has not voted yet. */
+function needsAttention(item) {
+    return item.myVote === 0 && !item.isDraft;
+}
+
+function prAgeDays(iso) {
+    if (!iso) return null;
+    const ms = Date.now() - new Date(iso).getTime();
+    return Math.max(0, Math.floor(ms / 86400000));
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   LINE DIFF
+   Files in these repositories run past 15,000 lines while typically differing
+   in a few dozen, so the common prefix and suffix are trimmed before any DP
+   runs. If the remaining middle is still too large to diff cheaply, the whole
+   middle is reported as one replaced block instead of hanging the tab.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+function splitLines(text) {
+    if (!text) return [];
+    const s = text.charCodeAt(0) === 0xFEFF ? text.slice(1) : text;
+    return s.split(/\r\n|\r|\n/);
+}
+
+function diffLines(beforeText, afterText) {
+    const a = splitLines(beforeText);
+    const b = splitLines(afterText);
+    const ops = [];
+    const state = { truncated: false };
+
+    diffSegment(a, b, 0, a.length, 0, b.length, ops, state, 0);
+
+    let added = 0, removed = 0;
+    ops.forEach(function (o) {
+        if (o.type === 'add') added++;
+        else if (o.type === 'del') removed++;
     });
 
-    if (!response.ok) {
-        const errorData = await response.json().catch(function() { return {}; });
-        throw new Error((errorData.error && errorData.error.message) || 'API request failed (' + response.status + ')');
+    return {
+        a: a, b: b, ops: ops, added: added, removed: removed,
+        truncated: state.truncated,
+        hunks: buildHunks(ops)
+    };
+}
+
+/* Patience-style recursive diff.
+   A whole-file LCS is O(n*m), which a 15,000-line file cannot afford. So each
+   segment first gives up its matching head and tail, and if what remains is
+   still too big to diff directly it is split on lines that occur EXACTLY ONCE
+   on both sides (patience anchors). Those anchors are certain matches, so the
+   segments between them are independent and small. Only when a segment has no
+   anchors at all does it degrade to "replace this block", and that is recorded
+   in state.truncated so the UI can say so. */
+function diffSegment(a, b, aStart, aEnd, bStart, bEnd, ops, state, depth) {
+    /* matching head */
+    while (aStart < aEnd && bStart < bEnd && a[aStart] === b[bStart]) {
+        ops.push({ type: 'eq', a: aStart, b: bStart });
+        aStart++; bStart++;
+    }
+    /* matching tail is emitted after the middle, so collect it first */
+    const tail = [];
+    while (aEnd > aStart && bEnd > bStart && a[aEnd - 1] === b[bEnd - 1]) {
+        aEnd--; bEnd--;
+        tail.push({ type: 'eq', a: aEnd, b: bEnd });
     }
 
-    const data = await response.json();
-    const content = data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content;
-
-    if (!content) throw new Error('Empty response from AI');
-
-    /* Parse JSON from response (handle markdown code blocks) */
-    let jsonStr = content.trim();
-    if (jsonStr.startsWith('```')) {
-        jsonStr = jsonStr.replace(/^```(?:json)?\s*/, '').replace(/```\s*$/, '');
+    const n = aEnd - aStart, m = bEnd - bStart;
+    if (n <= 0 || m <= 0) {
+        for (let i = aStart; i < aEnd; i++) ops.push({ type: 'del', a: i });
+        for (let j = bStart; j < bEnd; j++) ops.push({ type: 'add', b: j });
+    } else if (n * m <= DIFF_CELL_BUDGET) {
+        lcsOps(a, b, aStart, aEnd, bStart, bEnd, ops);
+    } else {
+        const anchors = depth < 20 ? patienceAnchors(a, b, aStart, aEnd, bStart, bEnd) : [];
+        if (!anchors.length) {
+            state.truncated = true;
+            for (let i = aStart; i < aEnd; i++) ops.push({ type: 'del', a: i });
+            for (let j = bStart; j < bEnd; j++) ops.push({ type: 'add', b: j });
+        } else {
+            let ai = aStart, bi = bStart;
+            anchors.forEach(function (pair) {
+                diffSegment(a, b, ai, pair[0], bi, pair[1], ops, state, depth + 1);
+                ops.push({ type: 'eq', a: pair[0], b: pair[1] });
+                ai = pair[0] + 1;
+                bi = pair[1] + 1;
+            });
+            diffSegment(a, b, ai, aEnd, bi, bEnd, ops, state, depth + 1);
+        }
     }
 
-    let parsed;
-    try {
-        parsed = JSON.parse(jsonStr);
-    } catch (e) {
-        throw new Error('Failed to parse AI response as JSON');
+    for (let k = tail.length - 1; k >= 0; k--) ops.push(tail[k]);
+}
+
+/* Lines occurring exactly once in both segments, kept in an order consistent
+   with both sides (longest increasing subsequence of their b positions). */
+function patienceAnchors(a, b, aStart, aEnd, bStart, bEnd) {
+    const countA = new Map(), countB = new Map();
+    for (let i = aStart; i < aEnd; i++) countA.set(a[i], (countA.get(a[i]) || 0) + 1);
+    for (let j = bStart; j < bEnd; j++) countB.set(b[j], (countB.get(b[j]) || 0) + 1);
+
+    const posInB = new Map();
+    for (let j = bStart; j < bEnd; j++) {
+        const line = b[j];
+        if (countB.get(line) === 1 && countA.get(line) === 1) posInB.set(line, j);
     }
+    const pairs = [];
+    for (let i = aStart; i < aEnd; i++) {
+        const line = a[i];
+        if (countA.get(line) === 1 && posInB.has(line)) pairs.push([i, posInB.get(line)]);
+    }
+    if (pairs.length < 2) return pairs;
 
-    if (!parsed.findings || !Array.isArray(parsed.findings)) return [];
+    /* longest increasing subsequence on the b index */
+    const tails = [], tailIdx = [], prev = new Array(pairs.length).fill(-1);
+    for (let k = 0; k < pairs.length; k++) {
+        const value = pairs[k][1];
+        let lo = 0, hi = tails.length;
+        while (lo < hi) {
+            const mid = (lo + hi) >> 1;
+            if (tails[mid] < value) lo = mid + 1; else hi = mid;
+        }
+        tails[lo] = value;
+        tailIdx[lo] = k;
+        prev[k] = lo > 0 ? tailIdx[lo - 1] : -1;
+    }
+    const out = [];
+    let k = tailIdx[tails.length - 1];
+    while (k !== -1 && k !== undefined) {
+        out.push(pairs[k]);
+        k = prev[k];
+    }
+    return out.reverse();
+}
 
-    /* Validate and tag findings */
-    return parsed.findings
-        .filter(function(f) {
-            return f && f.severity && f.title && SEVERITY_ORDER.includes(f.severity);
-        })
-        .map(function(f) {
-            return {
-                severity: f.severity,
-                line: typeof f.line === 'number' ? f.line : null,
-                title: String(f.title),
-                description: String(f.description || ''),
-                suggestion: String(f.suggestion || ''),
-                source: 'ai'
-            };
+/* Classic LCS table walked back into ops, bounded to one segment. */
+function lcsOps(a, b, aStart, aEnd, bStart, bEnd, ops) {
+    const n = aEnd - aStart, m = bEnd - bStart;
+    const width = m + 1;
+    const dp = new Int32Array((n + 1) * width);
+    for (let i = n - 1; i >= 0; i--) {
+        const row = i * width, next = (i + 1) * width;
+        for (let j = m - 1; j >= 0; j--) {
+            dp[row + j] = a[aStart + i] === b[bStart + j]
+                ? dp[next + j + 1] + 1
+                : Math.max(dp[next + j], dp[row + j + 1]);
+        }
+    }
+    let i = 0, j = 0;
+    while (i < n && j < m) {
+        if (a[aStart + i] === b[bStart + j]) {
+            ops.push({ type: 'eq', a: aStart + i, b: bStart + j });
+            i++; j++;
+        } else if (dp[(i + 1) * width + j] >= dp[i * width + j + 1]) {
+            ops.push({ type: 'del', a: aStart + i });
+            i++;
+        } else {
+            ops.push({ type: 'add', b: bStart + j });
+            j++;
+        }
+    }
+    while (i < n) { ops.push({ type: 'del', a: aStart + i }); i++; }
+    while (j < m) { ops.push({ type: 'add', b: bStart + j }); j++; }
+}
+
+/* Groups ops into hunks with DIFF_CONTEXT unchanged lines around each change. */
+function buildHunks(ops) {
+    const interesting = [];
+    ops.forEach(function (o, idx) { if (o.type !== 'eq') interesting.push(idx); });
+    if (!interesting.length) return [];
+
+    const ranges = [];
+    let start = Math.max(0, interesting[0] - DIFF_CONTEXT);
+    let end = Math.min(ops.length - 1, interesting[0] + DIFF_CONTEXT);
+    for (let k = 1; k < interesting.length; k++) {
+        const idx = interesting[k];
+        if (idx - DIFF_CONTEXT <= end + 1) {
+            end = Math.min(ops.length - 1, idx + DIFF_CONTEXT);
+        } else {
+            ranges.push([start, end]);
+            start = Math.max(0, idx - DIFF_CONTEXT);
+            end = Math.min(ops.length - 1, idx + DIFF_CONTEXT);
+        }
+    }
+    ranges.push([start, end]);
+
+    return ranges.map(function (r) {
+        const slice = ops.slice(r[0], r[1] + 1);
+        const firstA = slice.find(function (o) { return o.a !== undefined; });
+        const firstB = slice.find(function (o) { return o.b !== undefined; });
+        return {
+            ops: slice,
+            aStart: firstA ? firstA.a + 1 : 0,
+            bStart: firstB ? firstB.b + 1 : 0
+        };
+    });
+}
+
+/* New-file line numbers inside the hunks, so findings from the whole file can
+   be narrowed to what this pull request actually touched. */
+function changedLineSet(diff) {
+    const set = {};
+    diff.hunks.forEach(function (h) {
+        h.ops.forEach(function (o) {
+            if (o.b !== undefined) set[o.b + 1] = true;
         });
+    });
+    return set;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   PULL-REQUEST-LEVEL ANALYSIS
+   Signals that only exist when you look at the change set as a whole, rather
+   than at one file's contents.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+function analyzePullRequest(files) {
+    const findings = [];
+    const paths = files.map(function (f) { return f.path; });
+    const isTest = function (p) { return TEST_PATH.test(p); };
+    const code = files.filter(function (f) {
+        return !BINARY_EXT.test(f.path) && !isTest(f.path) &&
+            /\.(cs|js|ts|jsx|tsx|vb|py|java|sql|cshtml|razor|html|css|scss)$/i.test(f.path);
+    });
+
+    const add = function (severity, title, description, suggestion, file) {
+        findings.push({
+            severity: severity, line: null, title: title,
+            description: description, suggestion: suggestion,
+            source: 'rule', file: file || null
+        });
+    };
+
+    if (code.length && !paths.some(isTest)) {
+        add('MEDIUM', 'No test file touched',
+            code.length + ' code file(s) changed and nothing under a test path was added or updated.',
+            'Confirm the change is covered, or say in the PR why a test is not needed.');
+    }
+    const deletedTests = files.filter(function (f) { return isTest(f.path) && f.changeType === 'delete'; });
+    if (deletedTests.length) {
+        add('HIGH', 'Test file(s) deleted',
+            deletedTests.length + ' test file(s) are removed by this pull request.',
+            'Check the coverage they provided is replaced, not dropped.',
+            deletedTests[0].path);
+    }
+    const deps = files.filter(function (f) { return DEP_PATH.test(f.path); });
+    if (deps.length) {
+        add('MEDIUM', 'Dependency manifest changed',
+            'Changed: ' + deps.map(function (f) { return basename(f.path); }).join(', ') + '.',
+            'Review the version bumps and whether anything new is being pulled in.',
+            deps[0].path);
+    }
+    const migrations = files.filter(function (f) { return MIGRATION_PATH.test(f.path); });
+    if (migrations.length) {
+        add('HIGH', 'Database change included',
+            migrations.length + ' migration/SQL file(s) are part of this pull request.',
+            'Check it is reversible, ordered correctly and safe to run against production data.',
+            migrations[0].path);
+    }
+    const pipelines = files.filter(function (f) { return PIPELINE_PATH.test(f.path); });
+    if (pipelines.length) {
+        add('HIGH', 'Build or deployment definition changed',
+            'Changed: ' + pipelines.map(function (f) { return basename(f.path); }).join(', ') + '.',
+            'Pipeline changes affect every later build — review them separately from the code.',
+            pipelines[0].path);
+    }
+    const configs = files.filter(function (f) { return CONFIG_PATH.test(f.path); });
+    if (configs.length) {
+        add('MEDIUM', 'Configuration file changed',
+            'Changed: ' + configs.map(function (f) { return basename(f.path); }).join(', ') + '.',
+            'Confirm no secret or environment-specific value is committed.',
+            configs[0].path);
+    }
+    const binaries = files.filter(function (f) { return BINARY_EXT.test(f.path); });
+    if (binaries.length) {
+        add('LOW', 'Binary file(s) in the change set',
+            binaries.length + ' binary file(s) cannot be reviewed as text.',
+            'Confirm each one belongs in source control.',
+            binaries[0].path);
+    }
+    if (files.length >= 40) {
+        add('MEDIUM', 'Very large change set',
+            files.length + ' files are touched, which is hard to review in one pass.',
+            'Consider splitting it, or point reviewers at the files that carry the real change.');
+    }
+    const deletes = files.filter(function (f) { return f.changeType === 'delete'; });
+    if (deletes.length >= 5) {
+        add('LOW', deletes.length + ' file(s) deleted',
+            'Deletions: ' + deletes.slice(0, 5).map(function (f) { return basename(f.path); }).join(', ') +
+            (deletes.length > 5 ? ', ...' : '') + '.',
+            'Check nothing still references them.');
+    }
+    return findings;
+}
+
+function basename(p) {
+    const parts = String(p || '').split('/');
+    return parts[parts.length - 1] || p;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   PULL REQUEST UI
+   Built as DOM nodes rather than markup strings: branch names, titles, file
+   paths and diff lines all come from the server, and textContent means none of
+   it can be interpreted as markup.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+function h(tag, attrs, kids) {
+    const node = document.createElement(tag);
+    if (attrs) {
+        Object.keys(attrs).forEach(function (k) {
+            const v = attrs[k];
+            if (v === null || v === undefined || v === false) return;
+            if (k === 'text') node.textContent = String(v);
+            else if (k === 'class') node.className = String(v);
+            else if (k === 'value') node.value = v;
+            else if (k.slice(0, 2) === 'on' && typeof v === 'function') node.addEventListener(k.slice(2), v);
+            else node.setAttribute(k, String(v));
+        });
+    }
+    (kids || []).forEach(function (kid) {
+        if (kid === null || kid === undefined || kid === false) return;
+        node.appendChild(typeof kid === 'object' ? kid : document.createTextNode(String(kid)));
+    });
+    return node;
+}
+
+function clearNode(node) {
+    while (node && node.firstChild) node.removeChild(node.firstChild);
+}
+
+function setAppView(which) {
+    document.getElementById('viewPr').classList.toggle('active', which === 'pr');
+    document.getElementById('viewPaste').classList.toggle('active', which === 'paste');
+    document.getElementById('vsPr').classList.toggle('active', which === 'pr');
+    document.getElementById('vsPaste').classList.toggle('active', which === 'paste');
+    localStorage.setItem(LS_PR_VIEW, which);
+}
+
+function setPrView(view) {
+    pr.view = view;
+    ['Connect', 'List', 'Detail'].forEach(function (name) {
+        const el = document.getElementById('prView' + name);
+        if (el) el.style.display = (name.toLowerCase() === view) ? '' : 'none';
+    });
+}
+
+/* ─── PR LIST ─── */
+function onPrSearch(value) {
+    pr.search = String(value || '').toLowerCase();
+    renderPrList();
+}
+
+function visiblePrs() {
+    if (!pr.search) return pr.list;
+    return pr.list.filter(function (item) {
+        return (item.title + ' ' + item.repoName + ' ' + item.author + ' ' +
+                item.source + ' ' + item.target + ' ' + item.id).toLowerCase().indexOf(pr.search) !== -1;
+    });
+}
+
+function voteChip(vote) {
+    const label = VOTE_LABELS[String(vote)] || 'No vote';
+    const cls = vote >= 10 ? 'approved' : vote > 0 ? 'approved' : vote === -5 ? 'waiting' : vote <= -10 ? 'rejected' : 'novote';
+    return h('span', { class: 'pr-chip ' + cls, text: label });
+}
+
+function renderPrList(errorMessage) {
+    const tabs = { assigned: 'prTabAssigned', created: 'prTabCreated', all: 'prTabAll' };
+    Object.keys(tabs).forEach(function (key) {
+        const el = document.getElementById(tabs[key]);
+        if (el) el.classList.toggle('active', key === pr.filter);
+    });
+
+    const meta = document.getElementById('prListMeta');
+    const body = document.getElementById('prListBody');
+    clearNode(body);
+
+    if (pr.loading) {
+        meta.textContent = '';
+        body.appendChild(h('div', { class: 'pr-spinner-row' }, [
+            h('span', { class: 'pr-mini-spinner' }),
+            'Loading pull requests from TFS...'
+        ]));
+        return;
+    }
+    if (errorMessage) {
+        meta.textContent = '';
+        body.appendChild(h('div', { class: 'pr-empty' }, [
+            h('h3', { text: 'Could not load pull requests' }),
+            h('p', { text: errorMessage })
+        ]));
+        return;
+    }
+
+    const items = visiblePrs();
+    const attention = items.filter(needsAttention).length;
+    meta.textContent = items.length + ' pull request(s)' +
+        (pr.search ? ' matching "' + pr.search + '"' : '') +
+        (pr.filter === 'assigned' && attention ? '  ·  ' + attention + ' waiting for your vote' : '') +
+        (pr.me ? '  ·  signed in as ' + pr.me.displayName : '');
+
+    if (!items.length) {
+        const why = pr.filter === 'assigned'
+            ? 'Nothing is assigned to you for review right now. "All active" shows everything open in ' + TFS_PROJECT + '.'
+            : pr.filter === 'created'
+                ? 'You have no open pull requests.'
+                : 'No active pull requests were returned.';
+        body.appendChild(h('div', { class: 'pr-empty' }, [
+            h('h3', { text: pr.search ? 'Nothing matches that filter' : 'Nothing to review' }),
+            h('p', { text: pr.search ? 'Clear the filter to see the full list.' : why })
+        ]));
+        return;
+    }
+
+    /* oldest first when they are waiting on you: the queue a reviewer works */
+    const ordered = items.slice().sort(function (a, b) {
+        const aa = needsAttention(a) ? 0 : 1;
+        const bb = needsAttention(b) ? 0 : 1;
+        if (aa !== bb) return aa - bb;
+        return new Date(a.created) - new Date(b.created);
+    });
+
+    ordered.forEach(function (item) {
+        const age = prAgeDays(item.created);
+        const others = item.reviewers.filter(function (r) { return !pr.me || r.id !== pr.me.id; });
+        const approvals = others.filter(function (r) { return r.vote >= 5; }).length;
+
+        const sub = h('div', { class: 'pr-row-sub' }, [
+            h('span', { text: '#' + item.id }),
+            h('span', { text: item.author }),
+            h('span', { class: 'pr-branch', text: item.source + ' → ' + item.target }),
+            h('span', { text: age === 0 ? 'opened today' : age + ' day(s) old' }),
+            others.length ? h('span', { text: approvals + '/' + others.length + ' other reviewer(s) approved' }) : null
+        ]);
+
+        const right = h('div', { class: 'pr-row-right' }, [
+            h('span', { class: 'pr-chip repo', text: item.repoName }),
+            item.myVote === null ? h('span', { class: 'pr-chip novote', text: 'not a reviewer' }) : voteChip(item.myVote),
+            item.isDraft ? h('span', { class: 'pr-chip waiting', text: 'draft' }) : null,
+            item.mergeStatus === 'conflicts' ? h('span', { class: 'pr-chip rejected', text: 'conflicts' }) : null
+        ]);
+
+        body.appendChild(h('div', {
+            class: 'pr-row' + (needsAttention(item) ? ' attention' : ''),
+            onclick: function () { openPullRequest(item); }
+        }, [
+            h('div', { class: 'pr-row-flag' }),
+            h('div', null, [h('div', { class: 'pr-row-title', text: item.title }), sub]),
+            right
+        ]));
+    });
+}
+
+/* ─── PR DETAIL ─── */
+async function openPullRequest(item) {
+    pr.current = item;
+    pr.files = [];
+    pr.fileCache = {};
+    pr.activeFile = null;
+    pr.prFindings = [];
+    pr.workItems = [];
+    setPrView('detail');
+    renderPrDetailHead();
+    renderFileList(true);
+    clearNode(document.getElementById('prDiffBody'));
+    clearNode(document.getElementById('prInsights'));
+
+    try {
+        const base = '/repositories/' + encodeURIComponent(item.repoId) + '/pullRequests/' + item.id;
+        const iterations = await tfsFetch(gitPath(base + '/iterations'));
+        const list = iterations.value || [];
+        if (!list.length) throw new Error('TFS returned no iterations for this pull request.');
+        pr.iteration = list[list.length - 1];
+
+        const changes = await tfsFetch(gitPath(base + '/iterations/' + pr.iteration.id + '/changes?$top=1000'));
+        const entries = changes.changeEntries || changes.value || [];
+        pr.files = entries
+            .filter(function (c) { return c.item && c.item.path; })
+            .map(function (c) {
+                return {
+                    path: c.item.path,
+                    changeType: String(c.changeType || 'edit').split(',')[0].trim(),
+                    objectId: c.item.objectId || '',
+                    originalObjectId: c.item.originalObjectId || '',
+                    binary: BINARY_EXT.test(c.item.path)
+                };
+            });
+
+        pr.prFindings = analyzePullRequest(pr.files);
+        renderFileList();
+        renderInsights();
+
+        /* linked work items are cheap and useful context */
+        try {
+            const wi = await tfsFetch(gitPath(base + '/workitems'));
+            pr.workItems = wi.value || [];
+        } catch (e) {
+            pr.workItems = [];
+        }
+        renderPrDetailHead();
+
+        const firstText = pr.files.find(function (f) { return !f.binary && f.changeType !== 'delete'; });
+        if (firstText) openFile(firstText.path);
+    } catch (err) {
+        renderFileList(false, describeTfsError(err));
+    }
+}
+
+function renderPrDetailHead() {
+    const box = document.getElementById('prDetailHead');
+    if (!box) return;
+    clearNode(box);
+    const item = pr.current;
+    if (!item) return;
+
+    const meta = h('div', { class: 'pr-detail-meta' }, [
+        h('span', { text: '#' + item.id }),
+        h('span', { text: item.repoName }),
+        h('span', { class: 'pr-branch', text: item.source + ' → ' + item.target }),
+        h('span', { text: 'by ' + item.author }),
+        h('span', { text: prAgeDays(item.created) + ' day(s) old' }),
+        item.mergeStatus ? h('span', { text: 'merge: ' + item.mergeStatus }) : null,
+        pr.files.length ? h('span', { text: pr.files.length + ' file(s) changed' }) : null,
+        pr.workItems.length ? h('span', { text: pr.workItems.length + ' linked work item(s)' }) : null
+    ]);
+
+    const reviewers = h('div', { class: 'pr-detail-meta', style: 'margin-top:6px' },
+        item.reviewers.length
+            ? item.reviewers.map(function (r) {
+                const cls = r.vote >= 5 ? 'approved' : r.vote === -5 ? 'waiting' : r.vote <= -10 ? 'rejected' : 'novote';
+                return h('span', { class: 'pr-chip ' + cls, text: r.name + ' · ' + (VOTE_LABELS[String(r.vote)] || 'No vote') });
+            })
+            : [h('span', { text: 'No reviewers assigned' })]);
+
+    const actions = h('div', { class: 'pr-detail-actions' }, [
+        h('button', { class: 'btn btn-sm', text: '← Back to list', onclick: function () { setPrView('list'); } }),
+        h('a', {
+            class: 'btn btn-sm',
+            href: pr.tfsUrl + '/' + TFS_PROJECT + '/_git/' + encodeURIComponent(item.repoName) + '/pullrequest/' + item.id,
+            target: '_blank',
+            rel: 'noopener',
+            text: 'Open in TFS'
+        }),
+        h('button', { class: 'btn btn-sm', id: 'prAiBtn', text: 'AI review this file', onclick: runAiOnActiveFile }),
+        h('button', { class: 'btn btn-sm', text: 'Copy insights', onclick: copyPrInsights })
+    ]);
+
+    box.appendChild(h('div', { class: 'pr-detail-title', text: item.title }));
+    box.appendChild(meta);
+    box.appendChild(reviewers);
+    if (item.description) {
+        box.appendChild(h('div', {
+            class: 'pr-detail-meta',
+            style: 'margin-top:8px; display:block; white-space:pre-wrap; max-height:96px; overflow:auto',
+            text: item.description.slice(0, 1200)
+        }));
+    }
+    box.appendChild(actions);
+}
+
+const CHANGE_LETTER = { edit: 'M', add: 'A', delete: 'D', rename: 'R', 'edit, rename': 'R' };
+
+function renderFileList(loading, errorMessage) {
+    const box = document.getElementById('prFileList');
+    const title = document.getElementById('prFilesTitle');
+    if (!box) return;
+    clearNode(box);
+
+    if (loading) {
+        title.textContent = 'Changed files';
+        box.appendChild(h('div', { class: 'pr-spinner-row' }, [
+            h('span', { class: 'pr-mini-spinner' }), 'Loading the change set...'
+        ]));
+        return;
+    }
+    if (errorMessage) {
+        title.textContent = 'Changed files';
+        box.appendChild(h('div', { class: 'pr-empty' }, [
+            h('h3', { text: 'Could not load the changes' }),
+            h('p', { text: errorMessage })
+        ]));
+        return;
+    }
+    title.textContent = 'Changed files (' + pr.files.length + ')';
+
+    pr.files.forEach(function (file) {
+        const cached = pr.fileCache[file.path];
+        const worst = cached && cached.findings && cached.findings.length
+            ? SEVERITY_ORDER.find(function (s) {
+                return cached.findings.some(function (f) { return f.severity === s; });
+            })
+            : null;
+        const counts = cached && cached.diff
+            ? h('span', { class: 'file-counts' }, [
+                h('span', { class: 'plus', text: '+' + cached.diff.added }),
+                ' ',
+                h('span', { class: 'minus', text: '-' + cached.diff.removed })
+            ])
+            : h('span', { class: 'file-counts', text: file.binary ? 'bin' : '' });
+
+        box.appendChild(h('div', {
+            class: 'file-row' + (pr.activeFile === file.path ? ' active' : ''),
+            title: file.path,
+            onclick: function () { openFile(file.path); }
+        }, [
+            h('span', { class: 'file-badge ' + file.changeType, text: CHANGE_LETTER[file.changeType] || 'M' }),
+            h('span', { class: 'file-row-name', text: file.path }),
+            counts,
+            worst ? h('span', { class: 'file-flag ' + worst.toLowerCase(), title: worst }) : null
+        ]));
+    });
+}
+
+/* ─── ONE FILE: fetch both sides, diff, analyse ─── */
+async function openFile(path) {
+    pr.activeFile = path;
+    renderFileList();
+    const file = pr.files.find(function (f) { return f.path === path; });
+    if (!file) return;
+
+    const diffBox = document.getElementById('prDiffBody');
+    document.getElementById('prDiffTitle').textContent = basename(path);
+    document.getElementById('prDiffMeta').textContent = '';
+
+    if (pr.fileCache[path]) {
+        renderDiff(pr.fileCache[path]);
+        renderInsights();
+        return;
+    }
+    if (file.binary) {
+        pr.fileCache[path] = { binary: true };
+        renderDiff(pr.fileCache[path]);
+        return;
+    }
+
+    clearNode(diffBox);
+    diffBox.appendChild(h('div', { class: 'pr-spinner-row' }, [
+        h('span', { class: 'pr-mini-spinner' }), 'Fetching both versions of this file...'
+    ]));
+
+    try {
+        const blob = function (oid) {
+            return tfsFetch(gitPath('/repositories/' + encodeURIComponent(pr.current.repoId) +
+                '/blobs/' + encodeURIComponent(oid) + '?$format=text'), true);
+        };
+        const after = file.objectId ? await blob(file.objectId) : '';
+        const before = file.originalObjectId ? await blob(file.originalObjectId) : '';
+
+        if ((after.length + before.length) > MAX_DIFF_BYTES) {
+            pr.fileCache[path] = { tooBig: true, bytes: after.length + before.length };
+            renderDiff(pr.fileCache[path]);
+            return;
+        }
+
+        const diff = diffLines(before, after);
+        /* The whole-file rules run with full context, then findings are kept
+           only where this pull request actually touched the file. */
+        let findings = [];
+        if (after) {
+            const changed = changedLineSet(diff);
+            findings = runRuleBasedAnalysis(after)
+                .filter(function (f) { return !f.line || changed[f.line]; })
+                .map(function (f) {
+                    f.file = path;
+                    return f;
+                });
+        }
+        pr.fileCache[path] = { before: before, after: after, diff: diff, findings: findings };
+        renderDiff(pr.fileCache[path]);
+        renderFileList();
+        renderInsights();
+    } catch (err) {
+        pr.fileCache[path] = { error: describeTfsError(err) };
+        renderDiff(pr.fileCache[path]);
+    }
+}
+
+function renderDiff(cached) {
+    const box = document.getElementById('prDiffBody');
+    const metaEl = document.getElementById('prDiffMeta');
+    clearNode(box);
+
+    if (cached.error) {
+        box.appendChild(h('div', { class: 'pr-empty' }, [
+            h('h3', { text: 'Could not load this file' }), h('p', { text: cached.error })
+        ]));
+        return;
+    }
+    if (cached.binary) {
+        metaEl.textContent = '';
+        box.appendChild(h('div', { class: 'pr-empty' }, [
+            h('h3', { text: 'Binary file' }),
+            h('p', { text: 'This file cannot be shown as text. Check in TFS whether it belongs in source control.' })
+        ]));
+        return;
+    }
+    if (cached.tooBig) {
+        metaEl.textContent = '';
+        box.appendChild(h('div', { class: 'pr-empty' }, [
+            h('h3', { text: 'File too large to diff here' }),
+            h('p', { text: Math.round(cached.bytes / 1024) + ' KB across both versions. Open it in TFS instead.' })
+        ]));
+        return;
+    }
+
+    const diff = cached.diff;
+    metaEl.textContent = '+' + diff.added + '  -' + diff.removed + '  ·  ' +
+        diff.hunks.length + ' hunk(s)' +
+        (cached.findings && cached.findings.length ? '  ·  ' + cached.findings.length + ' finding(s)' : '');
+
+    if (!diff.hunks.length) {
+        box.appendChild(h('div', { class: 'pr-empty' }, [
+            h('h3', { text: 'No textual change' }),
+            h('p', { text: 'Both versions of this file are identical line for line.' })
+        ]));
+        return;
+    }
+    if (diff.truncated) {
+        box.appendChild(h('div', { class: 'diff-note', text:
+            'This file changed too much to align line by line, so the changed region is shown as a ' +
+            'removal followed by an addition rather than an interleaved diff.' }));
+    }
+
+    /* findings anchored to a new-file line, shown inline under that line */
+    const byLine = {};
+    (cached.findings || []).forEach(function (f) {
+        if (f.line) (byLine[f.line] || (byLine[f.line] = [])).push(f);
+    });
+
+    const table = h('table', { class: 'diff-table' });
+    const tbody = h('tbody');
+    diff.hunks.forEach(function (hunk) {
+        tbody.appendChild(h('tr', { class: 'diff-hunk-head' }, [
+            h('td', { colspan: 4, text: '@@ -' + hunk.aStart + ' +' + hunk.bStart + ' @@' })
+        ]));
+        hunk.ops.forEach(function (op) {
+            const isAdd = op.type === 'add';
+            const isDel = op.type === 'del';
+            const text = isDel ? diff.a[op.a] : diff.b[op.b];
+            tbody.appendChild(h('tr', { class: 'diff-line ' + (isAdd ? 'add' : isDel ? 'del' : 'eq') }, [
+                h('td', { class: 'diff-gutter old', text: op.a !== undefined ? String(op.a + 1) : '' }),
+                h('td', { class: 'diff-gutter new', text: op.b !== undefined ? String(op.b + 1) : '' }),
+                h('td', { class: 'diff-sign', text: isAdd ? '+' : isDel ? '-' : ' ' }),
+                h('td', { text: text === undefined ? '' : text })
+            ]));
+            if (op.b !== undefined && byLine[op.b + 1]) {
+                byLine[op.b + 1].forEach(function (f) {
+                    tbody.appendChild(h('tr', { class: 'diff-inline-finding ' + f.severity.toLowerCase() }, [
+                        h('td', { colspan: 4 }, [
+                            h('div', { class: 'finding-body' }, [
+                                h('strong', { text: f.severity + ': ' + f.title }),
+                                h('span', { class: 'src', text: f.source === 'ai' ? 'ai' : 'rule' }),
+                                f.description ? h('div', { text: f.description }) : null,
+                                f.suggestion ? h('div', { style: 'margin-top:3px', text: '→ ' + f.suggestion }) : null
+                            ])
+                        ])
+                    ]));
+                });
+            }
+        });
+    });
+    table.appendChild(tbody);
+    box.appendChild(table);
+}
+
+/* ─── INSIGHTS PANEL ─── */
+function allPrFindings() {
+    let out = pr.prFindings.slice();
+    Object.keys(pr.fileCache).forEach(function (path) {
+        const cached = pr.fileCache[path];
+        if (cached && cached.findings) out = out.concat(cached.findings);
+    });
+    const seen = {};
+    return out.filter(function (f) {
+        const key = (f.file || '') + '|' + f.title + '|' + (f.line || '');
+        if (seen[key]) return false;
+        seen[key] = 1;
+        return true;
+    }).sort(function (a, b) {
+        const d = SEVERITY_ORDER.indexOf(a.severity) - SEVERITY_ORDER.indexOf(b.severity);
+        return d !== 0 ? d : String(a.file || '').localeCompare(String(b.file || ''));
+    });
+}
+
+function renderInsights() {
+    const box = document.getElementById('prInsights');
+    const meta = document.getElementById('prInsightsMeta');
+    if (!box) return;
+    clearNode(box);
+
+    const findings = allPrFindings();
+    const counts = { CRITICAL: 0, HIGH: 0, MEDIUM: 0, LOW: 0 };
+    findings.forEach(function (f) { counts[f.severity] = (counts[f.severity] || 0) + 1; });
+    const reviewed = Object.keys(pr.fileCache).filter(function (p) { return pr.fileCache[p].diff; }).length;
+    const aiCount = findings.filter(function (f) { return f.source === 'ai'; }).length;
+
+    meta.textContent = SEVERITY_ORDER.map(function (s) { return counts[s] + ' ' + s.toLowerCase(); }).join('  ·  ') +
+        '  ·  ' + reviewed + '/' + pr.files.length + ' file(s) analysed' +
+        (aiCount ? '  ·  ' + aiCount + ' from AI' : '');
+
+    if (!findings.length) {
+        box.appendChild(h('div', { class: 'pr-empty', style: 'padding:26px 18px' }, [
+            h('h3', { text: 'Nothing flagged yet' }),
+            h('p', { text: reviewed
+                ? 'The rules found nothing on the lines this pull request touched. Open more files, or run an AI review for a second opinion.'
+                : 'Open a changed file to analyse it.' })
+        ]));
+        return;
+    }
+
+    const list = h('div', { class: 'pr-insight-list' }, findings.map(function (f) {
+        return h('div', { class: 'pr-insight' }, [
+            h('span', { class: 'pr-insight-sev ' + f.severity }),
+            h('div', null, [
+                h('span', { class: 'pr-insight-title', text: f.title }),
+                h('span', { class: 'src', text: f.source === 'ai' ? '  ai' : '' }),
+                f.description ? h('div', { class: 'pr-insight-desc', text: f.description }) : null,
+                f.suggestion ? h('div', { class: 'pr-insight-fix', text: '→ ' + f.suggestion }) : null,
+                f.file ? h('div', {
+                    class: 'pr-insight-where',
+                    text: basename(f.file) + (f.line ? ':' + f.line : ''),
+                    onclick: function () { if (f.file !== pr.activeFile) openFile(f.file); }
+                }) : null
+            ])
+        ]);
+    }));
+    box.appendChild(list);
+}
+
+/* ─── AI ON THE OPEN FILE ─── */
+async function runAiOnActiveFile() {
+    const cfg = aiConfig();
+    if (!cfg) {
+        showToast('No AI endpoint configured — set one on the Connection Settings page.', 'error');
+        return;
+    }
+    const path = pr.activeFile;
+    const cached = path && pr.fileCache[path];
+    if (!cached || !cached.diff) {
+        showToast('Open a changed text file first.', 'error');
+        return;
+    }
+    const btn = document.getElementById('prAiBtn');
+    if (btn) { btn.disabled = true; btn.textContent = 'Reviewing...'; }
+    try {
+        const found = await aiReviewFile(cfg, path, cached.diff);
+        cached.findings = (cached.findings || []).filter(function (f) { return f.source !== 'ai'; }).concat(found);
+        renderDiff(cached);
+        renderFileList();
+        renderInsights();
+        showToast(found.length ? found.length + ' AI finding(s) for ' + basename(path) : 'AI found nothing to flag here', 'success');
+    } catch (err) {
+        showToast(err.message, 'error');
+    } finally {
+        if (btn) { btn.disabled = false; btn.textContent = 'AI review this file'; }
+    }
+}
+
+function copyPrInsights() {
+    const item = pr.current;
+    if (!item) return;
+    const findings = allPrFindings();
+    const lines = ['# Review notes — PR #' + item.id + ': ' + item.title,
+        '', item.repoName + '  ·  ' + item.source + ' -> ' + item.target + '  ·  by ' + item.author, ''];
+    if (!findings.length) lines.push('No findings.');
+    SEVERITY_ORDER.forEach(function (sev) {
+        const group = findings.filter(function (f) { return f.severity === sev; });
+        if (!group.length) return;
+        lines.push('## ' + sev + ' (' + group.length + ')', '');
+        group.forEach(function (f) {
+            lines.push('- **' + f.title + '**' + (f.file ? ' — `' + f.file + (f.line ? ':' + f.line : '') + '`' : '') +
+                (f.source === 'ai' ? ' _(ai)_' : ''));
+            if (f.description) lines.push('  ' + f.description);
+            if (f.suggestion) lines.push('  Fix: ' + f.suggestion);
+        });
+        lines.push('');
+    });
+    const text = lines.join('\n');
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(function () {
+            showToast('Review notes copied as Markdown', 'success');
+        }, function () {
+            showToast('Could not copy to the clipboard', 'error');
+        });
+    } else {
+        showToast('Clipboard is not available in this browser', 'error');
+    }
+}
+
+/* ─── BOOT THE PR SIDE ─── */
+function initPullRequestView() {
+    const central = readCentralConfig().tfs || {};
+    const url = central.url || localStorage.getItem(LS_TFS_URL) || TFS_DEFAULT_URL;
+    const pat = central.pat || localStorage.getItem(LS_PAT) || '';
+    const proxy = central.proxy || localStorage.getItem(LS_PROXY) || '';
+    document.getElementById('prTfsUrl').value = url;
+    document.getElementById('prPatInput').value = pat;
+    document.getElementById('prProxyInput').value = proxy;
+
+    document.getElementById('prPatInput').addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') prConnect();
+    });
+
+    setAppView(localStorage.getItem(LS_PR_VIEW) === 'paste' ? 'paste' : 'pr');
+    setPrView('connect');
+    if (pat && url) prConnect();
 }
 
 /* ─── HISTORY ─── */
